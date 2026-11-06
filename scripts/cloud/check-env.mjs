@@ -9,7 +9,10 @@
  *   `trycloudflare.com`, `127.0.0.1`, `localhost`, `codex-cli`, `llamacpp:`,
  *   nebo na místní či soukromou adresu (`0.0.0.0`, `[::1]`, 10.x, 172.16–31.x, 192.168.x);
  * - chybí nebo je nečitelný dolarový strop `WORLDSMITH_SPEND_CAP_USD`
- *   či `WORLDSMITH_FALLBACK_SPEND_CAP_USD`;
+ *   či `WORLDSMITH_FALLBACK_SPEND_CAP_USD` (ten jen se zapnutou zálohou);
+ * - záloha je vyplněná jen zčásti: všechny `WORLDSMITH_FALLBACK_*` prázdné = záloha vypnutá (P71A),
+ *   jakákoli vyplněná = zapnutá, a pak chce adresu, model, ceny a oba stropy;
+ * - chybí nebo je prázdná předpona knihy `WORLDSMITH_SPEND_STORE_PREFIX` (P71A);
  * - `WORLDSMITH_MODEL_PROFILE` není `api` / `metered` / prázdný – `subscription`
  *   je osobní předplatné a překlep upstream odmítne (demo by běželo bez režiséra);
  * - strop počtu volání (`WORLDSMITH_CALL_CAP`, `WORLDSMITH_FALLBACK_CALL_CAP`)
@@ -122,6 +125,20 @@ function totalProblems(vars) {
   return problems;
 }
 
+/**
+ * Záloha je zapnutá, jakmile má kterákoli `WORLDSMITH_FALLBACK_*` hodnotu (P71A). Úplně prázdná = vypnutá:
+ * server ji bez adresy nepostaví (`chatConfigFromEnv`) a kniha zálohy se nekontroluje. Zapnutá chce adresu
+ * a model; klíč ne, ten `vercel env pull` u citlivé proměnné vrací prázdný.
+ */
+function fallbackProblems(vars) {
+  const on = Object.entries(vars).some(([name, value]) => name.startsWith('WORLDSMITH_FALLBACK_') && value.trim() !== '');
+  if (!on) return { on, problems: [] };
+  const problems = ['WORLDSMITH_FALLBACK_ENDPOINT', 'WORLDSMITH_FALLBACK_MODEL']
+    .filter((name) => (vars[name]?.trim() ?? '') === '')
+    .map((name) => ({ name, reason: 'fallback is half filled: leave every WORLDSMITH_FALLBACK_* empty to turn it off, or fill it all' }));
+  return { on, problems };
+}
+
 /** Proměnné, kvůli kterým nasazení neprojde, s důvodem; prázdné pole = v pořádku. */
 export function checkEnv(vars) {
   const problems = [];
@@ -130,8 +147,14 @@ export function checkEnv(vars) {
     const hit = HOME_PC.find((word) => value.toLowerCase().includes(word)) ?? PRIVATE_HOST.exec(value)?.[1];
     if (hit !== undefined) problems.push({ name, reason: `points at the home PC or the subscription (${hit})` });
   }
+  // P71A: prázdná předpona = výchozí `worldsmith:spend`, tedy kniha s útratou dřívějších nasazení.
+  if ((vars.WORLDSMITH_SPEND_STORE_PREFIX?.trim() ?? '') === '') {
+    problems.push({ name: 'WORLDSMITH_SPEND_STORE_PREFIX', reason: 'spend ledger prefix missing or empty: the ledger would carry earlier deployments\' spend' });
+  }
+  const fallback = fallbackProblems(vars);
+  problems.push(...fallback.problems);
   const reader = vars.PLAY_READER?.trim() === 'on';
-  const ledgers = reader ? [...LEDGERS, READER_LEDGER] : LEDGERS;
+  const ledgers = [...(fallback.on ? LEDGERS : LEDGERS.slice(0, 1)), ...(reader ? [READER_LEDGER] : [])];
   for (const { cap } of ledgers) {
     if (amount(vars[cap]) === null) problems.push({ name: cap, reason: 'spend cap missing or not a dollar amount' });
   }

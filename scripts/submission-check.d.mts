@@ -25,7 +25,11 @@ export declare function isDeployedUrl(value: unknown): string | null;
 export declare function mp4DurationSeconds(buffer: Buffer): number | null;
 
 /** Lexical disclosure lint for current English source-pilot copy, not semantic review. */
-export declare function descriptionContractProblems(text: string): string[];
+export declare function descriptionContractProblems(text: string, director?: string | null): string[];
+/** `WORLDSMITH_MODEL` z produkčního vzoru proměnných v `repo`, nebo `null`. */
+export declare function productionDirector(repo: string): string | null;
+export declare const PRODUCTION_ENV_FILE: string;
+export declare function externalMonitorProblems(external: unknown, manifest: Record<string, unknown>): string[];
 export declare function checkDescription(context: { repo: string; manifest: Record<string, unknown> }): string | null;
 
 /** Text bez rozdílů, které nejsou obsahem: zalomení, dvojité mezery, nbsp. */

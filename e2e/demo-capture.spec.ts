@@ -27,14 +27,14 @@ const PROFILES = [
 ] as const;
 type Profile = (typeof PROFILES)[number];
 
-/** Věty ze scénáře, doslova měřené (`JUDGE_PICKS`, `evals/play/p37a/dev-150.json` n19). */
-const KNIGHT = 'A knight fights a three-headed hydra at the castle gates.';
+/** Věty ze scénáře: hry, které QA P71 (5. 11.) označila „ok“; mimo kategorii `evals/play/p37a/dev-150.json` n19. */
+const KNIGHT = 'a knight fights goblins in an arena';
 const OFF_CATEGORY = 'a long queue at the pharmacy on a friday afternoon';
 const MONTAGE = [
-  'A space marine shoots alien bugs in a mining colony',
-  'a penguin that slides down a glacier, jumps over seals and catches fish',
-  'a kangaroo jumps over cars then collects coins on the highway',
-  'a unicorn gallops across a rainbow to reach a castle in the clouds',
+  'a fox runs through the city dodging cars',
+  'cowboy duel at high noon, first to shoot wins',
+  'a ninja slices flying watermelons',
+  'a black hole swallows the cars in the city',
 ] as const;
 
 interface HandProbe {

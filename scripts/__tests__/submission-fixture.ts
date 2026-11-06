@@ -26,6 +26,8 @@ export const GUARANTEE =
 
 /** Pevný okamžik, proti kterému se měří stáří záznamu hlídače. */
 export const NOW = Date.parse('2026-11-10T12:00:00Z');
+/** Režisér fixtury: `WORLDSMITH_MODEL` v jejím `scripts/cloud/env.production.example` i jméno v popisu (P71A). */
+export const FIXTURE_DIRECTOR = 'gpt-6-astra';
 
 const created: string[] = [];
 
@@ -137,7 +139,7 @@ export function description(): string {
     'The first version is a word draft. When the AI director is unavailable the game stays the draft and the page says so.',
     'A vision judge recognised the hero in some screenshots.',
     'A robot win does not prove that the game matches the sentence.',
-    'The director is gpt-oss on a hosted provider behind a spend cap.',
+    `The director is ${FIXTURE_DIRECTOR} through the OpenAI API behind a spend cap.`,
     'All results are automated; there is no human playtest yet.',
     '',
     'Naměřeno na zmrazeném korpusu: 2/27 kandidátů prošlo bez opravy.',
@@ -184,7 +186,7 @@ function monitoring(): string {
         { name: 'backend', url: BACKEND_URL },
       ],
       intervalSeconds: 300,
-      coverageUntil: '2026-12-01',
+      coverageUntil: '2026-12-31',
       alert: { channel: 'email', destination: 'ops@example.invalid' },
       heartbeatPath: 'ops/monitoring/heartbeat.jsonl',
     },
@@ -296,6 +298,7 @@ export function buildTemplate(): string {
   write(dir, 'video/final.mp4', mp4(95));
   write(dir, 'ops/monitoring/uptime.json', monitoring());
   write(dir, 'ops/monitoring/heartbeat.jsonl', heartbeat());
+  write(dir, 'scripts/cloud/env.production.example', `WORLDSMITH_MODEL_PROFILE=metered\nWORLDSMITH_MODEL=${FIXTURE_DIRECTOR}\n`);
   write(dir, '.gitignore', 'node_modules/\nblind-check.config.json\n');
 
   // Git je potřeba dvakrát: `git ls-files` je zdroj sledovaných cest a

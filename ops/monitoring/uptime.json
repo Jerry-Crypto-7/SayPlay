@@ -5,10 +5,18 @@
     { "name": "backend", "url": "https://worldstream-sigma.vercel.app/api/health" }
   ],
   "intervalSeconds": 300,
-  "coverageUntil": "2026-11-26",
+  "coverageUntil": "2026-12-31",
   "alert": {
     "channel": "github-issue",
     "destination": "https://github.com/Jerry-Crypto-7/Hackathon/issues"
+  },
+  "external": {
+    "service": "UptimeRobot",
+    "intervalMin": 5,
+    "targets": [
+      "https://worldstream-sigma.vercel.app",
+      "https://worldstream-sigma.vercel.app/api/health"
+    ]
   },
   "heartbeatPath": "ops/monitoring/heartbeat.jsonl"
 }

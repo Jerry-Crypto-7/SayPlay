@@ -135,8 +135,9 @@ describe('gpt-oss-20b first, astra as capped backup', () => {
   });
 
   it('bills the backup from its own cap, so a tight main cap still lets it play', async () => {
-    // Hlavní strop pustí jen primár (nejhorší případ ~0,0016 USD), ne astru (~0,08 USD).
-    stubEnv({ ...OSS, ...ASTRA_BACKUP, WORLDSMITH_SPEND_CAP_USD: '0.01' });
+    // Hlavní strop pustí jen primár (nejhorší případ ~0,02 USD), ne astru (~0,57 USD);
+    // obojí od P71A T1-R1 i se schématem odpovědi, které odchází.
+    stubEnv({ ...OSS, ...ASTRA_BACKUP, WORLDSMITH_SPEND_CAP_USD: '0.1' });
     stubFetch({ 'api.together.xyz': 503, 'api.openai.com': 'ok' });
     const game = await getDirector(Date.now(), 'book-caller')(SENTENCE);
     expect(game.authoredBy).toBe('gpt-6-astra');

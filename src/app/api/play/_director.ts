@@ -20,6 +20,8 @@
  */
 
 import { direct, directorCacheFromEnv, type DirectedGame, type DirectorDeps } from '@/play/director';
+import { buildCompactRequest } from '@/play/director/compact';
+import { buildDirectorRequest } from '@/play/director/prompt';
 import { readerConfigFromEnv, readerForAiVersion } from '@/play/read/client';
 import { VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
 import { killState } from '@/server/kill-switch';
@@ -195,19 +197,26 @@ async function directorWouldCall(env: Record<string, string | undefined>, config
   return directorWouldPay(env, config, caller);
 }
 
+/** Zbývá volajícímu dnes volání režiséra? Jen čte, nic nezapočítá; nedostupné úložiště volání nepustí. */
+async function callerHasCall(caller: string, env: Record<string, string | undefined>): Promise<boolean> {
+  try {
+    return await versionStoreFromEnv(env).hasDirectorCall(caller, callsPerCaller(env));
+  } catch (thrown) {
+    if (thrown instanceof VersionStoreUnavailable) return false;
+    throw thrown;
+  }
+}
+
 /** Peněžní část `directorWouldCall`: strop utrácení nevyčerpaný a volající má volání režiséra – jen čtené. */
 async function directorWouldPay(env: Record<string, string | undefined>, config: UpstreamConfig, caller: string): Promise<boolean> {
-  const callerHasCall = versionStoreFromEnv(env)
-    .hasDirectorCall(caller, callsPerCaller(env))
-    .catch((thrown: unknown) => {
-      if (thrown instanceof VersionStoreUnavailable) return false;
-      throw thrown;
-    });
-  // simplified: jen výstupní část nejhorší ceny – vstup zná až sestavený požadavek; kniha o méně než jeho cenu pod stropem
-  // ještě zaplatí čtení naprázdno. Kdyby to bylo vidět v útratě, sestavit požadavek před čtením a předat celý `worstCaseUsd`.
-  const worstOutputUsd = (config.maxOutputTokens * config.pricing.usdPerMTokOut) / 1_000_000;
-  const [exhausted, hasCall] = await Promise.all([processSpendCap().exhausted(worstOutputUsd), callerHasCall]);
-  return !exhausted && hasCall;
+  const hasCall = callerHasCall(caller, env);
+  // Nejhorší cena požadavku režiséra bez věty: systémový prompt a schéma odpovědi jsou známé před čtením a schéma je
+  // většina vstupu (revize P71A T1-R1-1, nález 2). simplified: chybí jen věta a příklady; kniha o jejich cenu (setiny
+  // dolaru) pod stropem ještě zaplatí čtení naprázdno. Zavřít úplně = sestavit celý požadavek před čtením.
+  const request = env.PLAY_DIRECTOR_MODE === 'full' ? buildDirectorRequest('', null) : buildCompactRequest('', null);
+  const worstUsd = upstreamBranch(config).worstCaseUsd({ prompt: '', request });
+  const [exhausted, callerMayCall] = await Promise.all([processSpendCap().exhausted(worstUsd), hasCall]);
+  return !exhausted && callerMayCall;
 }
 
 /**
@@ -278,6 +287,14 @@ async function cappedBranch(
       // a voláním stojí od P53 fronta na slot, až 240 s, a vypínač přepnutý
       // mezitím by jinak placené volání nezastavil – stejně jako u zálohy níž.
       if ((await killState(env)).upstream) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'the upstream kill switch is on', usage: null };
+      // P71A revize T1, nález 2: volající bez volání nesmí sáhnout na počet volání knihy – rezervace ho bere
+      // a vyrovnání ho nevrací, takže opakované věty nad denní mezí by počet vyjedly všem za 0 USD.
+      // simplified: jen čtení; souběžná věta téhož volajícího může poslední volání vzít mezi touto otázkou
+      // a `callerAllows`, pak propadne jedno volání knihy, nejvýš tolik, kolik vět běží naráz (sloty).
+      if (!(await callerHasCall(caller, env))) {
+        onCallerLimit();
+        return { ok: false, reason: 'UPSTREAM_REJECTED', detail: "the caller's daily director calls are used up", usage: null };
+      }
       const reservation = await cap.reserve(branch.worstCaseUsd(call));
       if (!reservation.ok) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'spend cap refused the call', usage: null };
       // Počet volajícího až po rezervaci: odmítnutí stropem mu volání neubere (revize R8).

@@ -8,7 +8,16 @@
  * přepisovat nedá. Tenhle skript se proto ptá na stopáž **dřív, než někdo
  * zapne nahrávání**.
  *
- * Skončí `0`, když je součet pod limitem a nechybí beat, jinak `1`.
+ * Skončí `0`, když je součet pod limitem a nechybí beat, jinak `1`; bez argumentu `2`.
+ *
+ * **Hotové video (P71A).** Cesta končící `.mp4` se nekontroluje jako scénář: délku čte
+ * `ffprobe` (proměnná `FFPROBE`, jinak `ffprobe` z PATH) a velikost `statSync`. Chybějící
+ * `ffprobe` je chyba s exit 1, ne tichý průchod – neověřená délka není délka pod limitem.
+ *
+ *   node scripts/video-check.mjs docs/video-script.md
+ *   node scripts/video-check.mjs <video>.mp4
+ *
+ * Limit je **ostře pod** 3:00 pro scénář i soubor: video dlouhé přesně 180,0 s už limit nesplní.
  *
  * **Proč se sčítají úseky a ne čte poslední značka.** Poslední značka je jedno
  * číslo, které do scénáře napíše člověk — a když se úseky mezitím posunou,
@@ -18,11 +27,58 @@
  * — bez ní by šel limit obejít tím, že se značky napíšou nedbale.
  */
 
-import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { readFileSync, statSync } from 'node:fs';
 import { basename } from 'node:path';
 
-/** Tvrdý limit z `RULES.md` §2. Nad ním se video nedá odevzdat. */
+/** Tvrdý limit z `RULES.md` §2. Video musí být ostře kratší; 180,0 s už neprojde. */
 export const LIMIT_SECONDS = 180;
+
+/** Největší soubor videa k odevzdání: 100 MB (desítkově, ať je mez spíš přísnější). */
+export const MAX_VIDEO_BYTES = 100_000_000;
+
+const USAGE = 'použití: node scripts/video-check.mjs <scénář.md | video.mp4>';
+
+/**
+ * Délka videa v sekundách z `ffprobe`, nebo `{ error }` s čitelným důvodem: chybějící
+ * program, nenulový exit, výstup, který není kladné číslo.
+ */
+export function ffprobeDuration(file, bin = process.env.FFPROBE || 'ffprobe') {
+  const result = spawnSync(bin, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', file], { encoding: 'utf8' });
+  if (result.error !== undefined) {
+    return { error: result.error.code === 'ENOENT' ? `ffprobe nenalezen (${bin}) – nainstaluj ffmpeg nebo nastav FFPROBE` : `ffprobe nejde spustit — ${result.error.message}` };
+  }
+  if (result.status !== 0) return { error: `ffprobe skončil ${String(result.status)}: ${String(result.stderr).trim().split('\n')[0]}` };
+  const seconds = Number(String(result.stdout).trim());
+  if (!Number.isFinite(seconds) || seconds <= 0) return { error: `ffprobe nevrátil délku („${String(result.stdout).trim()}“)` };
+  return { seconds };
+}
+
+/** Kontrola hotového MP4: velikost a délka ostře pod limitem. */
+function checkVideo(file, { probe, sizeOf }) {
+  let bytes;
+  try {
+    bytes = sizeOf(file);
+  } catch (error) {
+    console.log(`FAIL  ${file} nejde přečíst — ${error.message}`);
+    return 1;
+  }
+  if (bytes > MAX_VIDEO_BYTES) {
+    console.log(`FAIL  ${file}: ${(bytes / 1e6).toFixed(1)} MB, limit je ${MAX_VIDEO_BYTES / 1e6} MB`);
+    return 1;
+  }
+  const { seconds, error } = probe(file);
+  if (error !== undefined) {
+    console.log(`FAIL  ${file}: délku nejde ověřit — ${error}`);
+    return 1;
+  }
+  if (seconds >= LIMIT_SECONDS) {
+    console.log(`FAIL  ${file}: ${seconds.toFixed(1)} s, video musí být kratší než ${formatTime(LIMIT_SECONDS)}`);
+    return 1;
+  }
+  console.log(`PASS  ${file}: ${seconds.toFixed(1)} s, ${(bytes / 1e6).toFixed(1)} MB, pod limitem ${formatTime(LIMIT_SECONDS)} a ${MAX_VIDEO_BYTES / 1e6} MB.`);
+  return 0;
+}
 
 /**
  * Scény, které scénář Sayplay musí obsáhnout: smyčka věta → hra → AI verze →
@@ -97,12 +153,13 @@ export function formatTime(seconds) {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 }
 
-export function main(argv) {
+export function main(argv, { probe = (file) => ffprobeDuration(file), sizeOf = (file) => statSync(file).size } = {}) {
   const file = argv[0];
   if (file === undefined) {
-    console.log('FAIL  chybí argument: node scripts/video-check.mjs <scénář.md>');
-    return 1;
+    console.log(USAGE);
+    return 2;
   }
+  if (/\.mp4$/i.test(file)) return checkVideo(file, { probe, sizeOf });
 
   let markdown;
   try {
@@ -126,9 +183,9 @@ export function main(argv) {
   }
 
   const total = totalSeconds(segments);
-  if (total > LIMIT_SECONDS) {
+  if (total >= LIMIT_SECONDS) {
     console.log(
-      `FAIL  ${file}: stopáž ${formatTime(total)} přetahuje tvrdý limit ${formatTime(LIMIT_SECONDS)} o ${total - LIMIT_SECONDS} s`,
+      `FAIL  ${file}: stopáž ${formatTime(total)} nesplní limit, video musí být kratší než ${formatTime(LIMIT_SECONDS)}`,
     );
     return 1;
   }

@@ -561,8 +561,12 @@ export function upstreamBranch(
 
 function worstCaseUsd(call: GenerationCall, config: UpstreamConfig): number {
   // Jeden token na znak. Viz hlavička souboru: je to strop, o který se opírá
-  // ořez v `SpendCap.release()`, ne odhad průměru.
-  const inputTokens = call.request.system.length + call.request.user.length;
+  // ořez v `SpendCap.release()`, ne odhad průměru. Schéma odpovědi poskytovatel
+  // účtuje jako vstup, proto se počítá taky (`sentSchemaOf`), po své mezi.
+  const schema = sentSchemaOf(call, config);
+  const charsPerToken = chatTarget(config).openaiApi ? SCHEMA_CHARS_PER_TOKEN : 1;
+  const schemaTokens = schema === undefined ? 0 : Math.ceil(JSON.stringify(schema).length / charsPerToken);
+  const inputTokens = call.request.system.length + call.request.user.length + schemaTokens;
   return (
     (inputTokens * config.pricing.usdPerMTokIn + config.maxOutputTokens * config.pricing.usdPerMTokOut) /
     1_000_000
@@ -1088,6 +1092,18 @@ const REFUSED_US: Readonly<Record<number, string>> = {
 };
 
 /**
+ * **Účtenka odpovědi s chybovým HTTP stavem: nic.** Poskytovatel požadavek
+ * odmítl dřív, než model běžel (401/403 klíč, 429 limit, 400 schéma, 5xx), a
+ * neúčtuje ho; bez téhle nuly by ho kniha vyrovnala „unknown", tedy celou
+ * rezervací, a ~80 odmítnutí by spálilo rezervu poroty bez jediné AI verze
+ * (revize P71A T1-2, nález C). Vypršené a zrušené volání účtenku nemá a dál
+ * strhne celou rezervaci: model mohl běžet až do konce (R1, `_director.ts`).
+ * Jen cesta chat API; Messages API (jen `/api/generate`) má 5xx odhadem
+ * zapsané v `pipeline.test.ts`.
+ */
+const NOTHING_BILLED: Usage = { inputTokens: 0, outputTokens: 0 };
+
+/**
  * `reasoning_effort` chat API. gpt-oss přes API dokumentuje jen
  * low/medium/high, takže vyšší úroveň z Messages (`xhigh`, `max`) by každé
  * volání skončila čtyřistovkou; sníží se na nejvyšší, kterou znají všichni.
@@ -1101,12 +1117,54 @@ const CHAT_EFFORT: Readonly<Record<Effort, 'low' | 'medium' | 'high'>> = { low: 
  * a u OpenAI API `max_completion_tokens`. `reasoning_effort` jde oběma – bez něj
  * lokální gpt-oss přemýšlí výchozí úrovní a sní celé `max_tokens` (P36A F4).
  */
-async function generateViaChat(call: GenerationCall, config: UpstreamConfig, fetchImpl: typeof fetch, signal?: AbortSignal): Promise<GenerationOutcome> {
+function chatTarget(config: UpstreamConfig): { hosted: boolean; root: string; openaiApi: boolean } {
   const hosted = config.endpoint.startsWith(OPENAI_PREFIX);
-  const name = hosted ? 'hosted' : 'llama.cpp';
   const root = config.endpoint.slice(hosted ? OPENAI_PREFIX.length : LLAMACPP_PREFIX.length).replace(/\/+$/, '');
-  const openaiApi = hosted && new URL(root).hostname === 'api.openai.com';
-  const schema = call.request.outputSchema === undefined || !openaiApi ? call.request.outputSchema : openaiStrictSchema(call.request.outputSchema);
+  return { hosted, root, openaiApi: hosted && new URL(root).hostname === 'api.openai.com' };
+}
+
+/**
+ * **Schéma odpovědi tak, jak odchází poskytovateli**, `undefined`, když žádné
+ * neodchází (Messages API). Jeden zdroj pro odeslání i rezervaci, aby rezervace
+ * počítala přesně to, co se posílá.
+ *
+ * OpenAI účtuje `response_format` jako vstup: u režiséra naměřeno ~32 tis.
+ * tokenů a ~0,32 USD u astry na prvním volání (P58B, `director.json`). Bez něj
+ * rezervace vyšla ~0,55 USD, poctivá účtenka dlouhé odpovědi ~0,75 USD, a ořez
+ * v `settle()` by ten rozdíl tiše zahodil (revize P71A T1-1, nález 3).
+ *
+ * Kolik tokenů schéma stojí, říká `SCHEMA_CHARS_PER_TOKEN`.
+ */
+/**
+ * **Znaků schématu na token rezervace: 4, polovina naměřeného poměru.**
+ *
+ * Naměřeno: schéma režiséra z doby P58B (`1d6f0c9f`, striktní tvar) mělo
+ * 260 994 znaků a OpenAI za něj účtovalo ~32 tis. vstupních tokenů, tedy ~8,2
+ * znaku na token (`evals/play/p58b/director.json`, poznámka u ceny). Čtyři
+ * dávají dvojnásobnou rezervu. Jeden token na znak jako u textu by rezervaci
+ * režiséra u astry nafoukl na ~4,3 USD (schéma 6. 11. 2026: ~375 tis. znaků):
+ * volání bez účtenky (vypršení) by tolik strhlo a kontrola před čtením
+ * (`directorWouldPay`) by pod stropem nechala mezeru, kde se čtení zaplatí
+ * a režisér odmítne (revize P71A T1-R1-1, nálezy 1 a 2). Se čtyřmi ~1,5 USD.
+ * **Jen OpenAI API**, kde se měřilo a kam jde striktní tvar; jinde (Groq,
+ * Together, llama.cpp, codex-cli) jeden token na znak jako u textu, protože
+ * syrové schéma u cizího tokenizéru neznáme (revize T1-R1-2, nález 3).
+ * simplified: poměr z jednoho měření; přeměřit z `prompt_tokens` prvního
+ * volání živého běhu se současným schématem, a vyjde-li pod 4 znaky na token, snížit.
+ */
+const SCHEMA_CHARS_PER_TOKEN = 4;
+
+function sentSchemaOf(call: GenerationCall, config: UpstreamConfig): SchemaNode | undefined {
+  const { outputSchema } = call.request;
+  if (config.endpoint === CODEX_CLI_ENDPOINT) return codexSchemaOf(call.request);
+  if (!config.endpoint.startsWith(LLAMACPP_PREFIX) && !config.endpoint.startsWith(OPENAI_PREFIX)) return undefined;
+  return outputSchema === undefined || !chatTarget(config).openaiApi ? outputSchema : openaiStrictSchema(outputSchema);
+}
+
+async function generateViaChat(call: GenerationCall, config: UpstreamConfig, fetchImpl: typeof fetch, signal?: AbortSignal): Promise<GenerationOutcome> {
+  const { hosted, root, openaiApi } = chatTarget(config);
+  const name = hosted ? 'hosted' : 'llama.cpp';
+  const schema = sentSchemaOf(call, config);
   const format = schema === undefined ? { type: 'json_object' } : { type: 'json_schema', json_schema: { name: 'answer', strict: true, schema } };
   const messages = [
     { role: 'system', content: call.request.system },
@@ -1139,7 +1197,7 @@ async function generateViaChat(call: GenerationCall, config: UpstreamConfig, fet
       ok: false,
       reason: response.status >= 500 || refused !== undefined ? 'UPSTREAM_UNAVAILABLE' : 'UPSTREAM_REJECTED',
       detail: `upstream answered ${response.status}${refused === undefined ? '' : `: ${refused}`}`,
-      usage: null,
+      usage: NOTHING_BILLED,
     };
   }
 

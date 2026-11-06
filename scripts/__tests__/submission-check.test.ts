@@ -26,10 +26,11 @@ import {
   isPlaceholder,
   literalWeight,
   mp4DurationSeconds,
+  productionDirector,
   proseOf,
 } from '../submission-check.mjs';
 import { modelIdsIn, registeredModelNames } from '../license-gate.mjs';
-import { box, mp4, description, GUARANTEE } from './submission-fixture';
+import { box, mp4, description, FIXTURE_DIRECTOR, GUARANTEE } from './submission-fixture';
 
 describe('isDeployedUrl: nasazená adresa, ne localhost', () => {
   it('pustí veřejné jméno přes https', () => {
@@ -109,6 +110,17 @@ describe('current source submission disclosure contract, not semantic certificat
     expect(descriptionContractProblems(`${description().replace(original, replacement)}\n${GUARANTEE}`)).toEqual([
       expect.stringContaining(id),
     ]);
+  });
+  // P71A: jméno režiséra v hosted-cost se bere z produkčního vzoru, ne napevno gpt-oss.
+  it('wants the director the production example runs, not a hard-coded model', () => {
+    const stale = description().replace(FIXTURE_DIRECTOR, 'gpt-oss-20b');
+    expect(descriptionContractProblems(stale, FIXTURE_DIRECTOR)).toEqual([expect.stringContaining('hosted-cost')]);
+    expect(descriptionContractProblems(stale, 'gpt-oss-20b')).toEqual([]);
+    expect(descriptionContractProblems(description().replace(FIXTURE_DIRECTOR, `${FIXTURE_DIRECTOR}-mini`), FIXTURE_DIRECTOR)).toEqual([expect.stringContaining('hosted-cost')]);
+    expect(descriptionContractProblems(description(), null)).toEqual([expect.stringContaining('hosted-cost')]);
+  });
+  it('reads the director of this repository from scripts/cloud/env.production.example', () => {
+    expect(productionDirector(process.cwd())).toBe(FIXTURE_DIRECTOR);
   });
   it('accepts wording and markdown changes instead of requiring an exact quote', () => {
     const text = description().replace('a short 3D game', 'a short **3D** game')

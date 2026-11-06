@@ -22,8 +22,10 @@ const EXAMPLE = 'scripts/cloud/env.production.example';
 /** Nejmenší konfigurace, která projde; každý případ z ní jednu věc pokazí. */
 const GOOD = {
   WORLDSMITH_MODEL_PROFILE: 'metered',
+  WORLDSMITH_SPEND_STORE_PREFIX: 'sayplay',
   WORLDSMITH_MODEL_ENDPOINT: 'openai:https://api.together.xyz',
   WORLDSMITH_FALLBACK_ENDPOINT: 'openai:https://api.openai.com',
+  WORLDSMITH_FALLBACK_MODEL: 'fallback-model',
   PLAY_VOICE_ENDPOINT: 'openai-speech:https://api.deepinfra.com/v1/openai',
   WORLDSMITH_SPEND_CAP_USD: '30',
   WORLDSMITH_FALLBACK_SPEND_CAP_USD: '20',
@@ -105,13 +107,36 @@ describe('checkEnv', () => {
         'KV_REST_API_URL',
         'PLAY_TOTAL_SPEND_CAP_USD',
         'WORLDSMITH_CALL_CAP',
-        'WORLDSMITH_FALLBACK_CALL_CAP',
-        'WORLDSMITH_FALLBACK_SPEND_CAP_USD',
         'WORLDSMITH_MODEL_ENDPOINT',
         'WORLDSMITH_MODEL_PROFILE',
         'WORLDSMITH_SPEND_CAP_USD',
+        'WORLDSMITH_SPEND_STORE_PREFIX',
       ].sort(),
     );
+  });
+});
+
+describe('checkEnv – a fallback that is off, and the ledger prefix (P71A)', () => {
+  const FALLBACK = Object.keys(GOOD).filter((name) => name.startsWith('WORLDSMITH_FALLBACK_'));
+  const withoutFallback = Object.fromEntries(Object.entries(GOOD).filter(([name]) => !name.startsWith('WORLDSMITH_FALLBACK_')));
+
+  it('passes a fallback left entirely empty or absent: off, so its ledger is not checked', () => {
+    expect(checkEnv(withoutFallback)).toEqual([]);
+    expect(checkEnv({ ...withoutFallback, ...Object.fromEntries(FALLBACK.map((name) => [name, ''])), WORLDSMITH_FALLBACK_KEY: ' ' })).toEqual([]);
+  });
+
+  it('refuses a half-filled fallback, a key alone included, naming what is missing', () => {
+    expect(names({ ...withoutFallback, WORLDSMITH_FALLBACK_KEY: 'sk-live' }).sort()).toEqual(
+      ['WORLDSMITH_FALLBACK_CALL_CAP', 'WORLDSMITH_FALLBACK_ENDPOINT', 'WORLDSMITH_FALLBACK_MODEL', 'WORLDSMITH_FALLBACK_SPEND_CAP_USD'].sort(),
+    );
+    expect(names({ ...GOOD, WORLDSMITH_FALLBACK_MODEL: '' })).toEqual(['WORLDSMITH_FALLBACK_MODEL']);
+    expect(names({ ...GOOD, WORLDSMITH_FALLBACK_ENDPOINT: '' })).toEqual(['WORLDSMITH_FALLBACK_ENDPOINT']);
+  });
+
+  it('refuses a missing or empty ledger prefix', () => {
+    const { WORLDSMITH_SPEND_STORE_PREFIX: _drop, ...without } = GOOD;
+    expect(names(without)).toEqual(['WORLDSMITH_SPEND_STORE_PREFIX']);
+    expect(names({ ...GOOD, WORLDSMITH_SPEND_STORE_PREFIX: '  ' })).toEqual(['WORLDSMITH_SPEND_STORE_PREFIX']);
   });
 });
 
@@ -281,13 +306,14 @@ describe('parseEnvFile', () => {
 });
 
 describe('node scripts/cloud/check-env.mjs', () => {
-  // P68I T7: vzor nese celkový strop bez hodnoty (nastaví majitel v P59′) a úložiště dodá integrace Vercelu.
-  it('fails the production example only on what the owner and the store integration fill in', () => {
+  // P71A: vzor nese astru, stropy a rezervu poroty; chybí jen úložiště, které dodá integrace Vercelu.
+  it('fails the production example only on what the store integration fills in', () => {
     const { status, out } = run(EXAMPLE);
     expect(status, out).toBe(1);
-    expect(out.trim().split('\n').map((line) => line.split(':')[0]).sort()).toEqual(['KV_REST_API_TOKEN', 'KV_REST_API_URL', 'PLAY_TOTAL_SPEND_CAP_USD']);
-    const filled = envFile(`${readFileSync(EXAMPLE, 'utf8')}\nPLAY_TOTAL_SPEND_CAP_USD=70\nKV_REST_API_URL=https://example-kv.upstash.io\nKV_REST_API_TOKEN=token\n`);
-    expect(run(filled).status).toBe(0);
+    expect(out.trim().split('\n').map((line) => line.split(':')[0]).sort()).toEqual(['KV_REST_API_TOKEN', 'KV_REST_API_URL']);
+    const filled = envFile(`${readFileSync(EXAMPLE, 'utf8')}\nKV_REST_API_URL=https://example-kv.upstash.io\nKV_REST_API_TOKEN=token\n`);
+    const passed = run(filled);
+    expect(passed.status, passed.out).toBe(0);
   });
 
   it('fails with 1 and names the variable, never its value', () => {
