@@ -40,10 +40,13 @@ export function stagePlace(stage: Element | null): 'game' | 'feed' {
 /**
  * Náhled feedu na telefonu (P75 T7b) obraz nebere: na `/play` se stahoval a prolínal právě ve chvíli,
  * kdy hráč odesílá větu, a vstup do hry se na telefonu zdržel o ~0,5 s. Hra a desktop beze změny.
+ *
+ * Bouřka (`look.storm`, P76 T2) obraz nebere: malovaná obloha je slunné místo (město s barevnými domy) a ani
+ * ztmavená neladí s deštěm – zůstane zatažená obloha nálady.
  */
 export function paintedSkyOf(look: Look, lookId: LookId, tier: QualityTier, place: 'game' | 'feed' = 'game'): PaintedSky | null {
   const row = PAINTED_SKIES[lookId];
-  if (row === undefined || look.ceiling !== undefined || (place === 'feed' && tier !== 'high')) return null;
+  if (row === undefined || look.ceiling !== undefined || look.storm === true || (place === 'feed' && tier !== 'high')) return null;
   const [said, base] = [new Color(look.horizon), new Color(LOOKS[lookId].horizon)];
   const ratio = (scene: number, place: number) => (place <= 0.001 ? 1 : Math.min(TINT_MAX, scene / place));
   return {
