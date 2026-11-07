@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { Camera, PerspectiveCamera, Vector3 } from 'three';
+import type { Camera, PerspectiveCamera, Quaternion, Vector3 } from 'three';
 
 /**
  * Úvodní průlet (P28D T6, F-29; P37B T6): kamera přijíždí z širokého záběru
@@ -57,10 +57,17 @@ export function introLeftOf(camera: Camera): number {
   return (camera.userData.intro as IntroMark | undefined)?.left ?? 0;
 }
 
+/** Bod pohledu průletu, který `applyIntro` na kameru naposledy použil, do `out`. */
+export function introLookOf(camera: Camera, out: Vector3): Vector3 {
+  const mark = camera.userData.intro as IntroMark | undefined;
+  return mark === undefined ? out : out.set(mark.look[0], mark.look[1], mark.look[2]);
+}
+
 /**
  * Herní kamera bez průletu (P54B T8): `out` dostane objektiv a polohu `camera`, a běží-li
  * průlet, polohu vrácenou na herní pohled – orientační bod se staví podle záběru hry, ne
  * podle širokého úvodu. Scéna bez průletu (střelnice, hod, rytmus…) kameru nechá, jak je.
+ * P75 T4: kreslí-li se záběr zblízka v klidu (`RestShot`), vrátí herní záběr, který prolnul (`userData.game`).
  */
 export function restCamera(camera: PerspectiveCamera, out: PerspectiveCamera): PerspectiveCamera {
   if (out.fov !== camera.fov || out.aspect !== camera.aspect || out.near !== camera.near || out.far !== camera.far) {
@@ -71,9 +78,10 @@ export function restCamera(camera: PerspectiveCamera, out: PerspectiveCamera): P
     out.updateProjectionMatrix();
   }
   out.up.copy(camera.up);
-  out.position.copy(camera.position);
-  out.quaternion.copy(camera.quaternion);
-  if (introLeftOf(camera) !== 0) {
+  const game = camera.userData.game as { readonly position: Vector3; readonly quaternion: Quaternion } | undefined;
+  out.position.copy(game?.position ?? camera.position);
+  out.quaternion.copy(game?.quaternion ?? camera.quaternion);
+  if (game === undefined && introLeftOf(camera) !== 0) {
     const mark = camera.userData.intro as IntroMark;
     const [x, y, z] = mark.look;
     const pull = 1 + INTRO_PULL * mark.left;

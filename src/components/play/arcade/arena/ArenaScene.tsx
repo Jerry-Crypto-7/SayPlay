@@ -54,6 +54,7 @@ import { FieldGround } from '../look/FieldGround';
 import { boxEdge } from '../look/ground';
 import { glowingCopy } from '../look/load';
 import { applyIntro, introLeft, useIntroClock } from '../look/intro';
+import { RestShot } from '../look/rest-shot';
 import { Landmark } from '../look/Landmark';
 import type { DecorKeep } from '../look/rig/terrain/arenaDecor';
 import { ARENA_WALL_END } from '../look/rig/terrain/arenaFloor';
@@ -135,7 +136,13 @@ interface ArenaWorldProps {
 export function ArenaWorld(props: ArenaWorldProps) {
   const control = baseControlOf(props.session.world.control);
   const assembled = props.session.world.kinds?.some(kind => kind.startsWith('thing:part_'));
-  return control.id === 'fight' || control.params.size !== undefined || assembled ? <StyledWorld {...props} /> : <AgarWorld {...props} />;
+  return (
+    <>
+      {/* Záběr zblízka na startu, v pauze a po konci (P75 T4); souboj ne (`REST_CONTROLS`). */}
+      <RestShot session={props.session} />
+      {control.id === 'fight' || control.params.size !== undefined || assembled ? <StyledWorld {...props} /> : <AgarWorld {...props} />}
+    </>
+  );
 }
 
 function AgarWorld({ session, half, surface, look: scene, targets, ghost }: ArenaWorldProps) {
