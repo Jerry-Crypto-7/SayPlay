@@ -11,6 +11,7 @@ Věta projde, když hra vyhraje nebo soudce řekne SAME. **Brána T8: aspoň 4/1
 | main | `evals/play/p73/sceny/after` · 1play | 2026-11-07 14:10 | 7501 | **0/12** | A 6× · B 6× · SAME 0× |
 | t5 | `evals/play/p75/t5` · 1play | 2026-11-07 16:19 | 7501 | **0/12** | A 6× · B 6× · SAME 0× |
 | t6 | `evals/play/p75/after` · 1play | 2026-11-07 16:38 | 7501 | **0/12** | A 6× · B 6× · SAME 0× |
+| t8 | `evals/play/p75/after` · 1play | 2026-11-07 18:41 | 7501 | **0/12** | A 6× · B 6× · SAME 0× |
 
 ## main
 
@@ -62,3 +63,20 @@ Věta projde, když hra vyhraje nebo soudce řekne SAME. **Brána T8: aspoň 4/1
 | s10 | A farmer catches falling apples in the orchard | B | koncept | A has more polished lighting, cohesive colors, and smoother models, making the orchard feel carefully finished. B has useful game UI, but its harsh shadows and rougher visuals make it look less refined. | [list](judge/t6/s10.jpg) |
 | s11 | A dog races a cat through a candy land | B | koncept | A has more polished lighting, richer materials, and a clearer dog character, while the lollipops and striped barriers strongly establish candy land. B looks rougher and its environment reads more like an ordinary park. | [list](judge/t6/s11.jpg) |
 | s12 | A penguin slides down an icy mountain | A | koncept | B looks more polished, with cohesive snowy scenery, warm lighting, and a clearly sculpted downhill track. A feels more like a prototype, with scattered props and a flatter, less cohesive environment. | [list](judge/t6/s12.jpg) |
+
+## t8
+
+| # | věta | hra na listu | výsledek | důvod soudce | list |
+|---|---|---|---|---|---|
+| s1 | Escape a volcano before the lava reaches you | A | koncept | B has more cohesive lighting, cleaner geometry, and a stronger composition centered on the runner and erupting volcano. Its glowing lava and polished environment make it look more finished than A’s cluttered scenery and interface. | [list](judge/t8/s1.jpg) |
+| s2 | An underwater race between a turtle and a shark | A | koncept | B looks more polished, with cohesive materials, detailed characters, and warm lighting that gives the scene depth. Both the turtle and shark are clearly visible, making the race premise more immediately readable. | [list](judge/t8/s2.jpg) |
+| s3 | A cat delivering pizzas across rooftops while avoiding seagulls | A | koncept | B has polished lighting, cohesive detail, and a clearly readable cat carrying pizza while dodging seagulls on a rooftop. A looks less finished, with a sparse environment and little visible connection to the delivery premise. | [list](judge/t8/s3.jpg) |
+| s4 | Balance a tower of pancakes on a windy day | B | koncept | A has cohesive, polished lighting, materials, and composition, with a clear pancake tower and windblown leaves that communicate the premise. B looks unfinished, with rough props, inconsistent scale, and overlapping pancakes. | [list](judge/t8/s4.jpg) |
+| s5 | A knight jumps across floating islands to rescue a dragon egg | A | koncept | B looks more polished, with cohesive lighting, richer materials, and a clear focal point on the jumping knight and dragon egg. A feels more like a prototype, with cluttered scenery and flatter, angular terrain. | [list](judge/t8/s5.jpg) |
+| s6 | A spaceship shoots asteroids in deep space | B | koncept | A has more polished lighting, cohesive materials, and a clear spaceship firing among asteroids in deep space. B looks rougher, with sparse terrain and cluttered structures that weaken the intended scene. | [list](judge/t8/s6.jpg) |
+| s7 | Play mini golf in a candy land | B | koncept | A has more polished lighting, richer candy details, and a cohesive miniature golf course composition. B looks rougher, with faceted geometry and a large overlay obscuring the scene. | [list](judge/t8/s7.jpg) |
+| s8 | Find the lost crown in an old castle | A | koncept | B has a cohesive, polished castle setting with clear composition, appealing lighting, and an obvious crown objective. A is heavily blurred and obscured by a demo-finished overlay, making it feel less like a finished game scene. | [list](judge/t8/s8.jpg) |
+| s9 | A bird flies through a stormy city | B | koncept | A has polished lighting, cohesive stylized buildings, and a clearly visible bird framed by dramatic storm clouds and lightning. B looks less finished, with dim scenery and dense rain lines obscuring the action. | [list](judge/t8/s9.jpg) |
+| s10 | A farmer catches falling apples in the orchard | B | koncept | A has more polished lighting, cohesive materials, and a clearer composition, making the orchard and farmer feel carefully finished. B has useful game UI, but its harsh shadows and rougher models make the scene look less refined. | [list](judge/t8/s10.jpg) |
+| s11 | A dog races a cat through a candy land | B | koncept | A looks more polished, with cohesive candy-themed scenery, richer lighting, and a clearly modeled dog. B has game UI, but its blockier character and mostly ordinary forest setting feel less finished and less suited to candy land. | [list](judge/t8/s11.jpg) |
+| s12 | A penguin slides down an icy mountain | A | koncept | B has more cohesive lighting, richer scenery, and a polished composition with snow-covered trees framing the penguin’s downhill path. A looks more like a prototype, with sparse props and less refined terrain. | [list](judge/t8/s12.jpg) |

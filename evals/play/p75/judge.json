@@ -254,6 +254,91 @@
      "reason": "B looks more polished, with cohesive snowy scenery, warm lighting, and a clearly sculpted downhill track. A feels more like a prototype, with scattered props and a flatter, less cohesive environment."
     }
    }
+  },
+  "t8": {
+   "seed": 7501,
+   "judge": "codex",
+   "game": "evals/play/p75/after",
+   "moment": "1play",
+   "judgedAt": "2026-11-07T18:41:46.826Z",
+   "ids": [
+    "s1",
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s7",
+    "s8",
+    "s9",
+    "s10",
+    "s11",
+    "s12"
+   ],
+   "key": {
+    "s1": "A",
+    "s2": "A",
+    "s3": "A",
+    "s4": "B",
+    "s5": "A",
+    "s6": "B",
+    "s7": "B",
+    "s8": "A",
+    "s9": "B",
+    "s10": "B",
+    "s11": "B",
+    "s12": "A"
+   },
+   "answers": {
+    "s1": {
+     "winner": "B",
+     "reason": "B has more cohesive lighting, cleaner geometry, and a stronger composition centered on the runner and erupting volcano. Its glowing lava and polished environment make it look more finished than A’s cluttered scenery and interface."
+    },
+    "s2": {
+     "winner": "B",
+     "reason": "B looks more polished, with cohesive materials, detailed characters, and warm lighting that gives the scene depth. Both the turtle and shark are clearly visible, making the race premise more immediately readable."
+    },
+    "s3": {
+     "winner": "B",
+     "reason": "B has polished lighting, cohesive detail, and a clearly readable cat carrying pizza while dodging seagulls on a rooftop. A looks less finished, with a sparse environment and little visible connection to the delivery premise."
+    },
+    "s4": {
+     "winner": "A",
+     "reason": "A has cohesive, polished lighting, materials, and composition, with a clear pancake tower and windblown leaves that communicate the premise. B looks unfinished, with rough props, inconsistent scale, and overlapping pancakes."
+    },
+    "s5": {
+     "winner": "B",
+     "reason": "B looks more polished, with cohesive lighting, richer materials, and a clear focal point on the jumping knight and dragon egg. A feels more like a prototype, with cluttered scenery and flatter, angular terrain."
+    },
+    "s6": {
+     "winner": "A",
+     "reason": "A has more polished lighting, cohesive materials, and a clear spaceship firing among asteroids in deep space. B looks rougher, with sparse terrain and cluttered structures that weaken the intended scene."
+    },
+    "s7": {
+     "winner": "A",
+     "reason": "A has more polished lighting, richer candy details, and a cohesive miniature golf course composition. B looks rougher, with faceted geometry and a large overlay obscuring the scene."
+    },
+    "s8": {
+     "winner": "B",
+     "reason": "B has a cohesive, polished castle setting with clear composition, appealing lighting, and an obvious crown objective. A is heavily blurred and obscured by a demo-finished overlay, making it feel less like a finished game scene."
+    },
+    "s9": {
+     "winner": "A",
+     "reason": "A has polished lighting, cohesive stylized buildings, and a clearly visible bird framed by dramatic storm clouds and lightning. B looks less finished, with dim scenery and dense rain lines obscuring the action."
+    },
+    "s10": {
+     "winner": "A",
+     "reason": "A has more polished lighting, cohesive materials, and a clearer composition, making the orchard and farmer feel carefully finished. B has useful game UI, but its harsh shadows and rougher models make the scene look less refined."
+    },
+    "s11": {
+     "winner": "A",
+     "reason": "A looks more polished, with cohesive candy-themed scenery, richer lighting, and a clearly modeled dog. B has game UI, but its blockier character and mostly ordinary forest setting feel less finished and less suited to candy land."
+    },
+    "s12": {
+     "winner": "B",
+     "reason": "B has more cohesive lighting, richer scenery, and a polished composition with snow-covered trees framing the penguin’s downhill path. A looks more like a prototype, with sparse props and less refined terrain."
+    }
+   }
   }
  }
 }

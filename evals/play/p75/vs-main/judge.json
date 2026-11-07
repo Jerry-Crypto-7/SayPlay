@@ -1,0 +1,82 @@
+{
+ "seed": 7309,
+ "judgedAt": "2026-11-07T18:43:39.325Z",
+ "ids": [
+  "s1",
+  "s2",
+  "s3",
+  "s4",
+  "s5",
+  "s6",
+  "s7",
+  "s8",
+  "s9",
+  "s10",
+  "s11",
+  "s12"
+ ],
+ "key": {
+  "s1": "right",
+  "s2": "right",
+  "s3": "left",
+  "s4": "left",
+  "s5": "right",
+  "s6": "right",
+  "s7": "left",
+  "s8": "left",
+  "s9": "left",
+  "s10": "left",
+  "s11": "right",
+  "s12": "right"
+ },
+ "answers": {
+  "s1": {
+   "winner": "right",
+   "reason": "The right scene has clearer depth, warmer atmospheric lighting, and a readable escape route framed by volcanic rocks and lava. Its detailed character and cohesive environment look more polished, while oversized dark geometry obscures much of the left scene."
+  },
+  "s2": {
+   "winner": "right",
+   "reason": "The right scene has stronger depth from atmospheric haze, layered underwater scenery, and richer lighting. Its recognizable turtle and shark make the underwater race feel coherent, while the left uses cars and a less fitting player model."
+  },
+  "s3": {
+   "winner": "left",
+   "reason": "The left scene has warmer lighting, stronger foreground-to-background depth, and a colorful city backdrop that makes the rooftop setting feel more coherent. The right looks flatter and more like a gray enclosed courtyard, with conspicuous blank towers."
+  },
+  "s4": {
+   "winner": "left",
+   "reason": "The left scene uses recognizable, rounded pancakes with warm shading and convincing depth, fitting the prompt naturally. The right substitutes plain orange blocks and a bulky rock structure that crowds the scene and feels unrelated to balancing pancakes."
+  },
+  "s5": {
+   "winner": "right",
+   "reason": "The right scene has richer atmospheric depth, warm lighting, layered clouds, and more varied vegetation, making the floating islands feel part of a cohesive fantasy world. Its stronger foreground-to-background separation gives the knight’s journey a more polished, modern game look."
+  },
+  "s6": {
+   "winner": "right",
+   "reason": "The right version’s star-filled nebula gives the scene a convincing deep-space setting and adds depth behind the foreground rocks and spaceship. The left version’s plain gray backdrop feels flatter and less connected to the sentence."
+  },
+  "s7": {
+   "winner": "left",
+   "reason": "The left scene has richer depth, softer atmospheric lighting, and a fuller landscape of candy-like trees and colorful plants. The right feels sparse and flat, with large empty green areas that make the candy-land setting less convincing."
+  },
+  "s8": {
+   "winner": "right",
+   "reason": "The right version has clearer depth, sharper scenery, and a better-scaled character within a readable castle courtyard. The left is heavily blurred and zoomed in, especially on the phone, obscuring the setting and spatial relationships."
+  },
+  "s9": {
+   "winner": "right",
+   "reason": "The right scene has a cohesive stormy blue-gray palette, layered city silhouettes, and clearer depth from the foreground street to the distant skyline. The left’s brown ground and colorful buildings feel less convincing as a stormy city."
+  },
+  "s10": {
+   "winner": "left",
+   "reason": "The left scene has stronger depth from its softly blurred distant orchard, warmer lighting, and larger foreground farmer. These choices make the apple-catching setting feel more immersive and visually polished."
+  },
+  "s11": {
+   "winner": "right",
+   "reason": "The right scene has stronger depth from soft distance blur, warmer lighting, and more grounded character shadows. Cat rivals also fit the dog-racing-a-cat premise better than the left’s cars, though neither setting clearly reads as candy land."
+  },
+  "s12": {
+   "winner": "left",
+   "reason": "The left has sharper terrain, clearer foreground-to-background depth, and more legible icy obstacles, making the penguin’s mountain descent feel coherent. The right’s heavy blur obscures the environment, while its extra instruction text clutters the opening scene."
+  }
+ }
+}
