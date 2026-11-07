@@ -1,0 +1,2797 @@
+{
+ "about": "P74 T5: numbers for README.md and docs/submission/description.md on the final tree. Quick version on the held-out test-200 set, offline, same meters as P37 O8 (opened once on 2026-10-04, nothing tuned on it since; no vision judge in this run). Phone load times and the AI version from the P74 T2 trial deployment. Catalogue size from evals/play/catalog-coverage.json.",
+ "measuredOn": "2026-11-07",
+ "quick": {
+  "set": "evals/play/p30/test-200.json",
+  "opened": {
+   "openedAt": "2026-10-04T17:03:38.021Z",
+   "runId": "p37-o8-test200",
+   "commit": "6c3e6376",
+   "sha256": "7222b9b9d9020af2294f84ca0187f3f33c6ad79806f11b0381e4064e72c629a8"
+  },
+  "summary": {
+   "sentences": 200,
+   "playable": {
+    "hit": 200,
+    "of": 200
+   },
+   "robotWins": {
+    "hit": 200,
+    "of": 200
+   },
+   "idleLoses": {
+    "hit": 199,
+    "of": 200
+   },
+   "verbRead": {
+    "hit": 75,
+    "of": 200
+   },
+   "heroModel": {
+    "hit": 91,
+    "of": 118
+   },
+   "genres": {
+    "arena.collect": 66,
+    "quest.spatial": 20,
+    "control:steer": 18,
+    "arena.escape": 11,
+    "quest.station": 11,
+    "control:glide": 8,
+    "runner": 8,
+    "duel": 7,
+    "platformer": 7,
+    "control:ball": 6,
+    "rhythm": 6,
+    "control:walker": 5,
+    "arena.fight": 4,
+    "throw": 4,
+    "timing.stack": 4,
+    "defense": 2,
+    "push": 2,
+    "shooter": 2,
+    "catch": 1,
+    "control:move_free": 1,
+    "flap": 1,
+    "hole": 1,
+    "hop": 1,
+    "slice": 1,
+    "sort": 1,
+    "timing.precision": 1,
+    "whack": 1
+   }
+  },
+  "byTag": {
+   "non-game": {
+    "sentences": 48,
+    "playable": {
+     "hit": 48,
+     "of": 48
+    },
+    "robotWins": {
+     "hit": 48,
+     "of": 48
+    },
+    "idleLoses": {
+     "hit": 48,
+     "of": 48
+    },
+    "verbRead": {
+     "hit": 10,
+     "of": 48
+    },
+    "heroModel": {
+     "hit": 3,
+     "of": 4
+    },
+    "genres": {
+     "arena.collect": 23,
+     "arena.escape": 6,
+     "control:steer": 4,
+     "quest.spatial": 3,
+     "quest.station": 3,
+     "timing.stack": 3,
+     "duel": 2,
+     "control:walker": 1,
+     "hole": 1,
+     "push": 1,
+     "throw": 1
+    }
+   },
+   "unknown-verb": {
+    "sentences": 126,
+    "playable": {
+     "hit": 126,
+     "of": 126
+    },
+    "robotWins": {
+     "hit": 126,
+     "of": 126
+    },
+    "idleLoses": {
+     "hit": 125,
+     "of": 126
+    },
+    "verbRead": {
+     "hit": 38,
+     "of": 126
+    },
+    "heroModel": {
+     "hit": 48,
+     "of": 66
+    },
+    "genres": {
+     "arena.collect": 58,
+     "quest.spatial": 19,
+     "arena.escape": 10,
+     "control:steer": 7,
+     "quest.station": 7,
+     "duel": 4,
+     "rhythm": 4,
+     "arena.fight": 3,
+     "timing.stack": 3,
+     "control:glide": 2,
+     "control:walker": 2,
+     "runner": 2,
+     "hole": 1,
+     "push": 1,
+     "slice": 1,
+     "sort": 1,
+     "whack": 1
+    }
+   },
+   "fantasy": {
+    "sentences": 41,
+    "playable": {
+     "hit": 41,
+     "of": 41
+    },
+    "robotWins": {
+     "hit": 41,
+     "of": 41
+    },
+    "idleLoses": {
+     "hit": 41,
+     "of": 41
+    },
+    "verbRead": {
+     "hit": 18,
+     "of": 41
+    },
+    "heroModel": {
+     "hit": 26,
+     "of": 36
+    },
+    "genres": {
+     "arena.collect": 11,
+     "quest.spatial": 6,
+     "control:steer": 5,
+     "arena.fight": 3,
+     "duel": 3,
+     "control:glide": 2,
+     "control:walker": 2,
+     "defense": 2,
+     "throw": 2,
+     "control:ball": 1,
+     "control:move_free": 1,
+     "flap": 1,
+     "platformer": 1,
+     "quest.station": 1
+    }
+   }
+  }
+ },
+ "phones": {
+  "file": "evals/play/p74/phones.json",
+  "base": "https://worldstream-sigma.vercel.app",
+  "measuredAt": "2026-11-07T12:07:23.578Z",
+  "iphone": {
+   "games": 28,
+   "pass": 28,
+   "loadMedianMs": 1434,
+   "loadMinMs": 1085,
+   "loadMaxMs": 6927
+  },
+  "pixel": {
+   "games": 28,
+   "pass": 28,
+   "loadMedianMs": 2613.5,
+   "loadMinMs": 2414,
+   "loadMaxMs": 3087
+  }
+ },
+ "ai": {
+  "trial": {
+   "file": "evals/play/p74/ai.json",
+   "base": "https://worldstream-sigma.vercel.app",
+   "measuredAt": "2026-11-07T11:41:32.918Z",
+   "sentences": 5,
+   "quickMedianMs": 1815,
+   "aiReady": 0,
+   "reasons": [
+    "MODEL_UNAVAILABLE"
+   ]
+  },
+  "localRun": {
+   "reached": false,
+   "why": "no director key in the environment of this run",
+   "keysChecked": [
+    "WORLDSMITH_MODEL_KEY",
+    "KV_REST_API_TOKEN"
+   ],
+   "keysPresent": [],
+   "spendUsd": 0
+  }
+ },
+ "catalogue": {
+  "models": 1787,
+  "file": "evals/play/catalog-coverage.json"
+ },
+ "rows": [
+  {
+   "id": "t001",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t002",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "timing.stack",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t003",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "control:steer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t004",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.escape",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t005",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t006",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t007",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "control:walker",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t008",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "push",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t009",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t010",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "quest.station",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t011",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t012",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.escape",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t013",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t014",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.escape",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t015",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t016",
+   "tags": [
+    "non-game"
+   ],
+   "genre": "quest.station",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t017",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "hole",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t018",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "timing.stack",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t019",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t020",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "quest.station",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t021",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t022",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t023",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t024",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "duel",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t025",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t026",
+   "tags": [
+    "non-game"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t027",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t028",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "duel",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t029",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t030",
+   "tags": [
+    "non-game"
+   ],
+   "genre": "control:steer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": false
+  },
+  {
+   "id": "t031",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "timing.stack",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t032",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.escape",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t033",
+   "tags": [
+    "non-game"
+   ],
+   "genre": "throw",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t034",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t035",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.escape",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t036",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t037",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t038",
+   "tags": [
+    "non-game"
+   ],
+   "genre": "control:steer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t039",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t040",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.escape",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t041",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t042",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t043",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "control:steer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t044",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t045",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t046",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t047",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t048",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t049",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t050",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "rhythm",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t051",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t052",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t053",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": false
+  },
+  {
+   "id": "t054",
+   "tags": [],
+   "genre": "runner",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t055",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t056",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t057",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "sort",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t058",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t059",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t060",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "quest.station",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t061",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "rhythm",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t062",
+   "tags": [],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t063",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "rhythm",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t064",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t065",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t066",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t067",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "quest.station",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t068",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t069",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t070",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "rhythm",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t071",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t072",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "quest.station",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t073",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t074",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.escape",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t075",
+   "tags": [],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t076",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t077",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": false
+  },
+  {
+   "id": "t078",
+   "tags": [
+    "unknown-verb",
+    "fantasy"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": false
+  },
+  {
+   "id": "t079",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t080",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": false
+  },
+  {
+   "id": "t081",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t082",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.escape",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t083",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": false
+  },
+  {
+   "id": "t084",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": false
+  },
+  {
+   "id": "t085",
+   "tags": [],
+   "genre": "quest.station",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t086",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": false
+  },
+  {
+   "id": "t087",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t088",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t089",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t090",
+   "tags": [
+    "unknown-verb",
+    "fantasy"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": false
+  },
+  {
+   "id": "t091",
+   "tags": [],
+   "genre": "quest.station",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t092",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": false
+  },
+  {
+   "id": "t093",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t094",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t095",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t096",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "quest.station",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": false
+  },
+  {
+   "id": "t097",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "slice",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t098",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "quest.station",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t099",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t100",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "duel",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t101",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "control:steer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t102",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "defense",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t103",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "control:walker",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t104",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "arena.fight",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t105",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "control:steer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": false
+  },
+  {
+   "id": "t106",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "control:glide",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t107",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "throw",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t108",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t109",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t110",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t111",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "duel",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t112",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "control:steer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t113",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t114",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "control:move_free",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t115",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "arena.fight",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": false
+  },
+  {
+   "id": "t116",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "defense",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t117",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t118",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t119",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "duel",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t120",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t121",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "control:walker",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": false
+  },
+  {
+   "id": "t122",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": false
+  },
+  {
+   "id": "t123",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t124",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t125",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": false
+  },
+  {
+   "id": "t126",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "throw",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t127",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "control:steer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t128",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t129",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "quest.station",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t130",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "control:steer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": false
+  },
+  {
+   "id": "t131",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "arena.fight",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t132",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": false
+  },
+  {
+   "id": "t133",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "control:glide",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t134",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "control:ball",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t135",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "platformer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t136",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": false
+  },
+  {
+   "id": "t137",
+   "tags": [],
+   "genre": "platformer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t138",
+   "tags": [],
+   "genre": "duel",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t139",
+   "tags": [],
+   "genre": "runner",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t140",
+   "tags": [],
+   "genre": "control:glide",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t141",
+   "tags": [],
+   "genre": "control:steer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": false
+  },
+  {
+   "id": "t142",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t143",
+   "tags": [],
+   "genre": "shooter",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t144",
+   "tags": [],
+   "genre": "runner",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t145",
+   "tags": [],
+   "genre": "duel",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t146",
+   "tags": [],
+   "genre": "rhythm",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t147",
+   "tags": [],
+   "genre": "timing.stack",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t148",
+   "tags": [
+    "fantasy"
+   ],
+   "genre": "flap",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t149",
+   "tags": [],
+   "genre": "control:steer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t150",
+   "tags": [],
+   "genre": "runner",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t151",
+   "tags": [],
+   "genre": "shooter",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t152",
+   "tags": [],
+   "genre": "platformer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t153",
+   "tags": [],
+   "genre": "rhythm",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t154",
+   "tags": [],
+   "genre": "control:steer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t155",
+   "tags": [],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t156",
+   "tags": [],
+   "genre": "control:glide",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t157",
+   "tags": [],
+   "genre": "push",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t158",
+   "tags": [],
+   "genre": "catch",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t159",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": false
+  },
+  {
+   "id": "t160",
+   "tags": [],
+   "genre": "runner",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t161",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "control:walker",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t162",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t163",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t164",
+   "tags": [],
+   "genre": "runner",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t165",
+   "tags": [],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t166",
+   "tags": [],
+   "genre": "control:ball",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t167",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.escape",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": false
+  },
+  {
+   "id": "t168",
+   "tags": [],
+   "genre": "control:glide",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t169",
+   "tags": [],
+   "genre": "control:steer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t170",
+   "tags": [],
+   "genre": "control:ball",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": false
+  },
+  {
+   "id": "t171",
+   "tags": [],
+   "genre": "platformer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": false
+  },
+  {
+   "id": "t172",
+   "tags": [],
+   "genre": "arena.fight",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t173",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "control:steer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t174",
+   "tags": [],
+   "genre": "control:ball",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t175",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "whack",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t176",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "control:glide",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t177",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "runner",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": false
+  },
+  {
+   "id": "t178",
+   "tags": [],
+   "genre": "control:steer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": false
+  },
+  {
+   "id": "t179",
+   "tags": [],
+   "genre": "platformer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t180",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "quest.spatial",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t181",
+   "tags": [],
+   "genre": "control:ball",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t182",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "control:glide",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": false,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t183",
+   "tags": [],
+   "genre": "control:steer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t184",
+   "tags": [],
+   "genre": "throw",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t185",
+   "tags": [],
+   "genre": "control:ball",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t186",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "control:steer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t187",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "runner",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t188",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.escape",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t189",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "control:steer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t190",
+   "tags": [],
+   "genre": "platformer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t191",
+   "tags": [],
+   "genre": "arena.escape",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t192",
+   "tags": [],
+   "genre": "timing.precision",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": null
+  },
+  {
+   "id": "t193",
+   "tags": [],
+   "genre": "platformer",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t194",
+   "tags": [],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t195",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": true,
+   "verbWhy": "ok",
+   "heroModel": true
+  },
+  {
+   "id": "t196",
+   "tags": [],
+   "genre": "control:glide",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t197",
+   "tags": [],
+   "genre": "control:walker",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": null
+  },
+  {
+   "id": "t198",
+   "tags": [],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": false
+  },
+  {
+   "id": "t199",
+   "tags": [
+    "unknown-verb"
+   ],
+   "genre": "arena.collect",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  },
+  {
+   "id": "t200",
+   "tags": [],
+   "genre": "hop",
+   "playable": true,
+   "robotWins": true,
+   "idleLoses": true,
+   "verbRead": false,
+   "verbWhy": "not-in-spec",
+   "heroModel": true
+  }
+ ]
+}

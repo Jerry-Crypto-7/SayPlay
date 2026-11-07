@@ -27,7 +27,7 @@ sentence ─► word draft ─► GameSpec ─► compiler ─► world ─► r
 - **Sound.** Every game plays generated music and sound effects chosen by its look; an optional voice reads the objective.
 - **Deterministic runtime.** Arcade games step at a fixed 60 Hz with `pure-rand` streams; the grid runtime steps at 20 Hz. Real time, particles, camera and sound stay outside the hashed state.
 - **Versions never change.** The id is a hash of spec, world, seed and component versions; a remix is a new version. Stored in Upstash Redis for 180 days (`PLAY_VERSION_TTL_SECONDS`); without Upstash the server keeps games in memory and says so (`x-play-store: memory`).
-- **Assets.** 783 catalogue models: 363 CC0 models (Kenney, Quaternius, KayKit), 56 built by code in Blender, 32 built by code in three.js and 332 generated offline by `ops/gen3d` (FLUX.2-klein-4B image → TRELLIS.2-4B mesh → Blender finishing; each model's pipeline is recorded in its catalogue entry), plus 15 rigged CC0 characters. Generated models are used at runtime like any other catalogue model. Provenance: a `PROVENANCE.md` for the catalogue and one per model set under `public/assets/`, licences: [DISCLOSURE.md](DISCLOSURE.md).
+- **Assets.** 1787 catalogue models: 362 CC0 models (Kenney, Quaternius, KayKit), 57 built by code in Blender, 32 built by code in three.js and 1336 generated offline by `ops/gen3d` (FLUX.2-klein-4B image → TRELLIS.2-4B mesh → Blender finishing; each model's pipeline is recorded in its catalogue entry), plus 15 rigged CC0 characters. Generated models are used at runtime like any other catalogue model. Provenance: a `PROVENANCE.md` for the catalogue and one per model set under `public/assets/`, licences: [DISCLOSURE.md](DISCLOSURE.md).
 
 More detail: [docs/play/director.md](docs/play/director.md), [docs/play/ARCADE.md](docs/play/ARCADE.md), [docs/play/feed.md](docs/play/feed.md), [docs/play/CONTRACT.md](docs/play/CONTRACT.md).
 
@@ -42,6 +42,11 @@ More detail: [docs/play/director.md](docs/play/director.md), [docs/play/ARCADE.m
 | AI version playable | 30 / 30 sentences, AI time p50 12 s, p90 20 s | 24 Sep 2026, one live run, [evals/play/fidelity/README.md](evals/play/fidelity/README.md) |
 | Sentence items read by the game / drawn in the scene | 0.827 / 0.727 (AI), 0.646 / 0.583 (draft) | same run |
 | What a vision judge actually sees on screen | 26 / 110 items, hero 8 / 18, setting 1 / 24 | same run |
+| Quick version on a held-out set of 200 sentences | 200 / 200 playable, robot wins 200 / 200, idle player loses 199 / 200, verb read from the words 75 / 200 | 7 Nov 2026, final build, offline, [evals/play/p74/run-2026-11-07.json](evals/play/p74/run-2026-11-07.json) |
+| New sentence to quick version | median 1.8 s (5 / 5) | 7 Nov 2026, trial deployment, [evals/play/p74/ai.json](evals/play/p74/ai.json) |
+| Game link to first frame on emulated phones | median 1.4 s iPhone 15, 2.6 s Pixel 7; 56 / 56 games played through | 7 Nov 2026, trial deployment, [evals/play/p74/phones.json](evals/play/p74/phones.json) |
+| Frame rate on an emulated Pixel 7, CPU 4× slower | median 45–60 FPS in each of 8 games | 6 Nov 2026, local production build, [evals/play/p73/sceny/perf.md](evals/play/p73/sceny/perf.md) |
+| AI version on the final build | not measured: 0 / 5 on the trial deployment (`MODEL_UNAVAILABLE`), no director key in the local run, 0 USD spent | 7 Nov 2026, [evals/play/p74/run-2026-11-07.json](evals/play/p74/run-2026-11-07.json) |
 
 ## Known issues
 
