@@ -4,8 +4,9 @@
  * bez plátna. Jen kresba: stav, hash ani robot se nemění.
  */
 
-import { Box3, type Matrix4, type Mesh, type Object3D, Vector3 } from 'three';
+import { Box3, MathUtils, type Matrix4, type Mesh, type Object3D, type PerspectiveCamera, Vector3 } from 'three';
 
+import { DIORAMA_FRAMING, dropOf } from '../look/framing';
 import { isInk } from '../look/rig/InkOutline';
 
 /** Sklon kamery nad vodorovnou (sin, cos). */
@@ -17,8 +18,48 @@ const tiltOf = (degrees: number): Tilt => ({ sin: Math.sin((degrees * Math.PI) /
 /**
  * Kamera 3/4 shora. P35 T2: 50° → 40°. Při 50° byla kočka shora zezadu jen hřbet
  * a uši a astra ji naslepo nepoznala (O10); při 40° je vidět hlava a bok.
+ * P73D T2: na cíl kouká pořád takhle (25° + `dropOf` = 38°), ale osa pohledu se pak zvedne na 25°
+ * (`raiseArena`): obzor a kulisy za hranou arény v horní třetině, hrdina v dolní – dřív 70 % obrazu dlažba.
  */
-export const STYLED_TILT = tiltOf(40);
+export const STYLED_TILT = tiltOf(DIORAMA_FRAMING.move_free.pitch + MathUtils.radToDeg(dropOf(DIORAMA_FRAMING.move_free)));
+
+const lowered = new Vector3();
+const cameraUp = new Vector3();
+
+/**
+ * Po `lookAt` na cíl zvedne osu pohledu vždy o celé `dropOf` na sklon `DIORAMA_FRAMING.move_free` (25°, obzor v NDC
+ * 0,81) – cíl klesne do dolní třetiny. Zdvih tlačí hrdinu (`hero`, střed těla) a nejbližší hrozbu (`threat`) k dolní
+ * hraně; hrozba za zády hrdiny by z obrazu vypadla (08-gems: v 51 % tiků místo ≥ 85 %). Kamera pak sjede po své ose
+ * dolů, až střed hrdiny leží nad `HERO_EDGE` a hrozby nad `THREAT_EDGE` (NDC nad dolní hranou): obraz jede nahoru,
+ * sklon ani hloubka (velikost hrdiny) se nemění. Dřív se zdvih v takovém záběru zkrátil – honička a úkol na šířku
+ * zůstaly na 35–38° s obzorem nad horní hranou (QA 6. 11.). Hrdinu posun nikdy nezvedne výš, než ho měl záběr před
+ * zdvihem (na výšku tak zůstane pod pásem HUD, `bandLift`). Co už je mimo obraz (hrozba, kterou záběr neutáhl, ukáže
+ * šipka na okraji), posun nebrzdí. Souboj zůstává strmý (`FIGHT_TILT`): soupeř jde na hrdinu podél osy kamery.
+ */
+export function raiseArena(camera: PerspectiveCamera, fight: boolean, hero?: Vector3, threat?: Vector3 | null): void {
+  if (fight) return;
+  const tan = Math.tan(MathUtils.degToRad(camera.fov) / 2);
+  camera.updateMatrixWorld();
+  const kept: { readonly point: Vector3; readonly edge: number; readonly was: number }[] = [];
+  for (const [point, edge] of [[hero, HERO_EDGE], [threat, THREAT_EDGE]] as const) {
+    if (point === undefined || point === null) continue;
+    const at = lowered.copy(point).project(camera);
+    if (at.z > 1 || Math.abs(at.x) > 1 || Math.abs(at.y) > 1) continue;
+    kept.push({ point, edge, was: at.y });
+  }
+  camera.rotateX(dropOf(DIORAMA_FRAMING.move_free, camera.fov));
+  camera.updateMatrixWorld();
+  // Bod v prostoru kamery (hloubka −z) leží v NDC y / (hloubka · tan); posun kamery o `slide` po ose dolů mu přidá `slide` k y.
+  let slide = 0;
+  let ceiling = Infinity;
+  for (const { point, edge, was } of kept) {
+    const at = lowered.copy(point).applyMatrix4(camera.matrixWorldInverse);
+    slide = Math.max(slide, -edge * tan * -at.z - at.y);
+    if (point === hero) ceiling = was * tan * -at.z - at.y;
+  }
+  slide = Math.min(slide, ceiling);
+  if (slide > 0) camera.position.addScaledVector(cameraUp.set(0, 1, 0).applyQuaternion(camera.quaternion), -slide);
+}
 /**
  * Souboj strměji (P32E T6): soupeř jde na hrdinu podél osy kamery a při 50°
  * ho hrdina i jeho lišta HP zakryly, zásah i pád se ztratily za zády.

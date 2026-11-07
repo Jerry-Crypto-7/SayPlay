@@ -1,0 +1,1768 @@
+{
+ "takenAt": "2026-11-06T14:30:21.720Z",
+ "hz": 60,
+ "moments": [
+  {
+   "id": "0start",
+   "second": 0
+  },
+  {
+   "id": "1play",
+   "second": 3
+  },
+  {
+   "id": "2play",
+   "second": 8
+  }
+ ],
+ "sentences": [
+  {
+   "id": "s1",
+   "seed": 73101,
+   "text": "Escape a volcano before the lava reaches you"
+  },
+  {
+   "id": "s2",
+   "seed": 73102,
+   "text": "An underwater race between a turtle and a shark"
+  },
+  {
+   "id": "s3",
+   "seed": 73103,
+   "text": "A cat delivering pizzas across rooftops while avoiding seagulls"
+  },
+  {
+   "id": "s4",
+   "seed": 73104,
+   "text": "Balance a tower of pancakes on a windy day"
+  },
+  {
+   "id": "s5",
+   "seed": 73105,
+   "text": "A knight jumps across floating islands to rescue a dragon egg"
+  },
+  {
+   "id": "s6",
+   "seed": 73106,
+   "text": "A spaceship shoots asteroids in deep space"
+  },
+  {
+   "id": "s7",
+   "seed": 73107,
+   "text": "Play mini golf in a candy land"
+  },
+  {
+   "id": "s8",
+   "seed": 73108,
+   "text": "Find the lost crown in an old castle"
+  },
+  {
+   "id": "s9",
+   "seed": 73109,
+   "text": "A bird flies through a stormy city"
+  },
+  {
+   "id": "s10",
+   "seed": 73110,
+   "text": "A farmer catches falling apples in the orchard"
+  },
+  {
+   "id": "s11",
+   "seed": 73111,
+   "text": "A dog races a cat through a candy land"
+  },
+  {
+   "id": "s12",
+   "seed": 73112,
+   "text": "A penguin slides down an icy mountain"
+  }
+ ],
+ "shots": [
+  {
+   "id": "s1",
+   "vp": "desktop",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s1-desktop-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 8.44,
+      "horizonNdc": 0.257,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.406
+      },
+      "targetNdc": {
+       "x": 0.008,
+       "y": 0.075
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s1-desktop-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 10.342,
+      "horizonNdc": 0.316,
+      "heroNdc": {
+       "x": -0.141,
+       "y": -0.389
+      },
+      "targetNdc": {
+       "x": 0.133,
+       "y": -0.463
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s1-desktop-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 3.621,
+      "horizonNdc": 0.11,
+      "heroNdc": {
+       "x": 0.142,
+       "y": -0.341
+      },
+      "targetNdc": {
+       "x": -0.007,
+       "y": -0.028
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "17f99d8a0fa3019f31f3048a929d444b",
+   "genre": "runner",
+   "control": "runner",
+   "setting": "volcano",
+   "stage": "runner",
+   "look": "volcano",
+   "quality": "high"
+  },
+  {
+   "id": "s1",
+   "vp": "phone",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s1-phone-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 32,
+      "horizonNdc": 1.082,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.358
+      },
+      "targetNdc": {
+       "x": 0.026,
+       "y": 0.373
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s1-phone-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 33.377,
+      "horizonNdc": 1.141,
+      "heroNdc": {
+       "x": -0.507,
+       "y": -0.642
+      },
+      "targetNdc": {
+       "x": 0,
+       "y": -0.661
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s1-phone-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 28.249,
+      "horizonNdc": 0.931,
+      "heroNdc": {
+       "x": 0.488,
+       "y": -0.609
+      },
+      "targetNdc": {
+       "x": 0.13,
+       "y": 0.015
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "17f99d8a0fa3019f31f3048a929d444b",
+   "genre": "runner",
+   "control": "runner",
+   "setting": "volcano",
+   "stage": "runner",
+   "look": "volcano",
+   "quality": "medium"
+  },
+  {
+   "id": "s2",
+   "vp": "desktop",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s2-desktop-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 9.417,
+      "horizonNdc": 0.287,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.424
+      },
+      "targetNdc": {
+       "x": 0.198,
+       "y": -0.17
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s2-desktop-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 9.417,
+      "horizonNdc": 0.287,
+      "heroNdc": {
+       "x": -0.001,
+       "y": -0.424
+      },
+      "targetNdc": {
+       "x": 0.004,
+       "y": -0.198
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s2-desktop-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 9.417,
+      "horizonNdc": 0.287,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.424
+      },
+      "targetNdc": {
+       "x": -0.025,
+       "y": -0.027
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "4ba213867ef7ff1ba2c3d083f46bcd1c",
+   "genre": null,
+   "control": "steer",
+   "setting": "underwater",
+   "stage": "steer",
+   "look": "underwater",
+   "quality": "high"
+  },
+  {
+   "id": "s2",
+   "vp": "phone",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s2-phone-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 32.735,
+      "horizonNdc": 1.113,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.495
+      },
+      "targetNdc": {
+       "x": 0.429,
+       "y": -0.2
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s2-phone-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 32.735,
+      "horizonNdc": 1.113,
+      "heroNdc": {
+       "x": -0.002,
+       "y": -0.602
+      },
+      "targetNdc": {
+       "x": 0.009,
+       "y": -0.319
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s2-phone-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 32.735,
+      "horizonNdc": 1.113,
+      "heroNdc": {
+       "x": 0.001,
+       "y": -0.603
+      },
+      "targetNdc": {
+       "x": -0.069,
+       "y": -0.04
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "4ba213867ef7ff1ba2c3d083f46bcd1c",
+   "genre": null,
+   "control": "steer",
+   "setting": "underwater",
+   "stage": "steer",
+   "look": "underwater",
+   "quality": "medium"
+  },
+  {
+   "id": "s3",
+   "vp": "desktop",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s3-desktop-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 40,
+      "horizonNdc": 1.453,
+      "heroNdc": {
+       "x": -0.417,
+       "y": 0.436
+      },
+      "targetNdc": {
+       "x": -0.375,
+       "y": 0.498
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s3-desktop-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 40,
+      "horizonNdc": 1.453,
+      "heroNdc": {
+       "x": -0.281,
+       "y": 0.464
+      },
+      "targetNdc": {
+       "x": 0.791,
+       "y": -0.757
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s3-desktop-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 40,
+      "horizonNdc": 1.453,
+      "heroNdc": {
+       "x": -0.207,
+       "y": 0.441
+      },
+      "targetNdc": {
+       "x": 0.524,
+       "y": -0.498
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "63fe78f25d9f4d5fb30c8ee2d5b2ded4",
+   "genre": "arena",
+   "control": "move_free",
+   "setting": "rooftops",
+   "stage": "move_free",
+   "look": "city",
+   "quality": "high"
+  },
+  {
+   "id": "s3",
+   "vp": "phone",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s3-phone-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 40,
+      "horizonNdc": 1.453,
+      "heroNdc": {
+       "x": 0,
+       "y": 0.102
+      },
+      "targetNdc": {
+       "x": 0,
+       "y": 0.331
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s3-phone-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 40,
+      "horizonNdc": 1.453,
+      "heroNdc": {
+       "x": 0.641,
+       "y": -0.066
+      },
+      "targetNdc": {
+       "x": -167.025,
+       "y": 48.51
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s3-phone-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 40,
+      "horizonNdc": 1.453,
+      "heroNdc": {
+       "x": 0.546,
+       "y": 0.114
+      },
+      "targetNdc": {
+       "x": 23.764,
+       "y": -6.539
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "63fe78f25d9f4d5fb30c8ee2d5b2ded4",
+   "genre": "arena",
+   "control": "move_free",
+   "setting": "rooftops",
+   "stage": "move_free",
+   "look": "city",
+   "quality": "high"
+  },
+  {
+   "id": "s4",
+   "vp": "desktop",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s4-desktop-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 10.62,
+      "horizonNdc": 0.325,
+      "heroNdc": {
+       "x": -0.5,
+       "y": 0.07
+      },
+      "targetNdc": {
+       "x": 0,
+       "y": 7.784
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s4-desktop-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 10.62,
+      "horizonNdc": 0.325,
+      "heroNdc": {
+       "x": 0.322,
+       "y": 0.07
+      },
+      "targetNdc": {
+       "x": 0,
+       "y": 6.647
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s4-desktop-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 10.62,
+      "horizonNdc": 0.325,
+      "heroNdc": {
+       "x": 0.322,
+       "y": 0.07
+      },
+      "targetNdc": {
+       "x": 0,
+       "y": 4.809
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "7a9462dfdf13c0f150bd6ea1aea1df7d",
+   "genre": "timing",
+   "control": "timing",
+   "setting": "tower",
+   "stage": "timing",
+   "look": "castle",
+   "quality": "high"
+  },
+  {
+   "id": "s4",
+   "vp": "phone",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s4-phone-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 10.746,
+      "horizonNdc": 0.329,
+      "heroNdc": {
+       "x": -0.652,
+       "y": 0.089
+      },
+      "targetNdc": {
+       "x": 0,
+       "y": 1.472
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s4-phone-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 10.746,
+      "horizonNdc": 0.329,
+      "heroNdc": {
+       "x": 0.415,
+       "y": -0.136
+      },
+      "targetNdc": {
+       "x": 0,
+       "y": 1.072
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s4-phone-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 10.746,
+      "horizonNdc": 0.329,
+      "heroNdc": {
+       "x": 0.416,
+       "y": -0.137
+      },
+      "targetNdc": {
+       "x": 0,
+       "y": 0.787
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "7a9462dfdf13c0f150bd6ea1aea1df7d",
+   "genre": "timing",
+   "control": "timing",
+   "setting": "tower",
+   "stage": "timing",
+   "look": "castle",
+   "quality": "high"
+  },
+  {
+   "id": "s5",
+   "vp": "desktop",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s5-desktop-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 0,
+      "horizonNdc": 0,
+      "heroNdc": {
+       "x": -0.409,
+       "y": -0.012
+      },
+      "targetNdc": {
+       "x": 0.389,
+       "y": -1.082
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s5-desktop-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 0,
+      "horizonNdc": 0,
+      "heroNdc": {
+       "x": -0.409,
+       "y": -0.01
+      },
+      "targetNdc": {
+       "x": -0.343,
+       "y": -0.072
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s5-desktop-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 0,
+      "horizonNdc": 0,
+      "heroNdc": {
+       "x": -0.443,
+       "y": -0.052
+      },
+      "targetNdc": {
+       "x": -0.326,
+       "y": -0.402
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "dc29aa1d590e0a0d7c90a67b1ba56e45",
+   "genre": "platformer",
+   "control": "platform",
+   "setting": "floating islands",
+   "stage": "platform",
+   "look": "beach",
+   "quality": "high"
+  },
+  {
+   "id": "s5",
+   "vp": "phone",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s5-phone-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 10,
+      "horizonNdc": 0.305,
+      "heroNdc": {
+       "x": -0.491,
+       "y": 0.007
+      },
+      "targetNdc": {
+       "x": 0.796,
+       "y": -0.403
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s5-phone-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 10,
+      "horizonNdc": 0.305,
+      "heroNdc": {
+       "x": -0.492,
+       "y": -0.169
+      },
+      "targetNdc": {
+       "x": -0.311,
+       "y": -0.149
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s5-phone-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 10,
+      "horizonNdc": 0.305,
+      "heroNdc": {
+       "x": -0.506,
+       "y": -0.176
+      },
+      "targetNdc": {
+       "x": -0.259,
+       "y": -0.43
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "dc29aa1d590e0a0d7c90a67b1ba56e45",
+   "genre": "platformer",
+   "control": "platform",
+   "setting": "floating islands",
+   "stage": "platform",
+   "look": "beach",
+   "quality": "medium"
+  },
+  {
+   "id": "s6",
+   "vp": "desktop",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s6-desktop-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 48,
+      "pitchDeg": 10.045,
+      "horizonNdc": 0.398,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.677
+      },
+      "targetNdc": {
+       "x": 0.026,
+       "y": 0.058
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s6-desktop-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 48,
+      "pitchDeg": 10.045,
+      "horizonNdc": 0.398,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.667
+      },
+      "targetNdc": {
+       "x": -0.002,
+       "y": 0.229
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s6-desktop-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 48,
+      "pitchDeg": 10.045,
+      "horizonNdc": 0.398,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.678
+      },
+      "targetNdc": {
+       "x": -0.736,
+       "y": 0.243
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "9320524fa3d18e2d82710db61b8ee5ee",
+   "genre": "shooter",
+   "control": "shooter",
+   "setting": "deep space",
+   "stage": "shooter",
+   "look": "space",
+   "quality": "high"
+  },
+  {
+   "id": "s6",
+   "vp": "phone",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s6-phone-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 33.69,
+      "horizonNdc": 1.155,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.58
+      },
+      "targetNdc": {
+       "x": 0.066,
+       "y": 0.262
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s6-phone-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 33.69,
+      "horizonNdc": 1.155,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.71
+      },
+      "targetNdc": {
+       "x": -0.013,
+       "y": 0.556
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s6-phone-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 33.69,
+      "horizonNdc": 1.155,
+      "heroNdc": {
+       "x": -0.007,
+       "y": -0.708
+      },
+      "targetNdc": {
+       "x": -0.712,
+       "y": 0.697
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "9320524fa3d18e2d82710db61b8ee5ee",
+   "genre": "shooter",
+   "control": "shooter",
+   "setting": "deep space",
+   "stage": "shooter",
+   "look": "space",
+   "quality": "high"
+  },
+  {
+   "id": "s7",
+   "vp": "desktop",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s7-desktop-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 50,
+      "horizonNdc": 2.064,
+      "heroNdc": {
+       "x": 0.001,
+       "y": -0.501
+      },
+      "targetNdc": {
+       "x": 0.001,
+       "y": -0.24
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s7-desktop-1play.jpg",
+     "tick": 119,
+     "runState": "won",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 24.624,
+      "horizonNdc": 0.794,
+      "heroNdc": {
+       "x": 0.001,
+       "y": -0.146
+      },
+      "targetNdc": {
+       "x": 0.002,
+       "y": -0.22
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s7-desktop-2play.jpg",
+     "tick": 119,
+     "runState": "won",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 24.624,
+      "horizonNdc": 0.794,
+      "heroNdc": {
+       "x": 0.001,
+       "y": -0.146
+      },
+      "targetNdc": {
+       "x": 0.002,
+       "y": -0.22
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "17e4f06bd9946ab6438f8c2e6619d183",
+   "genre": "minigolf",
+   "control": "minigolf",
+   "setting": "candy land",
+   "stage": "minigolf",
+   "look": "meadow",
+   "quality": "high"
+  },
+  {
+   "id": "s7",
+   "vp": "phone",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s7-phone-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 50,
+      "horizonNdc": 2.064,
+      "heroNdc": {
+       "x": 0.008,
+       "y": -0.502
+      },
+      "targetNdc": {
+       "x": 0.01,
+       "y": -0.014
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s7-phone-1play.jpg",
+     "tick": 119,
+     "runState": "won",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 24.624,
+      "horizonNdc": 0.794,
+      "heroNdc": {
+       "x": 0.004,
+       "y": -0.364
+      },
+      "targetNdc": {
+       "x": 0.007,
+       "y": -0.426
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s7-phone-2play.jpg",
+     "tick": 119,
+     "runState": "won",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 24.624,
+      "horizonNdc": 0.794,
+      "heroNdc": {
+       "x": 0.004,
+       "y": -0.364
+      },
+      "targetNdc": {
+       "x": 0.007,
+       "y": -0.426
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "17e4f06bd9946ab6438f8c2e6619d183",
+   "genre": "minigolf",
+   "control": "minigolf",
+   "setting": "candy land",
+   "stage": "minigolf",
+   "look": "meadow",
+   "quality": "medium"
+  },
+  {
+   "id": "s8",
+   "vp": "desktop",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s8-desktop-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 40,
+      "horizonNdc": 1.453,
+      "heroNdc": {
+       "x": 0.077,
+       "y": 0.535
+      },
+      "targetNdc": {
+       "x": -0.44,
+       "y": 0.442
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s8-desktop-1play.jpg",
+     "tick": 96,
+     "runState": "won",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 40,
+      "horizonNdc": 1.453,
+      "heroNdc": {
+       "x": -0.153,
+       "y": 0.539
+      },
+      "targetNdc": {
+       "x": -0.23,
+       "y": 0.49
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s8-desktop-2play.jpg",
+     "tick": 96,
+     "runState": "won",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 40,
+      "horizonNdc": 1.453,
+      "heroNdc": {
+       "x": -0.153,
+       "y": 0.545
+      },
+      "targetNdc": {
+       "x": -0.229,
+       "y": 0.49
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "39e3eede3e314558cb3eb6204d646de2",
+   "genre": "quest",
+   "control": "move_free",
+   "setting": "old castle",
+   "stage": "move_free",
+   "look": "castle",
+   "quality": "high"
+  },
+  {
+   "id": "s8",
+   "vp": "phone",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s8-phone-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 40,
+      "horizonNdc": 1.453,
+      "heroNdc": {
+       "x": 0.343,
+       "y": 0.356
+      },
+      "targetNdc": {
+       "x": -1.579,
+       "y": 0.261
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s8-phone-1play.jpg",
+     "tick": 96,
+     "runState": "won",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 40,
+      "horizonNdc": 1.453,
+      "heroNdc": {
+       "x": -0.678,
+       "y": 0.243
+      },
+      "targetNdc": {
+       "x": -0.934,
+       "y": 0.236
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s8-phone-2play.jpg",
+     "tick": 96,
+     "runState": "won",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 40,
+      "horizonNdc": 1.453,
+      "heroNdc": {
+       "x": -0.68,
+       "y": 0.255
+      },
+      "targetNdc": {
+       "x": -0.936,
+       "y": 0.235
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "39e3eede3e314558cb3eb6204d646de2",
+   "genre": "quest",
+   "control": "move_free",
+   "setting": "old castle",
+   "stage": "move_free",
+   "look": "castle",
+   "quality": "medium"
+  },
+  {
+   "id": "s9",
+   "vp": "desktop",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s9-desktop-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 6.483,
+      "horizonNdc": 0.197,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.209
+      },
+      "targetNdc": null
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s9-desktop-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 6.483,
+      "horizonNdc": 0.197,
+      "heroNdc": {
+       "x": -0.021,
+       "y": -0.209
+      },
+      "targetNdc": null
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s9-desktop-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 6.482,
+      "horizonNdc": 0.197,
+      "heroNdc": {
+       "x": -0.041,
+       "y": -0.216
+      },
+      "targetNdc": null
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "afe063a582d715f1b339c2b50ef14c36",
+   "genre": null,
+   "control": "glide",
+   "setting": "stormy city",
+   "stage": "glide",
+   "look": "city",
+   "quality": "high"
+  },
+  {
+   "id": "s9",
+   "vp": "phone",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s9-phone-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 9.462,
+      "horizonNdc": 0.289,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.117
+      },
+      "targetNdc": null
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s9-phone-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 9.462,
+      "horizonNdc": 0.289,
+      "heroNdc": {
+       "x": -0.056,
+       "y": -0.41
+      },
+      "targetNdc": null
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s9-phone-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 9.461,
+      "horizonNdc": 0.289,
+      "heroNdc": {
+       "x": -0.092,
+       "y": -0.389
+      },
+      "targetNdc": null
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "afe063a582d715f1b339c2b50ef14c36",
+   "genre": null,
+   "control": "glide",
+   "setting": "stormy city",
+   "stage": "glide",
+   "look": "city",
+   "quality": "high"
+  },
+  {
+   "id": "s10",
+   "vp": "desktop",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s10-desktop-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 0,
+      "horizonNdc": 0,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.75
+      },
+      "targetNdc": {
+       "x": 0,
+       "y": 0.534
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s10-desktop-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 0,
+      "horizonNdc": 0,
+      "heroNdc": {
+       "x": 0.449,
+       "y": -0.75
+      },
+      "targetNdc": {
+       "x": 0.405,
+       "y": -0.122
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s10-desktop-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 0,
+      "horizonNdc": 0,
+      "heroNdc": {
+       "x": 0.229,
+       "y": -0.75
+      },
+      "targetNdc": {
+       "x": 0.203,
+       "y": -0.197
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "0e458b791344cbebff6a8ae7cac03a5b",
+   "genre": "catch",
+   "control": "lanes",
+   "setting": "orchard",
+   "stage": "lanes",
+   "look": "meadow",
+   "quality": "high"
+  },
+  {
+   "id": "s10",
+   "vp": "phone",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s10-phone-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 0,
+      "horizonNdc": 0,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.494
+      },
+      "targetNdc": {
+       "x": 0,
+       "y": 0.641
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s10-phone-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 0,
+      "horizonNdc": 0,
+      "heroNdc": {
+       "x": 0.819,
+       "y": -0.813
+      },
+      "targetNdc": {
+       "x": 0.754,
+       "y": -0.108
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s10-phone-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 0,
+      "horizonNdc": 0,
+      "heroNdc": {
+       "x": 0.419,
+       "y": -0.813
+      },
+      "targetNdc": {
+       "x": 0.38,
+       "y": -0.193
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "0e458b791344cbebff6a8ae7cac03a5b",
+   "genre": "catch",
+   "control": "lanes",
+   "setting": "orchard",
+   "stage": "lanes",
+   "look": "meadow",
+   "quality": "high"
+  },
+  {
+   "id": "s11",
+   "vp": "desktop",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s11-desktop-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 9.417,
+      "horizonNdc": 0.287,
+      "heroNdc": {
+       "x": -0.004,
+       "y": -0.381
+      },
+      "targetNdc": {
+       "x": 0.198,
+       "y": -0.17
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s11-desktop-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 9.417,
+      "horizonNdc": 0.287,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.382
+      },
+      "targetNdc": {
+       "x": -0.222,
+       "y": -0.227
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s11-desktop-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 9.416,
+      "horizonNdc": 0.287,
+      "heroNdc": {
+       "x": 0.039,
+       "y": -0.381
+      },
+      "targetNdc": {
+       "x": 0.07,
+       "y": 0.188
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "35ffc4431f013b7e7035b038bbfe4671",
+   "genre": null,
+   "control": "steer",
+   "setting": "candy land",
+   "stage": "steer",
+   "look": "meadow",
+   "quality": "high"
+  },
+  {
+   "id": "s11",
+   "vp": "phone",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s11-phone-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 32.735,
+      "horizonNdc": 1.113,
+      "heroNdc": {
+       "x": 0.005,
+       "y": -0.318
+      },
+      "targetNdc": {
+       "x": 0.429,
+       "y": -0.064
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s11-phone-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 32.735,
+      "horizonNdc": 1.113,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.594
+      },
+      "targetNdc": {
+       "x": -0.45,
+       "y": -0.367
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s11-phone-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 32.735,
+      "horizonNdc": 1.113,
+      "heroNdc": {
+       "x": 0.121,
+       "y": -0.564
+      },
+      "targetNdc": {
+       "x": 0.232,
+       "y": 0.566
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "35ffc4431f013b7e7035b038bbfe4671",
+   "genre": null,
+   "control": "steer",
+   "setting": "candy land",
+   "stage": "steer",
+   "look": "meadow",
+   "quality": "medium"
+  },
+  {
+   "id": "s12",
+   "vp": "desktop",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s12-desktop-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 8.44,
+      "horizonNdc": 0.257,
+      "heroNdc": {
+       "x": -0.004,
+       "y": -0.318
+      },
+      "targetNdc": {
+       "x": 0.024,
+       "y": 0.07
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s12-desktop-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 10.855,
+      "horizonNdc": 0.332,
+      "heroNdc": {
+       "x": -0.13,
+       "y": -0.314
+      },
+      "targetNdc": {
+       "x": 0.075,
+       "y": -0.109
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s12-desktop-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 7.861,
+      "horizonNdc": 0.239,
+      "heroNdc": {
+       "x": -0.133,
+       "y": -0.321
+      },
+      "targetNdc": {
+       "x": 0.143,
+       "y": -0.176
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "e4bdd0f82c19741f20cf482ec619854b",
+   "genre": "runner",
+   "control": "runner",
+   "setting": "icy mountain",
+   "stage": "runner",
+   "look": "snow",
+   "quality": "high"
+  },
+  {
+   "id": "s12",
+   "vp": "phone",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s12-phone-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 32,
+      "horizonNdc": 1.082,
+      "heroNdc": {
+       "x": -0.001,
+       "y": -0.242
+      },
+      "targetNdc": {
+       "x": 0.076,
+       "y": 0.375
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s12-phone-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 33.592,
+      "horizonNdc": 1.15,
+      "heroNdc": {
+       "x": -0.466,
+       "y": -0.474
+      },
+      "targetNdc": {
+       "x": 0.024,
+       "y": -0.27
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s12-phone-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 31.53,
+      "horizonNdc": 1.063,
+      "heroNdc": {
+       "x": -0.483,
+       "y": -0.488
+      },
+      "targetNdc": {
+       "x": 0.082,
+       "y": -0.253
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "e4bdd0f82c19741f20cf482ec619854b",
+   "genre": "runner",
+   "control": "runner",
+   "setting": "icy mountain",
+   "stage": "runner",
+   "look": "snow",
+   "quality": "medium"
+  }
+ ]
+}

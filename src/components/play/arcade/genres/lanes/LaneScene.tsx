@@ -41,6 +41,8 @@ export function LaneStage(props: Omit<WorldProps, 'control' | 'backdrop'>) {
 }
 
 const LANE_LENGTH = 40;
+/** Kamera pruhů: kde stojí a kam kouká (m scény). */
+export const LANE_CAMERA = { position: [0, 7.6, -9], look: [0, 0, 9.5] } as const;
 const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;
 
 const bodyColor = (role: number): string =>
@@ -52,8 +54,9 @@ export function LaneScene({ session, look }: { readonly session: ArcadeSession; 
   const meshes = useRef<(Mesh | null)[]>([]);
 
   useLayoutEffect(() => {
-    camera.position.set(0, 9, -8);
-    camera.lookAt(0, 0, 8);
+    // P73D T2: sklon 29° → 22° (`DIORAMA_FRAMING.lanes`), obzor zpátky pod horní hranu (NDC 0,98 → 0,71).
+    camera.position.set(...LANE_CAMERA.position);
+    camera.lookAt(...LANE_CAMERA.look);
   }, [camera]);
 
   useFrame((_, delta) => {

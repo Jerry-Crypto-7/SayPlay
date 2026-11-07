@@ -17,6 +17,7 @@ import { Box3, type PerspectiveCamera, Vector3 } from 'three';
 import { UNIT } from '@/play/arcade/contract';
 import { FLAP } from '@/play/arcade/pieces/flap';
 
+import { DIORAMA_FRAMING, dioramaRig } from './look/framing';
 import { type PlayRect, fitTall } from './portrait-frame';
 import { type Path, slopeAt } from './runner/path';
 
@@ -81,8 +82,9 @@ const DEG = Math.PI / 180;
  * tři pruhy (`half` m od osy: krajní pruh 2 m a půl hrdiny), od pat (`behind` m za hrdinou, kde běží
  * pronásledovatel) po `depth` m před ním a do výšky `top` m. Vzdálenost a svislý posun dává `fitChase`.
  * P70D T3: sklon 32° (dřív 22°) – hrdina shora šikmo místo zad jako kvádr, tři řady překážek před ním v záběru.
+ * P73D T2: 27° – při 32° a zorném poli 60° ležel obzor nad horní hranou (NDC 1,14), sopka ani panorama vidět nebyly.
  */
-export const RUNNER_TALL = { pitch: 32 * DEG, ahead: 10, reach: 21, half: 2.5, behind: 2, depth: 2, top: 2 } as const;
+export const RUNNER_TALL = { pitch: 27 * DEG, ahead: 10, reach: 21, half: 2.5, behind: 2, depth: 2, top: 2 } as const;
 
 const fitBox = new Box3();
 
@@ -108,8 +110,10 @@ export function placeRunner(camera: PerspectiveCamera, look: Vector3, x: number,
     fitChase(camera, look, fitBox, rect);
     return;
   }
-  camera.position.set(x * 0.6 + at.x - 6.5 * slope.x, 3.4 + at.y - 6.5 * slope.y, z - 6.5);
-  look.set(x * 0.4 + at.x + 9 * slope.x, 1.1 + at.y + 9 * slope.y, z + 9);
+  // P73D T2: 3/4 s obzorem (`DIORAMA_FRAMING.runner`) – dřív 8° od země a stěna kaňonu přes půl obrazu.
+  const { back, up, ahead } = dioramaRig(DIORAMA_FRAMING.runner, DIORAMA_FRAMING.runner.reach, camera.fov);
+  camera.position.set(x * 0.6 + at.x - back * slope.x, up + at.y - back * slope.y, z - back);
+  look.set(x * 0.4 + at.x + ahead * slope.x, at.y + ahead * slope.y, z + ahead);
   camera.lookAt(look);
 }
 

@@ -19,7 +19,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { color } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, UNIT, bodyBase, nativeRule, rampedSpeed } from '@/play/arcade/contract';
-import { type Look, SURFACES, sparseLandmarks } from '@/play/arcade/look';
+import { type Look, SURFACES, type Surface, sparseLandmarks } from '@/play/arcade/look';
 import { STEER, type SteerCourse } from '@/play/arcade/pieces/steer';
 import type { HeroAction } from '@/play/spec';
 
@@ -32,7 +32,7 @@ import type { Volume } from '../look/landmark-places';
 import { type IslandSpot, buildIslands, islandPalette } from '../look/rig/terrain/islands';
 import { hash } from '../look/rig/terrain/valley';
 import { BEFORE_COMPOSER } from '../look/rig/Post';
-import { roadGeometry, stripCurve, windowAlongZ } from '../look/road-strip';
+import { fleckGeometry, roadGeometry, stripCurve, windowAlongZ } from '../look/road-strip';
 import { buildWater } from '../look/rig/terrain/water';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { HorizonBackdrop } from '../look/Backdrop';
@@ -45,6 +45,7 @@ import { FittedModel } from '../World';
 import { keySteer } from './key-steer';
 import { BARRIER_W, roadShapeOf } from './road-shape';
 import { type DriveInputMode, driveInput } from './drive-input';
+import { DIORAMA_FRAMING, dioramaRig } from '../look/framing';
 import { VoyageHero } from './VoyageHero';
 import { type VoyageLayout, centerOf, nearShotsInView, voyageLayoutOf } from './voyageLayout';
 
@@ -80,8 +81,10 @@ export function placeChase(camera: PerspectiveCamera, look: Vector3, x: number, 
     track.max.set(road + view.half, view.top, z + view.depth);
     fitChase(camera, look, track, rect);
   } else {
-    camera.position.set(road + (x - road) * 0.8, 4.2, z - 8.5);
-    look.set(road + (x - road) * 0.6, 0.8, z + 12);
+    // P73D T2: 3/4 s obzorem (`DIORAMA_FRAMING.steer`) – dřív 9° nad dráhou a holá deska do mlhy.
+    const { back, up, ahead } = dioramaRig(DIORAMA_FRAMING.steer, DIORAMA_FRAMING.steer.reach, camera.fov);
+    camera.position.set(road + (x - road) * 0.8, up, z - back);
+    look.set(road + (x - road) * 0.6, 0, z + ahead);
   }
   camera.lookAt(look);
   // Small visual roll follows the car across the road, never the hashed world.
@@ -99,8 +102,9 @@ export function placeChase(camera: PerspectiveCamera, look: Vector3, x: number, 
 const VOYAGE_CAM = {
   // Na výšku víc do strany nejde: trať v zatáčce by vyjela z úzkého obrazu (−2,6 m = 1,9 s před psem).
   // P64 T5: výš, blíž a dál dopředu (dřív 4, 7, −1,6, 6) – trať běží nahoru po obrazovce, loď stojí dole v `playRect`.
-  phone: { up: 5, back: 5, side: -1, ahead: 8 },
-  desktop: { up: 3.6, back: 7.5, side: -3, ahead: 10 },
+  // P73D T2: výš (`up` 5 → 6, 3,6 → 7,5) – sklon 19° a 10° → 23° a 22°, trať i obzor v 3/4 záběru.
+  phone: { up: 6, back: 5, side: -1, ahead: 8 },
+  desktop: { up: 7.5, back: 7.5, side: -3, ahead: 10 },
 } as const;
 
 /**
@@ -109,7 +113,8 @@ const VOYAGE_CAM = {
  * a soupeř či turbo u kraje), od `behind` m za autem po `depth` m před ním, do výšky `top`. Vzdálenost a posun dává
  * `fitChase`.
  */
-const STEER_TALL = { up: 18, back: 18, ahead: 10, follow: 0.5, followLook: 0.4, half: 5, behind: 2, depth: 14, top: 1.5 } as const;
+// P73D T2: `up` 18 → 13 (sklon 33° → 25°): obzor zpátky v obraze (NDC 1,11 → 0,81).
+const STEER_TALL = { up: 13, back: 18, ahead: 10, follow: 0.5, followLook: 0.4, half: 5, behind: 2, depth: 14, top: 1.5 } as const;
 
 /**
  * Plavba na výšku (P64 T5): do `playRect` se vejde loď (`hero` m kolem ní, do výšky `top` se stěžněm); trať před ní
@@ -293,7 +298,7 @@ function RoadBackdrop({ course, shape, length, look, seed, sceneryFrom = 0 }: { 
   }, [strip]);
   const centerAt = useMemo(() => (z: number) => ({ x: roadAt(z).center, y: 0 }), [roadAt]);
   const widest = Math.max(...strip.map((segment) => segment.width));
-  const surface = SURFACES[look.surface];
+  const surface: Surface = SURFACES[look.surface];
   // Pás, okraje, značení a mantinely po jedné síti: úsek po úseku to byly desítky volání kreslení na snímek (P32F T4, telefon).
   const road = useMemo(() => {
     const wallH = STEER.wallH / UNIT;
@@ -303,10 +308,11 @@ function RoadBackdrop({ course, shape, length, look, seed, sceneryFrom = 0 }: { 
     // Ostrůvky rozcestí zůstávají kvádry jádra; s mantinely jedna síť (bez UV, které pás nemá).
     const islands = (shape?.islands ?? []).map((island) => new BoxGeometry(island.w, wallH, island.d).translate(island.x, wallH / 2, island.z).deleteAttribute('uv'));
     const barriers = built.walls === null && islands.length === 0 ? null : mergeGeometries([...(built.walls === null ? [] : [built.walls]), ...islands]);
-    const windows = [built.surface, built.edges, built.marks, barriers].filter((geometry) => geometry !== null).map(windowAlongZ);
-    return { ...built, barriers, windows };
+    const flecks = fleckGeometry(segments, surface);
+    const windows = [built.surface, built.edges, built.marks, barriers, built.bands, flecks].filter((geometry) => geometry !== null).map(windowAlongZ);
+    return { ...built, barriers, flecks, windows };
   }, [segments, shape, surface]);
-  useEffect(() => () => { road?.surface.dispose(); road?.edges.dispose(); road?.marks?.dispose(); road?.walls?.dispose(); road?.barriers?.dispose(); }, [road]);
+  useEffect(() => () => { road?.surface.dispose(); road?.edges.dispose(); road?.marks?.dispose(); road?.walls?.dispose(); road?.barriers?.dispose(); road?.bands?.dispose(); road?.flecks?.dispose(); }, [road]);
   // Zem s odstíny, skvrnami, krajnicí podél cesty a tmavnutím do strany (P46G T3) – jedna síť místo roviny jedné barvy.
   const ground = useMemo(() => {
     const geometry = buildRoadGround(look, strip, -60, span);
@@ -319,6 +325,8 @@ function RoadBackdrop({ course, shape, length, look, seed, sceneryFrom = 0 }: { 
     for (const window of [...(road?.windows ?? []), ground.window]) window(from, to);
   }, BEFORE_COMPOSER);
   const afloat = look.afloat === true;
+  // Černá je výchozí `emissive` materiálu: povrch bez svitu se kreslí jako dřív.
+  const glow = surface.glow ?? '#000000';
   return (
     <>
       <mesh geometry={ground.geometry} position={[0, -0.03, 0]} renderOrder={UNDER_PANORAMA}>
@@ -329,19 +337,31 @@ function RoadBackdrop({ course, shape, length, look, seed, sceneryFrom = 0 }: { 
           {/* Pás, okraje a značení leží na zemi: stín jen přijímají, rig by je jinak kreslil i do stínové mapy (P54B T15d). */}
           <mesh geometry={road.surface} receiveShadow userData={{ rigShadow: 'receive' }}>
             {/* Závod po řece jede po hladině (`afloat`, P30B T6), jinak po povrchu sady. */}
-            <meshStandardMaterial color={afloat ? look.water : surface.color} roughness={afloat ? 0.3 : 0.9} />
+            {/* Svit povrchu (`Surface.glow`, písek pod vodou) jen na pevné trati, hladina ho nemá. */}
+            <meshStandardMaterial color={afloat ? look.water : surface.color} emissive={afloat ? '#000000' : glow} roughness={afloat ? 0.3 : 0.9} />
           </mesh>
           <mesh geometry={road.edges} receiveShadow userData={{ rigShadow: 'receive' }}>
-            <meshStandardMaterial color={surface.edge} roughness={0.9} />
+            <meshStandardMaterial color={surface.edge} emissive={glow} roughness={0.9} />
           </mesh>
-          {road.marks !== null && !afloat && 'marks' in surface && (
+          {road.marks !== null && !afloat && surface.marks !== undefined && (
             <mesh geometry={road.marks} receiveShadow userData={{ rigShadow: 'receive' }}>
               <meshStandardMaterial color={surface.marks.color} roughness={0.9} />
             </mesh>
           )}
+          {road.flecks !== null && !afloat && (
+            <mesh geometry={road.flecks} receiveShadow userData={{ rigShadow: 'receive' }}>
+              <meshStandardMaterial color={surface.flecks} emissive={glow} roughness={0.9} />
+            </mesh>
+          )}
+          {/* Mantinel po kusech dvou barev povrchu (P73D T6): obrubník, plot, pískovec s korály – ne jednobarevná stěna. */}
           {road.barriers !== null && (
             <mesh geometry={road.barriers} castShadow receiveShadow>
-              <meshStandardMaterial color={color.tomato} roughness={0.7} />
+              <meshStandardMaterial color={surface.wall[0]} emissive={glow} roughness={0.8} />
+            </mesh>
+          )}
+          {road.bands !== null && (
+            <mesh geometry={road.bands} castShadow receiveShadow>
+              <meshStandardMaterial color={surface.wall[1]} emissive={glow} roughness={0.8} />
             </mesh>
           )}
         </>

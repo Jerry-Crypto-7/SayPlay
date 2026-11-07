@@ -4,8 +4,9 @@
  * Scéna minigolfu (P68 T8, kategorie `vozidla-sport`): jedna jamka z dlaždic s mantinely v místě z věty. Dráha je
  * trávník kitu, mantinely, jamka (procedurální kalíšek – katalog jamku nemá) s vlajkou `finish-flag`, odrazníky
  * a pohyblivá překážka jako věci z věty (`modelIdOf` – model druhu těla, popisek role `barrier` / `obstacle`),
- * kolem povrch, kulisy a horizont sady (`look`). Míček je hráč, kutálí se po stavu jádra – kreslí ho scéna jako
- * kouli: model `gen3d-golf-ball` má odlitý týček s trávníkem a kutálel se s ním.
+ * kolem ostrůvek s vegetací sady (`minigolfDressing`, P73D), kulisy a horizont sady (`look`). Míček je hráč,
+ * kutálí se po stavu jádra – kreslí ho scéna jako kouli: model `gen3d-golf-ball` má odlitý týček s trávníkem
+ * a kutálel se s ním.
  *
  * **Kamera** za míčkem po ose z míčku na cíl trasy (`minigolf-camera.ts`, míření ji nehýbe), tlumený přechod mezi klidem
  * a sledováním; na výšku přes `usePlayRectRef` + `fitTall`. **Natažení** dělá DOM vrstva `MinigolfTouch` – registr
@@ -30,6 +31,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { color, colorHex } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
 import { BODY, HEADER, RUN_STATE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { type Flora, type Look, markedFlora } from '@/play/arcade/look';
 import { strokesOf } from '@/play/arcade/pieces/minigolf';
 import { minigolfLayout } from '@/play/arcade/pieces/minigolf-hole';
 import { MINIGOLF, minigolfAim, minigolfDistance } from '@/play/arcade/pieces/minigolf-roll';
@@ -39,7 +41,10 @@ import { worldPlacement } from '../../Ghost';
 import { GhostSlot } from '../../GhostSlot';
 import { HorizonBackdrop } from '../../look/Backdrop';
 import { FieldGround } from '../../look/FieldGround';
+import type { Box as GroundBox } from '../../look/ground';
 import { Scenery } from '../../look/Scenery';
+import { VegetationAround } from '../../look/Vegetation';
+import type { Layer, Side } from '../../look/vegetation-places';
 import { type PlayRect, playRect as playRectOf, usePlayRectRef } from '../../portrait-frame';
 import { FittedModel, type WorldProps, modelIdOf } from '../../World';
 import { type MinigolfCourseView, minigolfCameraPose, minigolfCameraRig, minigolfCameraStep, minigolfCourseView } from './minigolf-camera';
@@ -60,8 +65,14 @@ const JUMP = 2;
 /** Tloušťka trávníku pod nulou a výška soklu odrazníku (m). */
 const GREEN_H = 0.1;
 const PLINTH_H = 0.06;
-/** Kolik povrchu a kulis kolem dráhy (m). */
-const AROUND = 30;
+/**
+ * Podstavec diorama kolem dráhy (m, P73D): ostrůvek s hranou v záběru před mlhou. Dřív 30 m holé roviny, která
+ * v mlze vypadala nekonečná; vegetace i kulisy stojí uvnitř (`land` ve `VegetationAround`).
+ */
+const AROUND = 20;
+/** Volný trávník mezi obalem dráhy a vegetací (m): míček, který mantinel přeskočí, nedopadne do keře. */
+const DRESSING_CLEAR = 2.5;
+const ALL_LAYERS: readonly Layer[] = ['near', 'mid', 'far'];
 /** Mezera mezi úvodní kartou a lištou HUD i hřištěm (px, `--sp-space-4` jako `PROMPT_GAP_PX` plátna). */
 const CARD_GAP_PX = 16;
 
@@ -114,7 +125,57 @@ interface Course {
   readonly bumpers: readonly Piece[];
   readonly mover: Piece | null;
   /** Obal dráhy ve scéně (m). */
-  readonly bounds: { readonly x0: number; readonly x1: number; readonly z0: number; readonly z1: number };
+  readonly bounds: GroundBox;
+}
+
+/** Dlaždice jádra (jednotky) ve scéně: střed v m, x zrcadlené. */
+const tileBox = (tile: MinigolfCourseView['floor'][number]): GroundBox => {
+  const [x, z, w, d] = [-m(tile.x), m(tile.z), m(tile.w), m(tile.d)];
+  return { x0: x - w / 2, x1: x + w / 2, z0: z - d / 2, z1: z + d / 2 };
+};
+
+/** Obal dlaždic dráhy ve scéně (m). */
+function courseBounds(view: MinigolfCourseView): GroundBox {
+  const tiles = view.floor.map(tileBox);
+  return {
+    x0: Math.min(...tiles.map((tile) => tile.x0)),
+    x1: Math.max(...tiles.map((tile) => tile.x1)),
+    z0: Math.min(...tiles.map((tile) => tile.z0)),
+    z1: Math.max(...tiles.map((tile) => tile.z1)),
+  };
+}
+
+export interface MinigolfDressing {
+  /** Obal dráhy (m, scéna) – vegetace stojí za ním a za volným pásem `clear`. */
+  readonly box: GroundBox;
+  readonly clear: number;
+  /** Podstavec (`FieldGround`) a zem, za jejíž hranu nic nesahá. */
+  readonly land: GroundBox;
+  /** Vegetace sady, v cukrové zemi z věty i s lízátky (`markedFlora`); sada bez vegetace nic. */
+  readonly flora: Flora | undefined;
+  readonly layers: Readonly<Record<Side, readonly Layer[]>>;
+}
+
+/**
+ * Svět kolem jamky (P73D): podstavec, na něm vegetace sady (`VegetationAround`) mimo dráhu a volný trávník kolem ní.
+ * Strany podle kamery (`minigolf-camera.ts` – vždy za míčkem, na cíl trasy): za odpalištěm (−z) stojí kamera prvního
+ * úseku, tam nic. Jamka s rohem (L, S) má úsek napříč (`floor[0]` je odpaliště, `[0, 0]`); kamera toho úseku stojí na
+ * straně proti němu, tam jen nízké drobnosti, přes které vidí na míček. Jinde všechny vrstvy – stromy rámují dráhu.
+ */
+export function minigolfDressing(view: MinigolfCourseView, look: Pick<Look, 'flora' | 'skyline'>): MinigolfDressing {
+  const box = courseBounds(view);
+  const tee = tileBox(view.floor[0]!);
+  // Polovina dlaždice jako rezerva: obal napříč přesahuje odpaliště o celé dlaždice.
+  const slack = (tee.x1 - tee.x0) / 2;
+  const across: Side | null = box.x1 > tee.x1 + slack ? '+x' : box.x0 < tee.x0 - slack ? '-x' : null;
+  const side = (key: Side): readonly Layer[] => (across !== null && key !== across ? ['near'] : ALL_LAYERS);
+  return {
+    box,
+    clear: DRESSING_CLEAR,
+    land: { x0: box.x0 - AROUND, x1: box.x1 + AROUND, z0: box.z0 - AROUND, z1: box.z1 + AROUND },
+    flora: markedFlora(look),
+    layers: { '-z': [], '+z': ALL_LAYERS, '-x': side('-x'), '+x': side('+x') },
+  };
 }
 
 /** Těla hřiště z počátečního stavu světa a rozložení z parametrů ovládání. */
@@ -128,20 +189,15 @@ function courseOf(world: MinigolfSceneProps['session']['world'], cast: MinigolfS
     return { index, x: -m(at(BODY.x)), y: m(at(BODY.y)), z: m(at(BODY.z)), ...size, model: modelIdOf({ index, kind, role: at(BODY.role), ...size }, cast) };
   };
   const range = ([first, count]: readonly [number, number]): Piece[] => Array.from({ length: count }, (_, k) => piece(first + k));
-  const floor = range(layout.floor);
+  const view = minigolfCourseView(initial, layout);
   return {
-    view: minigolfCourseView(initial, layout),
+    view,
     hole: piece(layout.hole),
-    floor,
+    floor: range(layout.floor),
     rails: range(layout.rails),
     bumpers: range(layout.bumpers),
     mover: layout.mover === undefined ? null : piece(layout.mover),
-    bounds: {
-      x0: Math.min(...floor.map((tile) => tile.x - tile.w / 2)),
-      x1: Math.max(...floor.map((tile) => tile.x + tile.w / 2)),
-      z0: Math.min(...floor.map((tile) => tile.z - tile.d / 2)),
-      z1: Math.max(...floor.map((tile) => tile.z + tile.d / 2)),
-    },
+    bounds: courseBounds(view),
   };
 }
 
@@ -216,6 +272,7 @@ export function MinigolfScene({ session, cast, surface, scene: look, enabled, gh
   const world = session.world;
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const course = useMemo(() => courseOf(world, cast), [world, cast]);
+  const dressing = useMemo(() => minigolfDressing(course.view, look), [course, look]);
   const playRect = usePlayRectRef();
   useTouchLayer(surface, session, enabled);
   useDockedCard(surface);
@@ -330,9 +387,11 @@ export function MinigolfScene({ session, cast, surface, scene: look, enabled, gh
   const reach = Math.max(Math.abs(bounds.x0), Math.abs(bounds.x1), Math.abs(bounds.z0), Math.abs(bounds.z1));
   return (
     <>
-      <FieldGround look={look} area={{ x0: bounds.x0 - AROUND, x1: bounds.x1 + AROUND, z0: bounds.z0 - AROUND, z1: bounds.z1 + AROUND }} y={-0.03} />
+      {/* Ostrůvek diorama (P73D): podstavec, na něm vegetace sady mimo dráhu a čáru kamery, mezi ní stavby sady. */}
+      <FieldGround look={look} area={dressing.land} y={-0.03} />
+      {dressing.flora !== undefined && <VegetationAround flora={dressing.flora} seed={world.seed} box={dressing.box} clear={dressing.clear} layers={dressing.layers} land={dressing.land} />}
       <group position={[middle, 0, 0]}>
-        <Scenery look={look} layout="sides" inner={(bounds.x1 - bounds.x0) / 2 + 3} from={bounds.z0 - 6} to={bounds.z1 + 6} />
+        <Scenery look={look} layout="sides" inner={(bounds.x1 - bounds.x0) / 2 + 3} from={bounds.z0 - 6} to={bounds.z1 + 6} vegetation={look.flora !== undefined} />
       </group>
       <HorizonBackdrop look={look} seed={world.seed} clear={0} beyond={reach + 8} />
 

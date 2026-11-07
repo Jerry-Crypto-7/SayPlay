@@ -21,7 +21,7 @@ import { type BufferGeometry, Color } from 'three';
 
 import { type Cover, type InteriorFloor, type Look, SURFACES } from '@/play/arcade/look';
 
-import { groundPainter, groundPalette } from '../../ground';
+import { buildPodium, groundPainter, groundPalette } from '../../ground';
 import { Faces, type Vertex, capOf } from './islands';
 import { hash, mix, noise } from './valley';
 
@@ -160,7 +160,9 @@ function paving(faces: Faces, half: number, stone: Color, seam: Color, face: Col
       const x1 = x0 + w;
       const edge = x1 < half ? x1 - gap : half;
       const tone = hash(row * 97 + k, 5);
-      face.copy((row + k) % 2 === 1 ? other : stone).multiplyScalar(0.86 + 0.2 * hash(row, k));
+      // P73D T3: přes kameny jde i hrubý šum – světlejší a tmavší místa přes víc dlaždic, ne mřížka stejných kusů.
+      const wash = 0.88 + 0.22 * noise(x0 * 0.09 + 7, z0 * 0.09 - 3);
+      face.copy((row + k) % 2 === 1 ? other : stone).multiplyScalar((0.86 + 0.2 * hash(row, k)) * wash);
       // Tu a tam tmavší kámen, ať dlažba není vzorník.
       if (tone < 0.08) face.lerp(seam, 0.35);
       rect(faces, Math.max(-half, x0), z0, Math.min(half, edge), top, face);
@@ -199,6 +201,8 @@ export interface ArenaFloor {
   readonly floor: BufferGeometry;
   /** Prstenec stěn za hranou arény; interiér je nemá (stěnu staví kulisy sady). */
   readonly walls: BufferGeometry;
+  /** Podstavec kolem země (`buildPodium`): hrana a boční řez na kraji světa. */
+  readonly podium: BufferGeometry;
   /** Čím je hrací plocha položená: povrch interiéru, jinak kryt sady. */
   readonly surface: InteriorFloor | Cover;
   /** Odkud za stěnami stojí kulisy (m od středu, `Scenery` po stranách). */
@@ -290,5 +294,7 @@ export function buildArenaFloor({ look, half }: ArenaFloorOptions): ArenaFloor {
     }
   }
 
-  return { floor: ground.geometry(), walls: walls.geometry(), surface: look.interior?.floor ?? look.cover, sceneryInner: inner + WALL_DEPTH + SCENERY_GAP, heightAt: () => 0 };
+  // Podstavec diorama (P73D T3) kolem zemí za hranou: zaoblená hrana a boční řez, za ním pozadí.
+  const podium = buildPodium(look, { x0: -outer, x1: outer, z0: -outer, z1: outer }, palette.land);
+  return { floor: ground.geometry(), walls: walls.geometry(), podium, surface: look.interior?.floor ?? look.cover, sceneryInner: inner + WALL_DEPTH + SCENERY_GAP, heightAt: () => 0 };
 }

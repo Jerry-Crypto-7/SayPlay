@@ -24,10 +24,12 @@ import { uniformFloat64 } from 'pure-rand/distribution/uniformFloat64';
 import { xoroshiro128plus } from 'pure-rand/generator/xoroshiro128plus';
 import { BufferGeometry, Color, Float32BufferAttribute } from 'three';
 
-import type { Look, Silhouette } from '@/play/arcade/look';
+import type { Look, Mark, Silhouette } from '@/play/arcade/look';
 
 /** Sůl semínka – stream kulisy je jiný než stream jádra, výzdoby arény i vegetace. */
 const SALT = 0x2b1d6e5f;
+/** Znaky místa mají vlastní stream: obrysy vrstev zůstanou, jaké byly před P73D. */
+const MARK_SALT = 0x5e7a19c3;
 const TAU = 2 * Math.PI;
 
 /**
@@ -62,6 +64,17 @@ export interface BackdropLayer {
   readonly foot: string;
   /** Úhel roste od 0 do 2π; první a poslední bod mají tutéž výšku, prstenec je zavřený. */
   readonly profile: readonly ProfilePoint[];
+  /** Znaky místa na téhle vrstvě (P73D T5), prázdné = jen obrys. */
+  readonly marks: readonly MarkPlace[];
+}
+
+/** Znak místa na prstenci: úhel (rad), výška paty (m), velikost (m) a zrcadlení. */
+export interface MarkPlace {
+  readonly kind: Mark;
+  readonly angle: number;
+  readonly base: number;
+  readonly size: number;
+  readonly flip: boolean;
 }
 
 /** Vrstva a její síť: komponenta z každé dělá právě jednu síť – jedno volání kreslení. */
@@ -215,6 +228,90 @@ function shapeOf(kind: Silhouette, next: Next): ProfilePoint[] {
 }
 
 /** Plynulý přechod 0 → 1 mezi `from` a `to`. */
+/**
+ * Znaky místa (P73D T5): ploché obrysy v rovině tečné k prstenci, v jednotkách velikosti znaku (u do strany,
+ * v nahoru, pata v 0). Trojúhelník je šest čísel; kouř sopky je zvlášť, má světlejší barvu.
+ */
+type Tri = readonly [number, number, number, number, number, number];
+type Pt = readonly [number, number];
+
+const rect = (u0: number, v0: number, u1: number, v1: number): Tri[] => [[u0, v0, u1, v0, u1, v1], [u0, v0, u1, v1, u0, v1]];
+const fan = (points: readonly Pt[], cu: number, cv: number): Tri[] => points.map((p, i) => [cu, cv, p[0], p[1], points[(i + 1) % points.length]![0], points[(i + 1) % points.length]![1]]);
+const disc = (cu: number, cv: number, r: number, n = 12): Tri[] => fan(Array.from({ length: n }, (_, i): Pt => [cu + r * Math.cos((TAU * i) / n), cv + r * Math.sin((TAU * i) / n)]), cu, cv);
+/** Vypouklý mnohoúhelník jako vějíř z prvního bodu. */
+const convex = (points: readonly Pt[]): Tri[] => points.slice(1, -1).map((p, i) => [points[0]![0], points[0]![1], p[0], p[1], points[i + 2]![0], points[i + 2]![1]]);
+/** Úzký pás z bodu do bodu (lopatka mlýna, noha vodojemu). */
+function bar(u0: number, v0: number, u1: number, v1: number, width: number): Tri[] {
+  const length = Math.hypot(u1 - u0, v1 - v0);
+  const [nu, nv] = [((v0 - v1) / length) * (width / 2), ((u1 - u0) / length) * (width / 2)];
+  return convex([[u0 + nu, v0 + nv], [u1 + nu, v1 + nv], [u1 - nu, v1 - nv], [u0 - nu, v0 - nv]]);
+}
+/** Půlmezikruží – oblouk od pravé paty přes vrchol k levé. */
+function arch(cu: number, cv: number, outer: number, inner: number, n = 10): Tri[] {
+  return Array.from({ length: n }, (_, k) => {
+    const [a, b] = [(Math.PI * k) / n, (Math.PI * (k + 1)) / n];
+    return convex([[cu + outer * Math.cos(a), cv + outer * Math.sin(a)], [cu + outer * Math.cos(b), cv + outer * Math.sin(b)], [cu + inner * Math.cos(b), cv + inner * Math.sin(b)], [cu + inner * Math.cos(a), cv + inner * Math.sin(a)]]);
+  }).flat();
+}
+
+const BLADES = [0.25, 0.75, 1.25, 1.75].map((turn) => turn * Math.PI);
+
+/** Obrys znaku: `solid` v barvě siluety, `smoke` v barvě oparu. */
+export function markShape(kind: Mark): { readonly solid: readonly Tri[]; readonly smoke: readonly Tri[] } {
+  switch (kind) {
+    case 'tanks':
+      return { solid: [...bar(-0.24, 0, -0.2, 0.52, 0.05), ...bar(0.24, 0, 0.2, 0.52, 0.05), ...bar(-0.22, 0.08, 0.22, 0.46, 0.04), ...rect(-0.32, 0.5, 0.32, 0.88), ...convex([[-0.36, 0.88], [0.36, 0.88], [0, 1.08]])], smoke: [] };
+    case 'cone':
+      return { solid: fan([[1, 0], [-1, 0], [-0.2, 0.6], [-0.08, 0.55], [0.08, 0.55], [0.2, 0.6]], 0, 0.3), smoke: [...disc(0.02, 0.72, 0.1), ...disc(-0.06, 0.86, 0.13), ...disc(0.06, 1.03, 0.16), ...disc(-0.03, 1.22, 0.19)] };
+    case 'arches':
+      return { solid: [...arch(0, 0.45, 0.5, 0.3), ...rect(-0.5, 0, -0.3, 0.45), ...rect(0.3, 0, 0.5, 0.45), ...disc(0, 0.95, 0.08), ...disc(-0.36, 0.8, 0.07), ...disc(0.36, 0.8, 0.06)], smoke: [] };
+    case 'mills':
+      return { solid: [...convex([[-0.14, 0], [0.14, 0], [0.08, 0.62], [-0.08, 0.62]]), ...convex([[-0.11, 0.62], [0.11, 0.62], [0, 0.74]]), ...BLADES.flatMap((a) => bar(0, 0.66, 0.48 * Math.cos(a), 0.66 + 0.48 * Math.sin(a), 0.07))], smoke: [] };
+    case 'turrets':
+      return { solid: [...rect(-0.13, 0, 0.13, 0.78), ...convex([[-0.18, 0.78], [0.18, 0.78], [0, 1.05]]), ...rect(0.13, 0, 0.24, 0.36), ...rect(0.22, 0, 0.4, 0.52), ...convex([[0.18, 0.52], [0.44, 0.52], [0.31, 0.72]])], smoke: [] };
+    case 'lollipops':
+      return { solid: [...rect(-0.025, 0, 0.025, 0.62), ...disc(0, 0.8, 0.2, 14)], smoke: [] };
+  }
+}
+
+/**
+ * Kde a kolik (P73D T5). `far` = na nejvzdálenější vrstvě (kužel sopky je obzor sám), jinak na nejbližší.
+ * `size` = výška znaku jako podíl poloměru vrstvy, `rest` = kolik výšky obrysu pod znakem zůstane pod jeho patou
+ * (vodojem stojí na střeše, mlýn vyrůstá z kopce). Počet na celý obvod: v záběru jsou vždy 1–2.
+ */
+const MARK_SPECS: Readonly<Record<Mark, { readonly far: boolean; readonly count: number; readonly size: readonly [number, number]; readonly rest: number }>> = {
+  tanks: { far: false, count: 8, size: [0.05, 0.07], rest: 0.97 },
+  cone: { far: true, count: 2, size: [0.42, 0.5], rest: 0.2 },
+  arches: { far: false, count: 5, size: [0.11, 0.15], rest: 0.55 },
+  mills: { far: false, count: 5, size: [0.09, 0.12], rest: 0.6 },
+  turrets: { far: false, count: 6, size: [0.1, 0.14], rest: 0.6 },
+  lollipops: { far: false, count: 9, size: [0.08, 0.12], rest: 0.6 },
+};
+/** První kužel stojí kousek vedle osy pohledu (+z), ať ho záběr po cestě vidí celý vedle průseku. */
+const CONE_AT = 0.35;
+
+function heightOf(profile: readonly ProfilePoint[], angle: number): number {
+  const i = Math.max(1, profile.findIndex(([at]) => at >= angle));
+  const [[a0, h0], [a1, h1]] = [profile[i - 1]!, profile[i] ?? profile[i - 1]!];
+  return a1 === a0 ? h0 : h0 + ((angle - a0) / (a1 - a0)) * (h1 - h0);
+}
+
+function placeMarks(kind: Mark, seed: number, radius: number, profile: readonly ProfilePoint[], notch: number): MarkPlace[] {
+  const spec = MARK_SPECS[kind];
+  const rng = xoroshiro128plus((seed ^ MARK_SALT) | 0);
+  const next = (): number => uniformFloat64(rng);
+  return Array.from({ length: spec.count }, (_, i) => {
+    const size = between(next, spec.size[0], spec.size[1]) * radius;
+    const jitter = (next() - 0.5) * 0.5;
+    const raw = kind === 'cone' ? CONE_AT + i * Math.PI : ((i + 0.5 + jitter) * TAU) / spec.count;
+    // Průsek nad cestou nechá volný: znak, který by do něj padl, se odsune k jeho kraji.
+    const keep = notch * NOTCH.ramp + size / radius;
+    const off = Math.min(raw % TAU, TAU - (raw % TAU));
+    const angle = off >= keep ? raw % TAU : raw % TAU < Math.PI ? keep : TAU - keep;
+    return { kind, angle, base: spec.rest * heightOf(profile, angle), size, flip: next() < 0.5 };
+  });
+}
+
 function smoothstep(from: number, to: number, x: number): number {
   const t = Math.min(1, Math.max(0, (x - from) / (to - from)));
   return t * t * (3 - 2 * t);
@@ -257,7 +354,9 @@ export function backdropLayers(look: Look, seed: number, clear: number, beyond =
       const keep = notch === 0 ? 1 : 1 - NOTCH.depth * (1 - smoothstep(notch, notch * NOTCH.ramp, off));
       return [angle, height * radius * keep];
     });
-    return { kind, radius, follow, approach: APPROACH * (1 - follow) * (radius - fogNear), ...colorsOf(look, skyline.tone, toward(FAR.strength, NEAR.strength)), profile };
+    const mark = skyline.marks;
+    const marks = mark !== undefined && index === (MARK_SPECS[mark].far ? 0 : last) ? placeMarks(mark, seed, radius, profile, notch) : [];
+    return { kind, radius, follow, approach: APPROACH * (1 - follow) * (radius - fogNear), ...colorsOf(look, skyline.tone, toward(FAR.strength, NEAR.strength)), profile, marks };
   });
 }
 
@@ -277,12 +376,35 @@ export function backdropGeometry(layer: BackdropLayer, skirt: number): BufferGeo
     const [low, high, nextLow, nextHigh] = [2 * i, 2 * i + 1, 2 * i + 2, 2 * i + 3];
     index.push(low, high, nextHigh, low, nextHigh, nextLow);
   }
+  // Znaky místa (P73D T5) jsou trojúhelníky v téže síti – kulisa nepřidá ani jedno volání kreslení.
+  const smoke = foot.clone().lerp(new Color('#ffffff'), 0.25);
+  const [markPositions, markColors] = [[] as number[], [] as number[]];
+  for (const mark of layer.marks) {
+    const shape = markShape(mark.kind);
+    const ring = radius * MARK_FRONT;
+    const [sin, cos] = [Math.sin(mark.angle), Math.cos(mark.angle)];
+    const side = mark.flip ? -mark.size : mark.size;
+    for (const [tris, color] of [[shape.solid, top], [shape.smoke, smoke]] as const) {
+      for (const tri of tris) {
+        for (let k = 0; k < 6; k += 2) {
+          const [u, v] = [tri[k]! * side, tri[k + 1]!];
+          markPositions.push(ring * sin + u * cos, mark.base + v * mark.size, ring * cos - u * sin);
+          markColors.push(color.r, color.g, color.b);
+        }
+      }
+    }
+  }
+  const first = profile.length * 2;
+  for (let k = 0; k < markPositions.length / 3; k += 1) index.push(first + k);
   const geometry = new BufferGeometry();
-  geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
-  geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
+  geometry.setAttribute('position', new Float32BufferAttribute([...positions, ...markPositions], 3));
+  geometry.setAttribute('color', new Float32BufferAttribute([...colors, ...markColors], 3));
   geometry.setIndex(index);
   return geometry;
 }
+
+/** Znak stojí kousek před svou vrstvou, ať se s ní v hloubce nepere. */
+const MARK_FRONT = 0.995;
 
 /** Celá kulisa sady: vrstvy a jejich sítě, jedna síť na vrstvu. */
 export function buildBackdrop(look: Look, { seed, clear, skirt, beyond = 0 }: BackdropOptions): BackdropPart[] {

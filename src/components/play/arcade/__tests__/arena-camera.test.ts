@@ -23,9 +23,10 @@ import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { runBot } from '@/play/arcade/verify';
 import { draftGameSpec } from '@/play/draft/draft';
 
-import { ARENA_FRAMING, type ArenaFraming, type ArenaView, FIGHT_TILT, FOLLOW, LEAD_S, STYLED_TILT, type Spot, arenaDistance, arenaGoal, bandLift, shownBox } from '../arena/arena-camera';
+import { ARENA_FRAMING, type ArenaFraming, type ArenaView, FIGHT_TILT, FOLLOW, LEAD_S, STYLED_TILT, type Spot, arenaDistance, arenaGoal, bandLift, raiseArena, shownBox } from '../arena/arena-camera';
 import { drawnOf, partOf } from '../arena/ArenaScene';
 import { bodiesOf } from '../bodies';
+import { DIORAMA_FRAMING, dropOf } from '../look/framing';
 
 const SENTENCES = [
   ['02-zombie', 'zombies attack my farm at night'],
@@ -58,7 +59,11 @@ interface Frame {
   readonly hero: boolean;
   /** Hrozba do `NEAR_M`: je její střed v obraze? `null` = žádná blízko. */
   readonly threat: boolean | null;
+  /** Sklon osy pohledu pod vodorovnou (°). */
+  readonly pitch: number;
 }
+
+const pitchOf = (camera: PerspectiveCamera): number => (Math.asin(-camera.getWorldDirection(new Vector3()).y) * 180) / Math.PI;
 
 /** Tiky hry robota „Show me how“ a kamera scény po každém z nich (jako `useFrame` stylové arény). */
 function framesOf(world: ArcadeWorld, aspect: number, framing: ArenaFraming): Frame[] {
@@ -109,8 +114,11 @@ function framesOf(world: ArcadeWorld, aspect: number, framing: ArenaFraming): Fr
     distance = frames.length === 0 ? wanted : distance + (wanted - distance) * k;
     camera.position.set(aim.x, distance * tilt.sin, aim.z - distance * tilt.cos);
     camera.lookAt(aim.x, 0, aim.z);
+    // P73D T2: osa pohledu zvednutá k obzoru jako ve scéně – hrdina a hrozba se měří v nové kompozici.
+    hero.setY(hero.y + heroSize.h / 2);
+    raiseArena(camera, tilt === FIGHT_TILT, hero, threatCentre);
     camera.updateMatrixWorld();
-    frames.push({ distance, hero: seen(camera, hero.setY(hero.y + heroSize.h / 2)), threat: nearest < NEAR_M ? seen(camera, threatCentre!) : null });
+    frames.push({ distance, hero: seen(camera, hero), threat: nearest < NEAR_M ? seen(camera, threatCentre!) : null, pitch: pitchOf(camera) });
   }
   return frames;
 }
@@ -167,6 +175,72 @@ describe('the arena camera sits closer and keeps the nearest foe in frame (P56B 
     const before = median(runs.flatMap((run) => run.before.map((frame) => frame.distance)));
     const after = median(runs.flatMap((run) => run.after.map((frame) => frame.distance)));
     expect(after).toBeLessThanOrEqual(before * 0.8);
+  });
+
+  // P73D: dřív hrozba za zády zdvih zkrátila – 08-gems na šířku až 38°, obzor nad horní hranou (QA 6. 11.: honička a úkol).
+  it('free movement keeps the table pitch on every tick, so the horizon stays in frame', () => {
+    const free = runs.filter((run) => baseControlOf(run.world.control).id !== 'fight');
+    expect(free.length).toBeGreaterThan(0);
+    for (const run of free) {
+      const off = Math.max(...run.after.map((frame) => Math.abs(frame.pitch - DIORAMA_FRAMING.move_free.pitch)));
+      expect(off, `${run.id} ${run.name}`).toBeLessThan(1e-6);
+    }
+  });
+});
+
+describe('a foe behind the hero keeps the arena pitch: the camera slides down its own axis (P73D, raiseArena)', () => {
+  /** Kamera arény na šířku 16 m od bodu pohledu `aim` jako `ArenaScene`, po `lookAt` a před zdvihem. */
+  function aimedAt(aim: Vector3): PerspectiveCamera {
+    const camera = new PerspectiveCamera(FOV, ASPECTS.wide, 0.1, 500);
+    camera.position.set(aim.x, 16 * STYLED_TILT.sin, aim.z - 16 * STYLED_TILT.cos);
+    camera.lookAt(aim);
+    camera.updateMatrixWorld();
+    return camera;
+  }
+  const ndcY = (camera: PerspectiveCamera, point: Vector3): number => point.clone().project(camera).y;
+  const depthOf = (camera: PerspectiveCamera, point: Vector3): number => -point.clone().applyMatrix4(camera.matrixWorldInverse).z;
+
+  it('a pursuer 10 m behind: full raise to the table pitch, the pursuer back on the bottom edge, the hero no higher and no smaller', () => {
+    const hero = new Vector3(0, 0.65, 0);
+    const threat = new Vector3(0.5, 0.5, -10);
+    const camera = aimedAt(new Vector3(0, 0, -3));
+    const heroBefore = ndcY(camera, hero);
+    // Bez posunu by plný zdvih poslal pronásledovatele pod dolní hranu – proto dřív jen 6° zdvihu a sklon 32°.
+    const rotated = camera.clone();
+    rotated.rotateX(dropOf(DIORAMA_FRAMING.move_free, FOV));
+    rotated.updateMatrixWorld();
+    expect(ndcY(rotated, threat)).toBeLessThan(-1);
+
+    raiseArena(camera, false, hero, threat);
+    camera.updateMatrixWorld();
+    expect(pitchOf(camera)).toBeCloseTo(DIORAMA_FRAMING.move_free.pitch, 6);
+    expect(ndcY(camera, threat)).toBeCloseTo(-0.9, 6);
+    expect(ndcY(camera, hero)).toBeLessThan(heroBefore);
+    expect(depthOf(camera, hero)).toBeCloseTo(depthOf(rotated, hero), 6);
+  });
+
+  it('the slide never lifts the hero above where the shot had it: a foe on the bottom edge beside the hero may stay low', () => {
+    // Oba nízko u dolní hrany (bod pohledu daleko před nimi), nepřítel o kus blíž kameře.
+    const hero = new Vector3(-1.5, 0.65, -7.8);
+    const threat = new Vector3(1.5, 0.5, -8.7);
+    const camera = aimedAt(new Vector3());
+    const heroBefore = ndcY(camera, hero);
+    expect(heroBefore).toBeGreaterThan(-0.8);
+    expect(ndcY(camera, threat)).toBeLessThan(-0.9);
+    expect(ndcY(camera, threat)).toBeGreaterThan(-1);
+    raiseArena(camera, false, hero, threat);
+    camera.updateMatrixWorld();
+    expect(pitchOf(camera)).toBeCloseTo(DIORAMA_FRAMING.move_free.pitch, 6);
+    expect(ndcY(camera, hero)).toBeCloseTo(heroBefore, 6);
+  });
+
+  it('a foe the shot already lost leaves the camera where the raise put it (the edge arrow shows it)', () => {
+    const hero = new Vector3(0, 0.65, 0);
+    const camera = aimedAt(new Vector3());
+    const rotated = camera.clone();
+    rotated.rotateX(dropOf(DIORAMA_FRAMING.move_free, FOV));
+    raiseArena(camera, false, hero, new Vector3(0, 0.5, -30));
+    expect(camera.position.distanceTo(rotated.position)).toBeLessThan(1e-9);
   });
 });
 

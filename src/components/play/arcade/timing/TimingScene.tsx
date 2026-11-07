@@ -15,7 +15,7 @@ import { renderHeld } from '../effects/render-feel';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import type { Group, Object3D, PerspectiveCamera } from 'three';
-import { Box3, Vector3 } from 'three';
+import { Box3, MathUtils, Vector3 } from 'three';
 
 import { ARCADE_HZ, BODY, BUTTON, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
@@ -28,6 +28,7 @@ import { type ArcadeGhost, GhostSlot, besideHero } from '../GhostSlot';
 import { isTyping } from '../input';
 import { HorizonBackdrop } from '../look/Backdrop';
 import { FieldGround } from '../look/FieldGround';
+import { DIORAMA_FRAMING } from '../look/framing';
 import type { Box } from '../look/ground';
 import type { Volume } from '../look/landmark-places';
 import { Landmark } from '../look/Landmark';
@@ -98,11 +99,18 @@ export function initialBody(world: ArcadeSession['world'], index: number) {
 }
 
 /** Jak daleko za hrací plochou (m po +z) stojí řada kulis – za zemí hrací plochy. */
-const SCENERY_BEHIND = 7;
+const SCENERY_BEHIND = 10;
+/**
+ * Řada kulis za věží (P73D, s4): kusy po ose x od −26 do 26 m, ale ne blíž než `SCENERY_CLEAR` od osy pohledu.
+ * Dřív stála řada 7 m za věží od −14 do 14 m a černá vrátnice a věž hradu trčely těsně za kyvem jako skvrny;
+ * teď prostředek obrazu za věží (v hloubce řady ±0,4 šířky) zůstane volný a kusy stojí po stranách jako místo.
+ */
+const SCENERY_SPAN = 26;
+const SCENERY_CLEAR = 9;
 /** Zem načasování (m): do stran za kyv jezdce, dozadu pod kulisy a do mlhy. */
 const TIMING_LAND = { x0: -40, x1: 40, z0: -20, z1: 60 } as const;
-/** Nejbližší vrstva kulisy (m od kamery 8+ m před věží): za řadou kulis (7–12 m za věží). */
-const BACKDROP_BEYOND = 26;
+/** Nejbližší vrstva kulisy (m od kamery 11,7+ m před věží): za řadou kulis (10–15 m za věží, v obraze nejdál ~31 m od kamery). */
+const BACKDROP_BEYOND = 32;
 /** Věž a kyv jezdce (±3 m a díl): orientační bod a rámující kusy stojí mimo (P54B T8). */
 const TIMING_AREA: readonly Box[] = [{ x0: -(TIMING.amplitude / UNIT + 2), x1: TIMING.amplitude / UNIT + 2, z0: -2, z1: 2 }];
 
@@ -111,7 +119,7 @@ export type BodyModel = (w: number, h: number, d: number) => React.ReactNode;
 
 /**
  * Hrdina věty (P58A T8) stojí před věží za krajem kyvu, natočený napůl ke kameře a napůl k věži – z profilu
- * se zvíře pozná líp než zepředu. Na šířku (kamera 8 m) má kolem 25 % výšky snímku; hloubka kvádru nechá
+ * se zvíře pozná líp než zepředu. Na šířku (kamera 12,8 m, `TIMING_BACK`) má kolem 14 % výšky snímku; hloubka kvádru nechá
  * dlouhé zvíře (ještěrka, tuleň) vyrůst do výšky. Kyv jezdce (±3 m, blok věže ±4,2 m) ho míjí za zády.
  */
 const HERO_M = { w: 1.2, h: 1.8, d: 1.6 };
@@ -145,6 +153,26 @@ export function timingDistance(fov: number, aspect: number, sliderW: number): nu
   const tan = Math.tan((fov * Math.PI) / 360);
   const swing = 2 * (TIMING.amplitude / UNIT + sliderW / 2 + SWING_PAD);
   return Math.max(swing / (2 * tan * aspect) + TIMING.depth / UNIT / 2, 7 / (2 * tan), 8);
+}
+
+/**
+ * O kolik dál než `timingDistance` stojí kamera (P73D T2: výš a dál, ať je za věží vidět svět a obzor). Na šířku je
+ * to 8 m × 1,6 = 12,8 m: jezdec zvětšený čitelností na strop (`LEGIBLE_CAP` 2×, 4,8 m) má ~22–25 % šířky obrazu
+ * místo ~30–33 % při 1,25 (s4: kvádr skoro přes půl obrazu), hrdina věty stojí kolem NDC x 0,45 místo 0,55.
+ * Na výšku polohu určí `fitTall` (posune kameru po ose pohledu), tam se nic nemění.
+ */
+export const TIMING_BACK = 1.6;
+
+/**
+ * Kamera stohování (P73D T2): jezdec nad věží uprostřed záběru, sklon `DIORAMA_FRAMING.timing` – dřív 10° od země,
+ * kvádr přes půl obrazu a za ním dlažba. Na výšku pak `fitTall` do hracího obdélníku (orientace i obzor drží).
+ */
+export function placeTiming(camera: PerspectiveCamera, look: Vector3, followY: number, distance: number): void {
+  const pitch = MathUtils.degToRad(DIORAMA_FRAMING.timing.pitch);
+  const reach = distance * TIMING_BACK;
+  look.set(0, followY, 0);
+  camera.position.set(0, followY + reach * Math.sin(pitch), -reach * Math.cos(pitch));
+  camera.lookAt(look);
 }
 
 /** Kolik stohu pod jezdcem drží kvádr na výšku (m) a jak vysoký kvádr nanejvýš je – na Pixelu 7 se vejde na `timingDistance`. */
@@ -307,11 +335,7 @@ export function TimingScene({
     followY.current = followY.current === null ? y : lerp(followY.current, y, Math.min(1, delta * 3));
     // Vidět celý kyv i na výšku: vzdálenost z poměru stran (`timingDistance`).
     const dist = timingDistance(camera.fov, camera.aspect, sliderInit.w);
-    // Na výšku je kamera daleko a díl by měl pod 4 % výšky obrazu: víc shora je vidět i jeho
-    // vršek, takže je na snímku vyšší a pozná se (P30B T5).
-    camera.position.set(0, followY.current + (camera.aspect < 1 ? 3.5 : 1.5), -dist);
-    look.set(0, followY.current, 0);
-    camera.lookAt(look);
+    placeTiming(camera, look, followY.current, dist);
     const rect = playArea.current;
     if (camera.aspect < 1 && rect !== null) {
       // Na výšku (P64 T4, T8-R3): kyv jezdce a okno věže kolem něj v `playRect` pod HUD – šířku dál drží `timingDistance`.
@@ -328,7 +352,7 @@ export function TimingScene({
       <FieldGround look={scene} area={TIMING_LAND} y={-0.005} under />
       {/* Kulisy sady prostředí (P27A T4) v řadě za hrací plochou: otočená sada „behind“ jde přes x v hloubce +z. */}
       <group rotation={[0, -Math.PI / 2, 0]}>
-        <Scenery look={scene} layout="behind" inner={SCENERY_BEHIND} from={-14} to={14} />
+        <Scenery look={scene} layout="behind" inner={SCENERY_BEHIND} from={-SCENERY_SPAN} to={SCENERY_SPAN} clear={SCENERY_CLEAR} />
       </group>
       {/* Kulisa za mlhou (P46G T7) za řadou kulis; vegetace ne – plocha je jen věž a kyv jezdce. */}
       <HorizonBackdrop look={scene} seed={world.seed} clear={0} beyond={BACKDROP_BEYOND} />

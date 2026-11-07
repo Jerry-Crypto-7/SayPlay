@@ -24,7 +24,7 @@ import { blowPlantWind, type PlantModel, paintedPlant, plantDepthMaterial, plant
 import { BEFORE_COMPOSER } from './rig/Post';
 import type { QualityTier } from './rig/quality';
 import { firstAtLeast } from './road-strip';
-import { type Layer, type Plant, type RoadAt, type Side, type VegetationProfile, placeAround, placeVegetation } from './vegetation-places';
+import { type Layer, type OrchardOptions, type Plant, type RoadAt, type Side, type VegetationProfile, placeAround, placeOrchard, placeVegetation } from './vegetation-places';
 import { useWarmed } from './warm-gate';
 
 /** Okno kandidátů: kolik metrů za kamerou a rezerva za koncem mlhy na korunu stromu (m). */
@@ -72,13 +72,22 @@ export interface VegetationAroundProps {
   readonly layers: Readonly<Record<Side, readonly Layer[]>>;
   /** Kolik metrů za kamerou (po z) okno kreslení drží: boční kamera vidí do stran po z daleko. */
   readonly behind?: number;
+  /** Podstavec pod vegetací (`placeAround`); stálý objekt. Bez něj zem do nekonečna. */
+  readonly land?: Box;
 }
 
-/** Vegetace kolem hrací plochy (P46G T7): aréna, bludiště, hřiště. */
-export function VegetationAround({ flora, seed, box, clear, layers, behind }: VegetationAroundProps) {
+/** Vegetace kolem hrací plochy (P46G T7): aréna, bludiště, hřiště, minigolf. */
+export function VegetationAround({ flora, seed, box, clear, layers, behind, land }: VegetationAroundProps) {
   const [profile] = useState(profileOf);
-  const plants = useMemo(() => placeAround({ flora, seed, box, clear, layers, profile }), [flora, seed, box, clear, layers, profile]);
+  const plants = useMemo(() => placeAround({ flora, seed, box, clear, layers, profile, land }), [flora, seed, box, clear, layers, profile, land]);
   return <Plants flora={flora} plants={plants} profile={profile} behind={behind} />;
+}
+
+/** Sad v řadách po stranách a za hrací plochou (P73D, chytání; `placeOrchard`). `area` a `keep` drží volající stálé. */
+export function Orchard({ flora, seed, area, keep, top }: OrchardOptions) {
+  const [profile] = useState(profileOf);
+  const plants = useMemo(() => placeOrchard({ flora, seed, area, keep, top }), [flora, seed, area, keep, top]);
+  return <Plants flora={flora} plants={plants} profile={profile} />;
 }
 
 interface PlantsProps {

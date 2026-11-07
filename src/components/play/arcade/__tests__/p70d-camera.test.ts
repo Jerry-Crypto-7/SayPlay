@@ -10,6 +10,7 @@ import { UNIT } from '@/play/arcade/contract';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { RUNNER, SPEED } from '@/play/arcade/pieces/runner';
 
+import { FRAMING_LIMITS, horizonNdc } from '../look/framing';
 import { type PlayRect, playRect } from '../portrait-frame';
 import { PLATFORM_TALL, RUNNER_TALL, placePlatform, placeRunner } from '../track-camera';
 
@@ -33,7 +34,9 @@ const inRect = (point: Vector3): boolean => point.z < 1 && Math.abs(point.x) <= 
 describe('3/4 chase cameras on a phone (P70D T3)', () => {
   it('runner: looks down from above, three obstacle rows ahead in the play rect, hero space at most 15 % of the height', () => {
     const { camera, look } = cameraOf((c, l) => placeRunner(c, l, 0, 0, undefined, RECT));
-    expect(pitchOf(camera, look)).toBeGreaterThanOrEqual(30);
+    // P73D T2: 32° → 27° – při 32° ležel obzor nad horní hranou; pořád 3/4 shora, v mezích `FRAMING_LIMITS`.
+    expect(pitchOf(camera, look)).toBeGreaterThanOrEqual(FRAMING_LIMITS.pitch.min);
+    expect(horizonNdc(pitchOf(camera, look))).toBeLessThan(1);
     for (const lane of [-2, 0, 2]) expect(inRect(ndc(camera, lane, 0, 3 * ROW)), `lane ${String(lane)}`).toBe(true);
     const share = (ndc(camera, 0, RUNNER.runH / UNIT, 0).y - ndc(camera, 0, 0, 0).y) / 2;
     expect(share).toBeLessThanOrEqual(0.15);

@@ -22,6 +22,7 @@ import { BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { MinigolfLayout } from '@/play/arcade/pieces/minigolf-hole';
 import { minigolfAim, minigolfAxisToward } from '@/play/arcade/pieces/minigolf-roll';
 
+import { DIORAMA_FRAMING } from '../../look/framing';
 import { type PlayRect, fitTall, playRect } from '../../portrait-frame';
 
 type Point = readonly [number, number];
@@ -29,8 +30,12 @@ type Point = readonly [number, number];
 export const MINIGOLF_CAMERA = {
   /** Zorný úhel plátna (`STAGE_CANVAS` feedu i vlastní plátno). */
   fov: 60,
-  /** Klid: sklon pohledu pod vodorovnou (°) a okraj krabice kolem míčku (m, půl dlaždice – vidět i odpaliště). */
-  rest: { pitch: 50, around: 2 },
+  /**
+   * Klid: sklon pohledu pod vodorovnou (°) a okraj krabice kolem míčku (m, půl dlaždice – vidět i odpaliště).
+   * P73D T2: 50° → 26° (`DIORAMA_FRAMING.minigolf`) – jamka i svět kolem v záběru a obzor v horní třetině, dřív
+   * malý obdélník uprostřed bílé mlhy.
+   */
+  rest: { pitch: DIORAMA_FRAMING.minigolf.pitch, around: 2 },
   /** Míček v pohybu: výš a dál, pohled blíž k míčku. */
   roll: { back: 3.6, up: 2.2, ahead: 1.2 },
   /** Krabice na výšku: okraj kolem míčku a cíle (m), výška vlajky nad jamkou (m). */

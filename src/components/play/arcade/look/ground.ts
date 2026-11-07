@@ -134,6 +134,10 @@ export function boxEdge({ x0, x1, z0, z1 }: Box): (x: number, z: number) => numb
 
 /** Krok mřížky rovné země (m): nejjemnější oktáva šumu má ~2 m, hustší síť by ji jen přepočítala. */
 const FIELD_CELL_M = 2.5;
+/** Interiér: nejtmavší odstín vrcholu (podíl bílé), ztmavení u stěny a jak daleko od ní sahá (m). */
+export const INTERIOR_TONE = 0.9;
+export const WALL_AO = 0.22;
+const WALL_AO_M = 1.5;
 
 /**
  * Rovná zem pod hrou bez cesty (P46G T7: bludiště, hřiště, střelnice, ring…):
@@ -161,6 +165,11 @@ export function buildFieldGround(look: Look, area: Box, edge: (x: number, z: num
     for (let column = 0; column <= columns; column += 1) {
       const x = area.x0 + ((area.x1 - area.x0) * column) / columns;
       if (paint !== null) paint(x, z, edge(x, z), color);
+      else {
+        // Interiér (P73D T3): textura nese dlažbu, vrcholy variaci odstínu a jemné AO u stěn – dlažba nečte jako vzorník.
+        const wall = Math.min(x - area.x0, area.x1 - x, z - area.z0, area.z1 - z);
+        color.setScalar((INTERIOR_TONE + (1 - INTERIOR_TONE) * noise(x * 0.15 + 13, z * 0.15 - 7)) * (1 - WALL_AO * (1 - smooth(wall / WALL_AO_M))));
+      }
       if (uvs !== null) {
         uvs[(at / 3) * 2] = x;
         uvs[(at / 3) * 2 + 1] = z;
@@ -196,6 +205,97 @@ export function buildFieldGround(look: Look, area: Box, edge: (x: number, z: num
   geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
   if (uvs !== null) geometry.setAttribute('uv', new Float32BufferAttribute(uvs, 2));
   geometry.setIndex(new BufferAttribute(index, 1));
+  return geometry;
+}
+
+/**
+ * Boční řez podstavce podle krytu sady (P73D T3): barva vrstvy pod hranou a u dna.
+ * Hlína pod trávou, pískovec, led pod sněhem, kvádry pod dlažbou, kámen.
+ */
+const CUT: Readonly<Record<Cover, readonly [top: string, bottom: string]>> = {
+  grass: ['#7a5534', '#3d2a1c'],
+  sand: ['#d8b98a', '#9c7448'],
+  snow: ['#dbe7ef', '#6f8796'],
+  paving: ['#a8a29e', '#57534e'],
+  rock: ['#8a817a', '#44403c'],
+};
+/** Poloměr zaoblené hrany (m), hloubka bočního řezu pod zemí (m), kroky oblouku hrany a rohu. */
+export const PODIUM_RIM_M = 0.8;
+export const PODIUM_DEPTH_M = 3;
+const RIM_STEPS = 4;
+const CORNER_STEPS = 4;
+/** Vrstvy bočního řezu pod obloukem hrany (pruhy hlíny, kamene). */
+const CUT_LAYERS = [0.12, 0.3, 0.5, 0.72, 1] as const;
+/** Krok podél hrany (m): pruhy řezu se vlní, ať podstavec není čistý kvádr. */
+const PODIUM_STEP_M = 2.5;
+
+/**
+ * Podstavec diorama (P73D T3) kolem rovné země `area`: hrana se zaobluje dolů (`PODIUM_RIM_M`),
+ * pod ní boční řez materiálu sady (`CUT`) do `PODIUM_DEPTH_M`, v rozích půdorysu oblouk. Za ním
+ * je pozadí, ne další dlažba do mlhy. Barvy ve vrcholech: hrana v barvě země `base`, řez
+ * v pruzích z šumu, u dna tmavne. Čistá funkce `area` – jádro o podstavci neví, hash se nehne.
+ */
+export function buildPodium(look: Look, area: Box, base: string = look.ground): BufferGeometry {
+  const [cutTop, cutBottom] = CUT[look.cover].map((hex) => new Color(mix(hex, base, 0.2))) as [Color, Color];
+  const lip = new Color(groundPalette(look, base).light);
+  // Obrys: rohy proti směru hodinových ručiček, v každém vějíř normál od jedné strany k druhé, mezi nimi rovná hrana po krocích.
+  const corners = [
+    [area.x1, area.z0, -Math.PI / 2],
+    [area.x1, area.z1, 0],
+    [area.x0, area.z1, Math.PI / 2],
+    [area.x0, area.z0, Math.PI],
+  ] as const;
+  const path: [x: number, z: number, nx: number, nz: number][] = [];
+  corners.forEach(([x, z, from], i) => {
+    for (let k = 0; k <= CORNER_STEPS; k += 1) {
+      const angle = from + ((Math.PI / 2) * k) / CORNER_STEPS;
+      path.push([x, z, Math.cos(angle), Math.sin(angle)]);
+    }
+    const [nx, nz] = corners[(i + 1) % 4]!;
+    const steps = Math.max(1, Math.ceil(Math.hypot(nx - x, nz - z) / PODIUM_STEP_M));
+    const [ox, oz] = [Math.cos(from + Math.PI / 2), Math.sin(from + Math.PI / 2)];
+    for (let k = 1; k < steps; k += 1) path.push([x + ((nx - x) * k) / steps, z + ((nz - z) * k) / steps, ox, oz]);
+  });
+  // Profil (odstup ven, výška, barva): oblouk hrany, pak svislý řez ve vrstvách.
+  const profile: [out: number, y: number, paint: (along: number, target: Color) => Color][] = [];
+  for (let k = 0; k <= RIM_STEPS; k += 1) {
+    const angle = ((Math.PI / 2) * k) / RIM_STEPS;
+    profile.push([PODIUM_RIM_M * Math.sin(angle), -PODIUM_RIM_M * (1 - Math.cos(angle)), (_, target) => target.copy(lip).lerp(cutTop, k / RIM_STEPS)]);
+  }
+  for (const depth of CUT_LAYERS) {
+    const y = -PODIUM_RIM_M - (PODIUM_DEPTH_M - PODIUM_RIM_M) * depth;
+    profile.push([PODIUM_RIM_M, y, (along, target) => target.copy(cutTop).lerp(cutBottom, depth).multiplyScalar((0.86 + 0.24 * noise(along * 0.15, y * 1.7)) * (depth === 1 ? 0.6 : 1))]);
+  }
+  const positions = new Float32Array(path.length * profile.length * 3);
+  const colors = new Float32Array(positions.length);
+  const color = new Color();
+  let at = 0;
+  path.forEach(([x, z, nx, nz]) => {
+    for (const [out, y, paint] of profile) {
+      paint(x * 0.7 + z * 1.3, color);
+      positions[at] = x + nx * out;
+      positions[at + 1] = y;
+      positions[at + 2] = z + nz * out;
+      colors[at] = color.r;
+      colors[at + 1] = color.g;
+      colors[at + 2] = color.b;
+      at += 3;
+    }
+  });
+  const rings = profile.length;
+  const index: number[] = [];
+  for (let p = 0; p < path.length; p += 1) {
+    const q = (p + 1) % path.length;
+    for (let r = 0; r + 1 < rings; r += 1) {
+      const [a, b, c, d] = [p * rings + r, q * rings + r, p * rings + r + 1, q * rings + r + 1];
+      index.push(a, b, c, b, d, c);
+    }
+  }
+  const geometry = new BufferGeometry();
+  geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
+  geometry.setIndex(index);
+  geometry.computeVertexNormals();
   return geometry;
 }
 

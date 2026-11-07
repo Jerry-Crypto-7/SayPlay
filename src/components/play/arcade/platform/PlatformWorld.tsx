@@ -81,7 +81,7 @@ function PlatformSea({ world, look, terrain }: { readonly world: ArcadeWorld; re
       <mesh ref={terrain} geometry={islands.geometry} material={material} castShadow receiveShadow userData={{ rigShadow: 'both', terrain: 'islands' }} />
       {houses !== null && <mesh geometry={houses} material={material} receiveShadow userData={{ rigShadow: 'receive' }} />}
       {/* Břeh za ostrůvky (+x, boční kamera stojí na −x) v barvách sady a na něm vegetace – jen za nimi, před kamerou nic, takže doskok ani minci nezakryje. */}
-      <FieldGround look={bankLook} area={bankArea} y={BANK} />
+      <FieldGround look={bankLook} area={bankArea} y={BANK} podium={false} />
       {look.flora !== undefined && (
         <group position={[0, BANK, 0]}>
           <VegetationAround flora={look.flora} seed={world.seed} box={{ x0: -SLAB_HALF, x1: SLAB_HALF, z0: -10, z1: length + 10 }} clear={BANK_FROM + 1 - SLAB_HALF} layers={BEHIND_ONLY} behind={30} />
