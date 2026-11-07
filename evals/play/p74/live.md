@@ -64,6 +64,8 @@ Kontrola na řádek: hra se načte, snímek uprostřed hry, robot `playWitness()
 - **R4 – hláška „Couldn't make the full-detail version right now. Keep playing the quick…“ přetéká přes pravý okraj obrazovky** na obou telefonech (text i rámeček uříznuté, např. `shots/catch-pixel.jpg`).
 - **R5 – chyba stránky na iPhonu** `null is not an object (evaluating 'i.x')`, 1× z 28 (runner, první načtení).
   - T3 (7. 11.): **nereprodukováno, 0 z 30** – 12 načtení v čerstvém WebKitu nad místním `next start`, 10 nad zkušební produkcí, 8 celých řádků runner/iPhone skriptem (robot, hra rukou, výzva). Původní záznam nesl jen text chyby, bez místa v kódu; `i.x` je ve 26 souborech buildu. Skript teď ke každé chybě stránky zapíše dva rámce stacku. Oprava až podle nich; naslepo se nic neměnilo. Hru to neshodilo – řádek prošel.
+- **R6 – souboj s dílem `fight`: tlačítko Attack u pravého okraje zakrylo 21 px štítku zóny „Strike“** (Pixel 7 i iPhone 15, opakovaný běh T2). Opraveno v T3 – štítky zón stojí na telefonu nad sloupcem tlačítek palce.
+- **Dřívější pád, ne regrese P74: `e2e/play-touch.spec.ts` „quest: won with gestures alone“ na `iphone-touch`.** Hra rukou nezapíše ani jeden vstup a prohraje na tiku 619. Nad buildem s R6 3 z 3, nad buildem `main` 2554d28c (před P74, export, `next start -p 3206`) 2 z 2 se stejným tikem i 0 vstupy. Na Pixelu 7 quest vyhraje, na iPhonu ostatní žánry projdou. Řádek quest v tabulce výš (skutečné ťuky sondy) na iPhonu prošel, takže to vypadá spíš na syntetické dotyky testu ve WebKitu než na hru. Neopraveno, příčina nehledaná.
 
 ## Zřícenina za stohovací věží (P73D s4) – zapsáno, přeskočeno
 
