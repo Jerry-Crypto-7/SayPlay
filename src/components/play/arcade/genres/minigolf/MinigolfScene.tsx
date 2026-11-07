@@ -42,6 +42,7 @@ import { GhostSlot } from '../../GhostSlot';
 import { HorizonBackdrop } from '../../look/Backdrop';
 import { FieldGround } from '../../look/FieldGround';
 import type { Box as GroundBox } from '../../look/ground';
+import { airOf } from '../../look/rig/fog-light';
 import { Scenery } from '../../look/Scenery';
 import { VegetationAround } from '../../look/Vegetation';
 import type { Layer, Side } from '../../look/vegetation-places';
@@ -98,6 +99,7 @@ function useDockedCard(surface: React.RefObject<HTMLDivElement | null>): void {
     host.dataset.promptDock = 'top';
     return () => {
       delete host.dataset.promptDock;
+      delete host.dataset.startFrame;
       host.style.removeProperty('--_prompt-top');
     };
   }, [surface]);
@@ -273,6 +275,7 @@ export function MinigolfScene({ session, cast, surface, scene: look, enabled, gh
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const course = useMemo(() => courseOf(world, cast), [world, cast]);
   const dressing = useMemo(() => minigolfDressing(course.view, look), [course, look]);
+  const fogStart = useMemo(() => airOf(look).near, [look]);
   const playRect = usePlayRectRef();
   useTouchLayer(surface, session, enabled);
   useDockedCard(surface);
@@ -375,7 +378,9 @@ export function MinigolfScene({ session, cast, surface, scene: look, enabled, gh
     // Plocha pod kartou drží až do první rány: karta zmizí s prvním tikem, tedy uprostřed prvního míření.
     if (strokesOf(state) > 0) startFrame.current = null;
     else if (card !== null) startFrame.current = card;
-    const pose = minigolfCameraPose(view, camera.aspect, playRect.current, course.view, camera.fov, startFrame.current);
+    const pose = minigolfCameraPose(view, camera.aspect, playRect.current, course.view, camera.fov, startFrame.current, fogStart);
+    // Pro e2e (`play-minigolf` P71C T2): karta smí zakrýt hřiště, jen když se pod ni nevešlo (P74 R3).
+    if (card !== null && surface.current !== null) surface.current.dataset.startFrame = pose.underCard ? 'card' : 'rect';
     minigolfCameraStep(rig, pose, tick, delta, card !== null);
     camera.position.copy(rig.eye);
     camera.lookAt(rig.look);

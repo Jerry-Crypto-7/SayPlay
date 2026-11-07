@@ -920,7 +920,8 @@ describe('let na ovládací klíč má svůj vlastní, kratší limit', () => {
   it('limit je ten ovládací, ne ten od knihy — soudí se čas, ne typ objektu', async () => {
     let signal: AbortSignal | undefined;
     const fetchImpl = vi.fn(async (_url: string, init?: RequestInit) => {
-      signal = init?.signal ?? undefined;
+      // Signál PRVNÍHO letu: opakovaný let (P74 R1) má vlastní a startuje až po vypršení prvního.
+      signal ??= init?.signal ?? undefined;
       // Let, který se nikdy nedokončí: rozhodne o něm výhradně jeho limit.
       return new Promise<Response>(() => undefined);
     });

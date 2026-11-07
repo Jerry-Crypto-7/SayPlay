@@ -4,6 +4,8 @@
  * Kmitání i trvalé „low“ by na obrazovce vypadaly jen jako horší obraz.
  */
 
+import { readFileSync } from 'node:fs';
+
 import { describe, expect, it } from 'vitest';
 
 import { LOOKS } from '@/play/arcade/look';
@@ -116,6 +118,14 @@ describe('quality tiers', () => {
     const slow = run(measuring(), 30, DOWN_MS - STEP_MS, 0);
     // Skrytá záložka: 10 s bez vzorku, pak jeden pomalý snímek po návratu.
     expect(sampleQuality(slow.state, 30, slow.at + 10_000).tier).toBe('high');
+  });
+
+  it('sets the canvas pixel ratio once from the start tier, never from the running one (P74 R2)', () => {
+    // Emulated iPhone (WebKit): shrinking the canvas mid-game (medium -> low, 1.5 -> 1) left only the background colour.
+    const post = readFileSync(new URL('../look/rig/Post.tsx', import.meta.url), 'utf8');
+    const calls = [...post.matchAll(/setDpr\(([^;]*)\);/g)].map((match) => match[1]!);
+    expect(calls).toEqual(['Math.min(window.devicePixelRatio, TIER_SETTINGS[start.tier].dpr)']);
+    expect(post).toContain('}, [setDpr, start]);');
   });
 
   it('blooms only above the brightest sunlit matte white of every set', () => {

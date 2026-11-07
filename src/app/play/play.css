@@ -3513,6 +3513,8 @@ button.play-feed-card {
     left: var(--_side-l);
     right: var(--_side-r);
     transform: none;
+    /* `width: max-content` toastu kitu by přebil `right` a věta přetekla přes pravý okraj (P74 R4). */
+    width: auto;
     max-width: none;
     padding: var(--sp-space-2) var(--sp-space-3);
     gap: var(--sp-space-2);
@@ -3956,6 +3958,12 @@ button.play-feed-card {
 
   .play-stage:has(> .play-fire ~ .play-fire ~ .play-fire) {
     --_thumb-h: calc(3 * var(--_thumb-step));
+  }
+
+  /* Štítky zón stojí nad sloupcem kol palce (P74): pravý štítek („Strike“ souboje s dílem `fight`, „Jump“ plošinovky
+   * se střelbou) ležel na téže výšce pod kolem u pravého kraje. Bez kol `--_thumb-h` není a štítky zůstanou dole. */
+  .play-touch-zone {
+    bottom: calc(var(--_stack) + var(--_thumb-h, 0px));
   }
 
   /* Nápověda míče z levého horního rohu (pod pilulkou postupu) dolů nad ovládání: jen dotyková věta, nejvýš dva

@@ -1,0 +1,72 @@
+{
+ "base": "https://worldstream-sigma.vercel.app",
+ "measuredAt": "2026-11-07T11:41:32.918Z",
+ "summary": {
+  "quickOk": 5,
+  "aiReady": 0,
+  "medianQuickMs": 1815,
+  "medianAiMs": null
+ },
+ "rows": [
+  {
+   "id": "teacup",
+   "text": "a hamster in a teacup sails across a flooded kitchen collecting cherries",
+   "versionId": "83bdcfae76117204feff5d91efd615c8",
+   "quickMs": 1815,
+   "specGenre": null,
+   "chain": false,
+   "store": null,
+   "status": "draft-final",
+   "reason": "MODEL_UNAVAILABLE",
+   "aiMs": null
+  },
+  {
+   "id": "fireflies",
+   "text": "a lighthouse cat herds glowing fireflies into jars before dawn",
+   "versionId": "c350e9b1a866e34831cc38d8831905be",
+   "quickMs": 1979,
+   "specGenre": "arena",
+   "chain": false,
+   "store": null,
+   "status": "draft-final",
+   "reason": "MODEL_UNAVAILABLE",
+   "aiMs": null
+  },
+  {
+   "id": "snail",
+   "text": "an astronaut snail races across a moon made of cheese",
+   "versionId": "01921204e61a04f20430170016080f63",
+   "quickMs": 2128,
+   "specGenre": null,
+   "chain": false,
+   "store": null,
+   "status": "draft-final",
+   "reason": "MODEL_UNAVAILABLE",
+   "aiMs": null
+  },
+  {
+   "id": "cactus",
+   "text": "a grumpy cactus bounces tumbleweeds away from its desert flower",
+   "versionId": "9e81d3719da4cfae855dbce16315ee75",
+   "quickMs": 1815,
+   "specGenre": "platformer",
+   "chain": false,
+   "store": null,
+   "status": "draft-final",
+   "reason": "MODEL_UNAVAILABLE",
+   "aiMs": null
+  },
+  {
+   "id": "balcony",
+   "text": "a tiny robot waters seedlings on a windy balcony while pigeons try to eat them",
+   "versionId": "83d6f69874fae3d616589149aac601a9",
+   "quickMs": 1373,
+   "specGenre": "arena",
+   "chain": false,
+   "store": null,
+   "status": "draft-final",
+   "reason": "MODEL_UNAVAILABLE",
+   "aiMs": null
+  }
+ ]
+}

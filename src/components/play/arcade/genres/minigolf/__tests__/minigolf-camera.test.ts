@@ -13,6 +13,7 @@ import { minigolfParts } from '@/play/arcade/pieces/minigolf';
 import { MINIGOLF_SHAPES, type MinigolfShape, minigolfLayout } from '@/play/arcade/pieces/minigolf-hole';
 import { minigolfAim, minigolfAxisToward } from '@/play/arcade/pieces/minigolf-roll';
 
+import { airOf } from '../../../look/rig/fog-light';
 import { type Plant, placeAround } from '../../../look/vegetation-places';
 import { type PlayRect, playRect } from '../../../portrait-frame';
 import { MINIGOLF_CAMERA, type MinigolfCameraPose, type MinigolfCourseView, minigolfCameraAxis, minigolfCameraPose, minigolfCameraRig, minigolfCameraStep, minigolfCourseView, minigolfFocus } from '../minigolf-camera';
@@ -261,6 +262,33 @@ describe('minigolf camera (P68 T8)', () => {
         expect(inside(seen(pose, aspect, bx, 0.2, bz), free), `ball ${label}`).toBe(true);
         expect(inside(seen(pose, aspect, pose.focus[0], 0, pose.focus[1]), free), `focus ${label}`).toBe(true);
         expect(inside(seen(pose, aspect, hx, MINIGOLF_CAMERA.flag, hz), free), `flag ${label}`).toBe(true);
+      }
+    }
+  });
+
+  it('a start card too tall for the course frames the whole play rect, so the course stays in front of the fog (P74 R3)', () => {
+    // Karta „How I read it“ (P73B) měří na telefonu 330 px; obdélníky změřené na stránce 7. 11. (HUD nahoře, ovládání dole).
+    const fogStart = airOf(sceneLook({ setting: 'farm', mood: 'playful' })).near;
+    for (const phone of [{ width: 412, height: 839, top: 150, bottom: 663 }, { width: 393, height: 659, top: 151, bottom: 483 }]) {
+      const rect = playRect(phone, phone.top, phone.bottom);
+      const aspect = phone.width / phone.height;
+      for (const [card, fits] of [[330, false], [150, true]] as const) {
+        const under = playRect(rect.canvas, rect.px.top + 16 + card + 16, rect.px.bottom);
+        for (const shape of MINIGOLF_SHAPES) {
+          for (const seed of [1, 2, 3, 4, 5]) {
+            const { state, course } = holeOf(seed, shape);
+            const pose = minigolfCameraPose(state, aspect, rect, course, MINIGOLF_CAMERA.fov, under, fogStart);
+            const [bx, bz] = ballOf(state);
+            const [hx, hz] = course.hole;
+            const label = `${shape} seed ${String(seed)} ${String(phone.width)}x${String(phone.height)} card ${String(card)} px`;
+            for (const [x, z] of [[bx, bz], [hx, hz]] as const) expect(pose.position.distanceTo(new Vector3(-x / UNIT, 0, z / UNIT)), label).toBeLessThan(fogStart);
+            const frame = pose.underCard ? under : rect;
+            expect(inside(seen(pose, aspect, bx, 0.2, bz), frame), `ball ${label}`).toBe(true);
+            expect(inside(seen(pose, aspect, hx, MINIGOLF_CAMERA.flag, hz), frame), `flag ${label}`).toBe(true);
+            // Pod vysokou kartu se hřiště nevejde nikdy; pod nízkou na Pixelu aspoň rovná dráha.
+            if (!fits || (phone.height === 839 && shape === 'straight')) expect(pose.underCard, label).toBe(fits);
+          }
+        }
       }
     }
   });
