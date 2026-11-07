@@ -266,21 +266,28 @@ describe('minigolf camera (P68 T8)', () => {
     }
   });
 
-  it('a start card taller than half the play rect does not push the course into the fog (P74 R3)', () => {
+  it('a start card too tall for the course frames the whole play rect, so the course stays in front of the fog (P74 R3)', () => {
     // Karta „How I read it“ (P73B) měří na telefonu 330 px; obdélníky změřené na stránce 7. 11. (HUD nahoře, ovládání dole).
     const fogStart = airOf(sceneLook({ setting: 'farm', mood: 'playful' })).near;
     for (const phone of [{ width: 412, height: 839, top: 150, bottom: 663 }, { width: 393, height: 659, top: 151, bottom: 483 }]) {
       const rect = playRect(phone, phone.top, phone.bottom);
-      const under = playRect(rect.canvas, rect.px.top + 16 + 330 + 16, rect.px.bottom);
-      for (const shape of MINIGOLF_SHAPES) {
-        for (const seed of [1, 2, 3, 4, 5]) {
-          const { state, course } = holeOf(seed, shape);
-          const pose = minigolfCameraPose(state, phone.width / phone.height, rect, course, MINIGOLF_CAMERA.fov, under);
-          const [bx, bz] = ballOf(state);
-          const [hx, hz] = course.hole;
-          const label = `${shape} seed ${String(seed)} ${String(phone.width)}x${String(phone.height)}`;
-          for (const [x, z] of [[bx, bz], [hx, hz]] as const) expect(pose.position.distanceTo(new Vector3(-x / UNIT, 0, z / UNIT)), label).toBeLessThan(fogStart);
-          expect(inside(seen(pose, phone.width / phone.height, bx, 0.2, bz), rect), `ball ${label}`).toBe(true);
+      const aspect = phone.width / phone.height;
+      for (const [card, fits] of [[330, false], [150, true]] as const) {
+        const under = playRect(rect.canvas, rect.px.top + 16 + card + 16, rect.px.bottom);
+        for (const shape of MINIGOLF_SHAPES) {
+          for (const seed of [1, 2, 3, 4, 5]) {
+            const { state, course } = holeOf(seed, shape);
+            const pose = minigolfCameraPose(state, aspect, rect, course, MINIGOLF_CAMERA.fov, under, fogStart);
+            const [bx, bz] = ballOf(state);
+            const [hx, hz] = course.hole;
+            const label = `${shape} seed ${String(seed)} ${String(phone.width)}x${String(phone.height)} card ${String(card)} px`;
+            for (const [x, z] of [[bx, bz], [hx, hz]] as const) expect(pose.position.distanceTo(new Vector3(-x / UNIT, 0, z / UNIT)), label).toBeLessThan(fogStart);
+            const frame = pose.underCard ? under : rect;
+            expect(inside(seen(pose, aspect, bx, 0.2, bz), frame), `ball ${label}`).toBe(true);
+            expect(inside(seen(pose, aspect, hx, MINIGOLF_CAMERA.flag, hz), frame), `flag ${label}`).toBe(true);
+            // Pod vysokou kartu se hřiště nevejde nikdy; pod nízkou na Pixelu aspoň rovná dráha.
+            if (!fits || (phone.height === 839 && shape === 'straight')) expect(pose.underCard, label).toBe(fits);
+          }
         }
       }
     }

@@ -48,8 +48,6 @@ export const MINIGOLF_CAMERA = {
   maxDelta: 0.1,
   /** Klidová póza se pohnula o víc (m) než tohle = nový přechod (přeměřený hrací obdélník, zmizelá karta startu). */
   still: 0.05,
-  /** Plocha pod úvodní kartou zabere nejméně tento podíl výšky hracího obdélníku (`startFrame`). */
-  startShare: 0.5,
 } as const;
 
 /**
@@ -165,25 +163,19 @@ export interface MinigolfCameraPose {
   /** Cíl záběru na výšku (jednotky jádra): jamka, nebo bod trasy za rohem. */
   readonly focus: Point;
   readonly rolling: boolean;
+  /** Přehled je rámovaný do plochy pod úvodní kartou (`start`); `false` = do celého hracího obdélníku. */
+  readonly underCard: boolean;
 }
 
 const scratch = { camera: new PerspectiveCamera(MINIGOLF_CAMERA.fov, 1, 0.1, 500), box: new Box3(), corner: new Vector3() };
 
 /**
- * Plocha pod úvodní kartou, jen když zabere aspoň `startShare` hracího obdélníku (P74 R3): karta „How I read it“
- * (P73B) měří na telefonu 330 px, pod ní zbyl proužek (Pixel 30 %, iPhone nic) a fit do něj odvezl kameru na
- * 60–220 m, za začátek mlhy. Nižší podíl = rámuje se celý obdélník; karta zakryje kus hřiště, dokud nezmizí.
- */
-function roomy(start: PlayRect, rect: PlayRect | null): boolean {
-  return rect === null || start.px.bottom - start.px.top >= MINIGOLF_CAMERA.startShare * (rect.px.bottom - rect.px.top);
-}
-
-/**
  * Póza kamery ze stavu: míček (hráč) a osa kamery (`minigolfCameraAxis`), pohyb podle `vx/vz`. `rect` = hrací obdélník
  * plátna (`usePlayRectRef`), `null` = nezměřený – pak póza bez fitu. `fov` = zorný úhel kamery plátna. `start` = plocha
  * pod úvodní kartou (P71C T2), dokud se čeká na první vstup: klidový přehled se rámuje do ní na výšku i na šířku.
+ * `fogStart` = kde začíná mlha sady (m, `airOf(look).near`).
  */
-export function minigolfCameraPose(state: ArrayLike<number>, aspect: number, rect: PlayRect | null, course: MinigolfCourseView, fov: number = MINIGOLF_CAMERA.fov, start: PlayRect | null = null): MinigolfCameraPose {
+export function minigolfCameraPose(state: ArrayLike<number>, aspect: number, rect: PlayRect | null, course: MinigolfCourseView, fov: number = MINIGOLF_CAMERA.fov, start: PlayRect | null = null, fogStart = Number.POSITIVE_INFINITY): MinigolfCameraPose {
   const at = ballOf(state);
   const { x, z, rolling } = at;
   const [ax, az] = minigolfAim(minigolfCameraAxis(state, course));
@@ -216,15 +208,27 @@ export function minigolfCameraPose(state: ArrayLike<number>, aspect: number, rec
     const pitch = MathUtils.degToRad(MINIGOLF_CAMERA.rest.pitch);
     const look = box.getCenter(new Vector3());
     const position = look.clone().addScaledVector(ahead, -Math.cos(pitch)).setY(look.y + Math.sin(pitch));
-    const frame = start !== null && roomy(start, rect) ? start : aspect < 1 && rect !== null ? rect : playRect({ width: aspect * 1000, height: 1000 }, 0, 1000);
-    return { ...fit(position, look, frame), focus, rolling };
+    if (start !== null) {
+      // P74 R3: karta „How I read it“ (P73B) měří na telefonu 330 px, pod ní zbyl proužek (Pixel 30 %, iPhone nic)
+      // a fit do něj odvezl kameru na 62 / 220 m, za začátek mlhy. Plocha pod kartou platí, jen když míček i jamka
+      // zůstanou před mlhou; jinak celý obdélník a karta zakryje kus hřiště, dokud nezmizí. Plocha bez výšky
+      // (`playRect` sevře spodek na vršek, když karta sahá pod ovládání) dá ve fitu kameru u země – taky celý obdélník.
+      if (start.px.bottom > start.px.top) {
+        const under = fit(position.clone(), look.clone(), start);
+        const [hx, hz] = course.hole;
+        const far = Math.max(under.position.distanceTo(ball), under.position.distanceTo(corner.set(-hx / UNIT, 0, hz / UNIT)));
+        if (far < fogStart) return { ...under, focus, rolling, underCard: true };
+      }
+    }
+    const frame = aspect < 1 && rect !== null ? rect : playRect({ width: aspect * 1000, height: 1000 }, 0, 1000);
+    return { ...fit(position, look, frame), focus, rolling, underCard: false };
   }
 
   const view = MINIGOLF_CAMERA.roll;
   const position = ball.clone().addScaledVector(ahead, -view.back).setY(view.up);
   const look = ball.clone().addScaledVector(ahead, view.ahead);
-  if (!(aspect < 1) || rect === null) return { position, look, focus, rolling };
+  if (!(aspect < 1) || rect === null) return { position, look, focus, rolling, underCard: false };
   take(ball.x, ball.z, pad, pad);
   take(-focus[0] / UNIT, focus[1] / UNIT, pad, MINIGOLF_CAMERA.flag);
-  return { ...fit(position, look, rect), focus, rolling };
+  return { ...fit(position, look, rect), focus, rolling, underCard: false };
 }

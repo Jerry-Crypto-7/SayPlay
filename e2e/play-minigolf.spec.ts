@@ -275,7 +275,8 @@ const degBetween = (a: CameraFrame['q'], b: CameraFrame['q']): number => {
 };
 
 /**
- * Kamera po snímcích (P71C T2) skutečnou rukou v reálném čase: na startu karta nekryje míček ani jamku; pak míření
+ * Kamera po snímcích (P71C T2) skutečnou rukou v reálném čase: na startu karta nekryje míček ani jamku (když se hřiště
+ * pod kartu vejde před mlhu, P74 R3); pak míření
  * (prst krouží, nebo šipky), natažení a rána; záznam `__playFrame().camera` v každém `requestAnimationFrame` až do
  * klidu po zastavení. Prahy `CAMERA_GATE`; záznam a snímky před / během / po do `CAMERA_OUT`.
  */
@@ -294,10 +295,13 @@ async function cameraCheck(page: Page, info: TestInfo, cdp: CDPSession | null, n
     const px = (box: { minX: number; maxX: number; minY: number; maxY: number } | null) =>
       box === null ? null : { left: stage.left + ((box.minX + 1) / 2) * stage.width, right: stage.left + ((box.maxX + 1) / 2) * stage.width, top: stage.top + ((1 - box.maxY) / 2) * stage.height, bottom: stage.top + ((1 - box.minY) / 2) * stage.height };
     const over = (box: ReturnType<typeof px>) => card !== null && box !== null && box.left < card.right && card.left < box.right && box.top < card.bottom && card.top < box.bottom;
-    return { card: card !== null, ball: over(px(frame.hero)), hole: over(px(frame.target)), holeSeen: frame.target !== null };
+    // Kamera rámuje pod kartu jen tehdy, když tam hřiště zůstane před mlhou (P74 R3, `underCard`); jinak celý obdélník.
+    const under = document.querySelector<HTMLElement>('[data-start-frame]')?.dataset.startFrame ?? null;
+    return { card: card !== null, under, ball: over(px(frame.hero)), hole: over(px(frame.target)), holeSeen: frame.target !== null };
   });
   await snap('start');
-  if (covered.ball || covered.hole) failures.push(`start card covers ${covered.ball ? 'the ball' : ''}${covered.hole ? ' the hole' : ''}`);
+  if (covered.under === null) failures.push('the scene did not report its start frame (data-start-frame)');
+  if (covered.under === 'card' && (covered.ball || covered.hole)) failures.push(`start card covers ${covered.ball ? 'the ball' : ''}${covered.hole ? ' the hole' : ''}`);
 
   await page.evaluate(() => {
     const own = window as unknown as { __cam?: CameraFrame[]; __camOn?: boolean };
