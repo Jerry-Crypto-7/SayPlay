@@ -115,3 +115,32 @@ describe('P41 honesty follows witnesses of the final game', () => {
     expect((await honestyForSpec('a robot runs and shoots zombies and knits a scarf', running(), 7))?.reason).toBe("Shooting and knitting aren't here yet – here's an endless runner.");
   });
 });
+
+/** P73A T5: náhrada místa nebo postavy vypadá na snímku hratelně – oko ji nehlídá, proto pin nad větami soupeřů. */
+describe('P73A every substitution is said out loud', () => {
+  const said = async (sentence: string) => {
+    await loadRapier();
+    return (await honestyForSpec(sentence, draftGameSpecWithMeta(sentence, 1).spec, 1))?.reason ?? null;
+  };
+
+  it.each([
+    ['A haunted library where books fly at you and you must find the exit', "The library isn't here yet – it's a spooky forest."],
+    ['A cat delivering pizzas across rooftops while avoiding seagulls', "The rooftops aren't here yet – it's a city."],
+    ['a wombat races a narwhal', "The wombat isn't here yet – it's a car."],
+    ['shoot the wombats in space', "The wombats aren't here yet – they're robots."],
+  ])('%s admits the stand-in', async (sentence, line) => {
+    expect(await said(sentence)).toContain(line);
+  }, 120_000);
+
+  it('a sentence without a verb admits the stand-in before its hint', async () => {
+    expect(await said('a wombat runs through the city')).toMatch(/^The wombat isn't here yet – it's an explorer\. No game verb found/);
+  }, 120_000);
+
+  it.each(['An underwater race between a turtle and a shark', 'Escape a volcano before the lava reaches you', 'escape a dungeon full of skeletons'])(
+    '%s substitutes nothing and says nothing',
+    async (sentence) => {
+      expect(await said(sentence)).toBeNull();
+    },
+    120_000,
+  );
+});

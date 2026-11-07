@@ -520,9 +520,10 @@ const OWN_KINDS: Readonly<Record<PropRole, readonly string[]>> = {
   hazard: [],
 };
 
-/** Model soupeře: přesná nebo blízká identita, žádná třída; v závodě jen vozidlo, loď nebo letadlo. */
+/** Model soupeře: přesná nebo blízká identita, žádná třída; v závodě vozidlo, loď nebo letadlo, jinak zvíře z věty (P73A T2). */
 function rivalModel(label: string, control: string): string | undefined {
-  return choose(label, control === 'steer' ? { identity: rides, rest: rides } : ANY, { withClass: false })?.model;
+  if (control !== 'steer') return choose(label, ANY, { withClass: false })?.model;
+  return choose(label, { identity: rides, rest: rides }, { withClass: false })?.model ?? creatureOf(label);
 }
 
 /**
@@ -751,7 +752,8 @@ export function heroChoice(label: string, genre: GenreId | undefined, control: s
   const fallback = steer ? 'race-car' : control === 'flap' ? BIRD : 'explorer';
   const chosen = choose(label, bounds, { withClass: true, ride: steer, fallback }) as ModelChoice;
   // P70B T3: zvíře z věty, které nic neveze („the rabbit races the turtle“), závodí samo – ne auto z nouze.
-  const animal = steer && chosen.level === 'fallback' ? riggedAnimalOf(label) : undefined;
+  // P73A T2: i zvíře a pták bez klipů (želva, tučňák) – pohyb dá kinematika vozidla, mění se jen model.
+  const animal = steer && chosen.level === 'fallback' ? creatureOf(label) : undefined;
   return animal === undefined ? chosen : { model: animal, level: 'identity', entry: ENTRY_OF_MODEL.get(animal) };
 }
 
@@ -790,6 +792,12 @@ export function riggedModelOf(label: string): string | undefined {
 function riggedAnimalOf(label: string): string | undefined {
   const named = identityEntry(label, ANY.identity);
   return named !== undefined && named.class === 'animal' && animated(named) ? sceneId(named) : undefined;
+}
+
+/** Zvíře nebo pták, které popisek jmenuje, s klipy i bez nich (P73A T2): závodník z věty místo auta z nouze. */
+function creatureOf(label: string): string | undefined {
+  const named = identityEntry(label, ANY.identity);
+  return named !== undefined && (named.class === 'animal' || named.class === 'bird') ? sceneId(named) : undefined;
 }
 
 /** Riggovaná postava za id modelu, nebo `undefined` pro model katalogu. */

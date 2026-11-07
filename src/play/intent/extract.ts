@@ -747,7 +747,10 @@ export function extractIntent(sentence: string): Intent {
   // A reciprocal verb joins two noun subjects. Do not steal participants
   // from an earlier action in "a cat runs and a dog duels a fox".
   const pairedDuel = coordinatedDuel !== null && !verbHits.some(hit => hit.at < coordinatedDuel[0].length - coordinatedDuel[3].length) ? coordinatedDuel : null;
-  const relation = between ?? versusArgument ?? pairedDuel ?? marriage;
+  // P73A T2: závod dvou jmenovaných („an underwater race between a turtle and a shark“, „a turtle vs shark race“) –
+  // první je hrdina, druhý soupeř; dřív jela ponorka z prostředí proti autům.
+  const raceBetween = /\brace between (.+?) and (.+?)(?:[,.]|$)/.exec(text) ?? /^(.+?) (?:vs\.?|versus) (.+?) race\b/.exec(text);
+  const relation = between ?? versusArgument ?? pairedDuel ?? marriage ?? raceBetween;
   const relationActor = relation === null ? null : actorIn(relation[1]);
   const relationObject = relation === null ? null : actorIn(relation[2]);
   const pluralPhrase = pluralArgument === null ? null : phraseIn(pluralArgument[1]);
@@ -874,6 +877,9 @@ export function extractIntent(sentence: string): Intent {
   const runaway = /\bafter\s+(?:a |an |the )?runaway\s+([a-z-]+)/.exec(text);
   if (runaway && drafts.some(item => item.axis === 'move') && !inScope(runaway.index)) push('objective', 'catch', heroName, headOf(runaway[1]), runaway[0]);
   if (companion !== null && drafts.some(item => item.verb === 'race') && !drafts.some(item => item.axis === 'move') && /^(?:horse|pony|zebra|dog|rabbit|cheetah)$/.test(heroName)) push('move', 'run', heroName, null, heroName);
+  if (relation !== null && relation === raceBetween && relationObject !== null && relationObject !== heroName && !inScope(raceBetween.index)) push('threat', 'rival', relationObject, heroName, relationObject);
+  // „a race between two cats“: soupeř je druhá kočka, ne auto.
+  if (pluralArgument !== null && pluralActor !== null && pluralArgument[0].startsWith('race') && !inScope(pluralArgument.index)) push('threat', 'rival', pluralActor, heroName, pluralActor);
   const racers = /\brac(?:e|es|ing)\s+(?:against\s+)?(?:other\s+|the other\s+)([a-z-]+(?:\s+[a-z-]+)?)/.exec(text);
   if (racers !== null) {
     const phrase = phraseIn(racers[1]);

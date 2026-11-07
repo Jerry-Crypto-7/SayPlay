@@ -6,6 +6,7 @@ import { withAuthoredContent } from './content';
 import { expandTemplate } from '../arcade/rules/templates';
 import { lookFor } from '../arcade/look';
 import { steerStyleFor } from '../arcade/pieces/steer';
+import { plural } from '../draft/lexicon';
 
 /** New driving compositions use the native track, never the frozen voyage course. */
 export function driveSpec(recipe: Recipe, content: GenreSpec): GameSpecV1 {
@@ -36,7 +37,12 @@ export function driveSpec(recipe: Recipe, content: GenreSpec): GameSpecV1 {
   if (shoot) roles.push({ id: 'enemy', kind: 'hazard', label: label('shoot_at', 'target'), count: 1 });
   if (chase) roles.push({ id: 'chaser', kind: 'chaser', label: label('chase_me', 'police car'), count: 1 });
   if (delivery) roles.push({ id: 'cargo', kind: 'item', label: cargo, count: 1 });
-  const goal = delivery ? `Pick up the ${cargo} and carry it to the delivery point.` : race ? 'Beat the rival vehicles to the finish.' : chase ? 'Reach the finish without being caught.' : `Reach the ${destination}.`;
+  // P73A T2: soupeř z věty má jméno i v cíli („Beat the shark to the finish.“); víc různých soupeřů jsou „rivals“.
+  const rivals = [...new Set(content.cast?.filter(item => item.does === 'fight').map(item => item.label))];
+  // „race against the other cars“ jmenuje skupinu: „Beat the other cars“, ne „the other car“.
+  const rivalName = rivals[0] === undefined ? undefined : /^(?:other|rival)\s/.test(rivals[0]) ? plural(rivals[0], 3) : rivals[0];
+  const rivalGoal = rivalName === undefined ? 'Beat the rival vehicles to the finish.' : rivals.length === 1 ? `Beat the ${rivalName} to the finish.` : 'Beat the rivals to the finish.';
+  const goal = delivery ? `Pick up the ${cargo} and carry it to the delivery point.` : race ? rivalGoal : chase ? 'Reach the finish without being caught.' : `Reach the ${destination}.`;
   // Lives the sentence asks for are the track's crash budget – the steer world's health
   // (`arcade/compile.ts`) – and the spec says so, as the walker and the voyage course do.
   const { lives, ...rest } = content.params ?? {};

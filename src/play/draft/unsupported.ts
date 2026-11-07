@@ -15,7 +15,10 @@ import type { ArchetypeId } from '../registry';
 import type { ControlId, GameSpecV1 } from '../spec';
 import type { PublishedGame, VersionStore } from '../version';
 import { noVerbTopic } from './draft';
+import { plural } from './lexicon';
 import { arcadeWorldOf, preloadPhysics } from '../arcade/compile';
+import { lookOf, type LookId } from '../arcade/look';
+import { RIGGED_ALIAS, enemyLabel, heroChoice, type ModelChoice } from '../arcade/models';
 import { loadRapier } from '../arcade/physics/world';
 import { witnessRuns } from '../arcade/verify';
 import { bindRoles, matchesWitness, namesActor, type RoleBinding } from '../arcade/witness';
@@ -238,7 +241,68 @@ const listed = (words: readonly string[]) => (words.length === 1 ? words[0]! : `
 /** „stab“ → „stabbing“, „lug“ → „lugging“, „escape“ → „escaping“. */
 const gerund = (lemma: string) => (/[^e]e$/.test(lemma) ? `${lemma.slice(0, -1)}ing` : /^[^aeiou]*[aeiou][^aeiouwxy]$/.test(lemma) ? `${lemma}${lemma.at(-1)}ing` : `${lemma}ing`);
 
+/**
+ * Místa z věty, která žádná sada nekreslí (P73A T5): „a haunted library“ hraje hřbitov, „across rooftops“ náměstí.
+ * simplified: ruční tabulka míst, která sady znají jen přibližně nebo vůbec; rozšířit, až snímek ukáže další tichou náhradu.
+ */
+const STAND_IN_PLACES: readonly (readonly [RegExp, string])[] = [
+  [/\blibrar(?:y|ies)\b/, 'the library'],
+  [/\brooftops?\b/, 'the rooftops'],
+  [/\bsewers?\b/, 'the sewer'],
+  [/\bsubway\b/, 'the subway'],
+  [/\bhospital\b/, 'the hospital'],
+  [/\bmuseum\b/, 'the museum'],
+  [/\bairport\b/, 'the airport'],
+  [/\bprison\b/, 'the prison'],
+  [/\bchurch\b/, 'the church'],
+  [/\bstadium\b/, 'the stadium'],
+];
+/** Jak se sada jmenuje hráči; jinak její id se členem („a city“). */
+const LOOK_NAMES: Partial<Record<LookId, string>> = { graveyard: 'a spooky forest', underwater: 'the sea floor', space: 'outer space', ocean: 'the open sea', living_room: 'a living room' };
+const lookName = (look: LookId) => LOOK_NAMES[look] ?? `${/^[aeiou]/.test(look) ? 'an' : 'a'} ${look.replace(/_/g, ' ')}`;
+const article = (name: string) => `${/^[aeiou]/.test(name) ? 'an' : 'a'} ${name}`;
+
+/** Jméno modelu z nouze: riggovaná postava jménem statického modelu („explorer“, ne štítek „rancher“), jinak obecný štítek. */
+const FALLBACK_NAMES: readonly string[] = ['explorer', 'robot', 'car', 'bird'];
+const aliasName = (model: string) => Object.entries(RIGGED_ALIAS).find(([, id]) => model === `rigged:${id}`)?.[0];
+
+/** Postava z věty, kterou scéna kreslí modelem z nouze (`level: 'fallback'`): „The giraffe isn't here yet – it's an explorer.“ */
+function standInCharacter(text: string, label: string, choice: ModelChoice): string | null {
+  const head = label.toLowerCase().split(' ').at(-1);
+  const word = head === undefined || head === '' || choice.level !== 'fallback' ? undefined : new RegExp(`\\b${head}(?:e?s)?\\b`).exec(text)?.[0];
+  if (word === undefined) return null;
+  const tags = choice.entry?.identity ?? [];
+  const drawn = (aliasName(choice.model) ?? FALLBACK_NAMES.find((name) => tags.includes(name)) ?? tags[0])?.replace(/-/g, ' ');
+  const many = word !== head;
+  const as = drawn === undefined ? '' : many ? ` – they're ${plural(drawn, 2)}` : ` – it's ${article(drawn)}`;
+  return `The ${word} ${many ? "aren't" : "isn't"} here yet${as}.`;
+}
+
+/** Co věta jmenuje a hra kreslí jinak (P73A T5): postava bez modelu, pak místo; každá náhrada jedna věta. */
+function standIns(sentence: string, spec: GameSpecV1): string[] {
+  const text = sentence.toLowerCase();
+  const player = spec.roles.find((role) => role.kind === 'player')?.label ?? '';
+  const enemy = enemyLabel(spec);
+  const said = [
+    standInCharacter(text, player, heroChoice(player, spec.genre?.id, spec.control)),
+    enemy === '' ? null : standInCharacter(text, enemy, heroChoice(enemy, undefined, spec.control, 'enemy')),
+  ].filter((line): line is string => line !== null);
+  const place = STAND_IN_PLACES.find(([cue]) => cue.test(text));
+  if (place !== undefined) said.push(`${capital(place[1])} ${place[1].endsWith('s') ? "aren't" : "isn't"} here yet – it's ${lookName(lookOf(spec.theme))}.`);
+  return said;
+}
+
+/** Přiznání slovesa (níž) a k němu každá náhrada postavy nebo místa; bez slovesa jde náhrada sama jako `actions`. */
 async function measureHonesty(sentence: string, spec: GameSpecV1, seed: number, publishedWorld?: ArcadeWorld): Promise<Honesty | null> {
+  const verbs = await verbHonesty(sentence, spec, seed, publishedWorld);
+  const said = standIns(sentence, spec);
+  if (said.length === 0) return verbs;
+  if (verbs === null) return { kind: 'actions', closest: closestOf(spec), reason: said.join(' ') };
+  // Hláška bez slovesa končí nápovědou („Try: ‘Dodge …’“) – náhrada jde před ni.
+  return { ...verbs, reason: verbs.kind === 'no_verb' ? `${said.join(' ')} ${verbs.reason}` : `${verbs.reason} ${said.join(' ')}` };
+}
+
+async function verbHonesty(sentence: string, spec: GameSpecV1, seed: number, publishedWorld?: ArcadeWorld): Promise<Honesty | null> {
   // Hra je žánr věty: pruh se neukáže (zůstává jen třída, kterou neumíme vůbec – otevřený svět, idle …).
   if (playsOwnGenre(sentence, spec)) return unsupportedGame(sentence, spec);
   const read = extractIntent(sentence);

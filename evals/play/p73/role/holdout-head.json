@@ -1,0 +1,2351 @@
+{
+ "summary": {
+  "sentences": 260,
+  "rolesKept": "194/326",
+  "settingsKept": "164/190",
+  "heroDrawn": 229,
+  "compiles": 260
+ },
+ "rows": [
+  {
+   "id": "s039",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s037",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s002",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s003",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s006",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s008",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s022",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s021",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s035",
+   "roles": 0,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s050",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s088",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s069",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s056",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s058",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s111",
+   "roles": 0,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s095",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s188",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s144",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s155",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "s099",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "h01",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "h02",
+   "roles": 0,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "h03",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "h04",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "h05",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "h06",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "h07",
+   "roles": 0,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "h08",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "h09",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "h10",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "j01",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "j02",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "j03",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "j04",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "j05",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "j06",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "j07",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "j08",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "j09",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "j10",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d01",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d02",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d03",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d04",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d05",
+   "roles": 0,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d06",
+   "roles": 0,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d07",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d08",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d09",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d10",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d11",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d12",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d13",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d14",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d15",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d16",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d17",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d18",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "d19",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "d20",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t001",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t002",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t003",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t004",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t005",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t006",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t007",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t008",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t009",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t010",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t011",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t012",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t013",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t014",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t015",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t016",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t017",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t018",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t019",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t020",
+   "roles": 2,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t021",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t022",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t023",
+   "roles": 2,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t024",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t025",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t026",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t027",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t028",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t029",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t030",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t031",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t032",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t033",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t034",
+   "roles": 2,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t035",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t036",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t037",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t038",
+   "roles": 0,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t039",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t040",
+   "roles": 2,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t041",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t042",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t043",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t044",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t045",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t046",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t047",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t048",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t049",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t050",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t051",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t052",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t053",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t054",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t055",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t056",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t057",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t058",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t059",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t060",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t061",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t062",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t063",
+   "roles": 2,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t064",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t065",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t066",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t067",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t068",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t069",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t070",
+   "roles": 2,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t071",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t072",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t073",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t074",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t075",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t076",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t077",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t078",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t079",
+   "roles": 0,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t080",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t081",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t082",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t083",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t084",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t085",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t086",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t087",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t088",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t089",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t090",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t091",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t092",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t093",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t094",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t095",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t096",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t097",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t098",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t099",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t100",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t101",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t102",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t103",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t104",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t105",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t106",
+   "roles": 0,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t107",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t108",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t109",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t110",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t111",
+   "roles": 3,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t112",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t113",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t114",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t115",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t116",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t117",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t118",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t119",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t120",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t121",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t122",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t123",
+   "roles": 2,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t124",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t125",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t126",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t127",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t128",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t129",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t130",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t131",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t132",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t133",
+   "roles": 0,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t134",
+   "roles": 2,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t135",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t136",
+   "roles": 2,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t137",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t138",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t139",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t140",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t141",
+   "roles": 0,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t142",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t143",
+   "roles": 2,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t144",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t145",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t146",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t147",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t148",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t149",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t150",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t151",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t152",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t153",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t154",
+   "roles": 0,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t155",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t156",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t157",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t158",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t159",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t160",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t161",
+   "roles": 0,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t162",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t163",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t164",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t165",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t166",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t167",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t168",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t169",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t170",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t171",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t172",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t173",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t174",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t175",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t176",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t177",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t178",
+   "roles": 0,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t179",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t180",
+   "roles": 2,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t181",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t182",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t183",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t184",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t185",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t186",
+   "roles": 0,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t187",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t188",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t189",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t190",
+   "roles": 2,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t191",
+   "roles": 2,
+   "rolesKept": 2,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t192",
+   "roles": 2,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t193",
+   "roles": 0,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t194",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t195",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t196",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t197",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t198",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": false,
+   "compiles": true
+  },
+  {
+   "id": "t199",
+   "roles": 1,
+   "rolesKept": 0,
+   "settings": 0,
+   "settingsKept": 0,
+   "heroDrawn": true,
+   "compiles": true
+  },
+  {
+   "id": "t200",
+   "roles": 1,
+   "rolesKept": 1,
+   "settings": 1,
+   "settingsKept": 1,
+   "heroDrawn": true,
+   "compiles": true
+  }
+ ]
+}

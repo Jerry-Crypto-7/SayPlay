@@ -120,8 +120,10 @@ describe('arcade model choice from role labels', () => {
     expect(propModels(withLabel(duel, 'rival', 'wombat'))).toEqual({});
     // Cíl závodu kreslí od P47C prapor (`gen3d-finish-banner`); tady jde o soupeře.
     expect(propModels(withLabel(steer, 'rival', 'rival plane')).rival).toBe('plane');
-    // Soupeř závodu je vozidlo; zvíře jako auto neřídí.
-    expect(propModels(withLabel(steer, 'rival', 'fox')).rival).toBeUndefined();
+    // P73A T2: soupeř závodu, kterého věta jmenuje, je to zvíře („a turtle races a shark“) – závodí samo, jen bez auta.
+    expect(propModels(withLabel(steer, 'rival', 'fox')).rival).toBe('rigged:q-fox');
+    expect(propModels(withLabel(steer, 'rival', 'shark')).rival).toBe('cc0-shark');
+    expect(propModels(withLabel(steer, 'rival', 'wombat')).rival).toBeUndefined();
     expect(propModels(withLabel(steer, 'rival', 'rival car')).rival).toBeUndefined();
   });
 
