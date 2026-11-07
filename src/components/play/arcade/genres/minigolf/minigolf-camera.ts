@@ -48,6 +48,8 @@ export const MINIGOLF_CAMERA = {
   maxDelta: 0.1,
   /** Klidová póza se pohnula o víc (m) než tohle = nový přechod (přeměřený hrací obdélník, zmizelá karta startu). */
   still: 0.05,
+  /** Plocha pod úvodní kartou zabere nejméně tento podíl výšky hracího obdélníku (`startFrame`). */
+  startShare: 0.5,
 } as const;
 
 /**
@@ -168,6 +170,15 @@ export interface MinigolfCameraPose {
 const scratch = { camera: new PerspectiveCamera(MINIGOLF_CAMERA.fov, 1, 0.1, 500), box: new Box3(), corner: new Vector3() };
 
 /**
+ * Plocha pod úvodní kartou, jen když zabere aspoň `startShare` hracího obdélníku (P74 R3): karta „How I read it“
+ * (P73B) měří na telefonu 330 px, pod ní zbyl proužek (Pixel 30 %, iPhone nic) a fit do něj odvezl kameru na
+ * 60–220 m, za začátek mlhy. Nižší podíl = rámuje se celý obdélník; karta zakryje kus hřiště, dokud nezmizí.
+ */
+function roomy(start: PlayRect, rect: PlayRect | null): boolean {
+  return rect === null || start.px.bottom - start.px.top >= MINIGOLF_CAMERA.startShare * (rect.px.bottom - rect.px.top);
+}
+
+/**
  * Póza kamery ze stavu: míček (hráč) a osa kamery (`minigolfCameraAxis`), pohyb podle `vx/vz`. `rect` = hrací obdélník
  * plátna (`usePlayRectRef`), `null` = nezměřený – pak póza bez fitu. `fov` = zorný úhel kamery plátna. `start` = plocha
  * pod úvodní kartou (P71C T2), dokud se čeká na první vstup: klidový přehled se rámuje do ní na výšku i na šířku.
@@ -205,7 +216,7 @@ export function minigolfCameraPose(state: ArrayLike<number>, aspect: number, rec
     const pitch = MathUtils.degToRad(MINIGOLF_CAMERA.rest.pitch);
     const look = box.getCenter(new Vector3());
     const position = look.clone().addScaledVector(ahead, -Math.cos(pitch)).setY(look.y + Math.sin(pitch));
-    const frame = start ?? (aspect < 1 && rect !== null ? rect : playRect({ width: aspect * 1000, height: 1000 }, 0, 1000));
+    const frame = start !== null && roomy(start, rect) ? start : aspect < 1 && rect !== null ? rect : playRect({ width: aspect * 1000, height: 1000 }, 0, 1000);
     return { ...fit(position, look, frame), focus, rolling };
   }
 
