@@ -272,7 +272,7 @@ export function controlFilePath(env: Record<string, string | undefined>): string
  * Vypínač se čte **při každém rozhodnutí**, ale na sdílený obchod se přitom
  * nesahá pokaždé: `controlStoreFromEnv()` obaluje čtení oknem
  * `CONTROL_CACHE_TTL_MS` (1 s, `spend-store.ts`), takže instance vydá nejvýš
- * jeden `GET` za sekundu (limit letu `DEFAULT_CONTROL_TIMEOUT_MS`, 200 ms)
+ * jeden `GET` za sekundu, dva když první selže (limit letu `DEFAULT_CONTROL_TIMEOUT_MS`, 200 ms)
  * a souběžní čtenáři sdílejí jeden let.
  *
  * ⚠ **To okno je oprava blokujícího nálezu, ne úspora.** Bez něj byl každý

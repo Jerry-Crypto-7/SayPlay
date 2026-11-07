@@ -267,6 +267,28 @@ test('duel: the Quick | Full detail switch leaves the touch zones readable', asy
   expect(fits).toMatch(/true$/);
 });
 
+// P74: souboj s dílem `fight` (liška a klokan) má navíc kolo „Attack“ u pravého kraje; štítek „Strike“ stál na téže
+// výšce a kolo ho z 21 px zakrylo (Pixel 7, `p74-live` T2 i po opravách T3).
+test('duel: the Attack button of a fight part leaves the zone labels readable', async ({ page, request }) => {
+  const created = await request.post('/api/play/games', { data: { sentence: 'a fox duels a kangaroo in a boxing ring', seed: 74100 } });
+  expect(created.status(), await created.text()).toBeLessThan(300);
+  const { url } = (await created.json()) as { url: string };
+  await page.goto(url);
+  await expect(page.getByTestId('arcade-stage')).toHaveAttribute('data-control', 'duel', { timeout: 90_000 });
+  await expect(page.getByTestId('arcade-attack')).toBeVisible();
+  const zones = page.locator('.play-touch-zone');
+  await expect(zones).toHaveCount(2);
+  const pieces: { name: string; x: number; y: number; width: number; height: number }[] = [];
+  for (const zone of await zones.all()) pieces.push({ name: `zone ${String(await zone.textContent())}`, ...(await zone.boundingBox())! });
+  for (const button of await page.locator('[data-testid="arcade-stage"] > .play-fire').all()) pieces.push({ name: `button ${String(await button.textContent())}`, ...(await button.boundingBox())! });
+  for (const [i, a] of pieces.entries()) {
+    for (const b of pieces.slice(i + 1)) {
+      const overlaps = a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+      expect(overlaps, `${a.name} ${JSON.stringify(a)} overlaps ${b.name} ${JSON.stringify(b)}`).toBe(false);
+    }
+  }
+});
+
 // P58C T6b: povel „Dodge!“ / „Strike!“ visí nad soupeřem, jmenovky hrdiny a soupeře (P58A) ho nesmí zakrýt. Na telefonu
 // stála „Knight“ nad středem rámečku rytíře i s mečem namířeným na hydru – přímo pod povelem. Hraje robot po tiku,
 // takže běh dojde přes obě jmenovky (3–6 s) bez ohledu na zátěž stroje.
