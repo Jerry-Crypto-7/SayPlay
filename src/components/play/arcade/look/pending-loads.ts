@@ -25,6 +25,23 @@ export function loadsSettled(): Promise<void> {
 }
 
 /**
+ * Doběhne, až se po další úloze nic nenačítá (kulisy začínají až po `afterBodies`, tedy později než první snímek),
+ * nejpozději za `capMs`. Malovaná obloha (P76 T3) tak dekóduje a nahrává obraz až po modelech, ne v době, kdy
+ * telefon kreslí první snímky hry a hráč poprvé klepne.
+ */
+export function loadsIdle(capMs: number): Promise<void> {
+  const tick = (): Promise<void> => new Promise<void>((done) => setTimeout(done, 0));
+  const idle = async (): Promise<void> => {
+    for (;;) {
+      await tick();
+      if (pending.size === 0) return;
+      await loadsSettled();
+    }
+  };
+  return Promise.race([idle(), new Promise<void>((done) => setTimeout(done, capMs))]);
+}
+
+/**
  * Těla rolí mají ve frontě modelů přednost (P62 T11). Scéna montuje podlahu, stěny a kulisy dřív než těla, takže
  * se jejich modely stahovaly a rozbalovaly první: hrad v aréně má 27 modelů a rytíř šel poslední – na listu T7
  * stál hrdina v 1 i 3 s jako modrý kvádr. Kulisa (`loadFlatModel`, `paintedPlant`) proto čeká na `afterBodies`.
