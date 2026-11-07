@@ -567,7 +567,8 @@ function unknownHits(text: string, clauses: readonly (readonly [number, number])
   return found
     .filter(({ at, said, verb, meta }) => {
       const end = at + said.length;
-      if (seen.has(at) || LIGHT_VERBS.has(said) || LIGHT_VERBS.has(verb) || (meta && META_VERBS.has(verb)) || verb.length < 2 || covered(at, end)) return false;
+      // Předložka sloveso není: „as high as you can in the wind“ hlásilo „Inning isn't here yet“ (P73A R1).
+      if (seen.has(at) || LIGHT_VERBS.has(said) || LIGHT_VERBS.has(verb) || PHRASE_BREAK.has(said) || (meta && META_VERBS.has(verb)) || verb.length < 2 || covered(at, end)) return false;
       if (verbHits.some((hit) => hit.at >= end && hit.at < clauseEnd(at) && !modifies(hit, end))) return false;
       seen.add(at);
       return true;

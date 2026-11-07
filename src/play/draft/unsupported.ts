@@ -15,7 +15,7 @@ import type { ArchetypeId } from '../registry';
 import type { ControlId, GameSpecV1 } from '../spec';
 import type { PublishedGame, VersionStore } from '../version';
 import { noVerbTopic } from './draft';
-import { plural } from './lexicon';
+import { plural, singular } from './lexicon';
 import { arcadeWorldOf, preloadPhysics } from '../arcade/compile';
 import { lookOf, type LookId } from '../arcade/look';
 import { RIGGED_ALIAS, enemyLabel, heroChoice, type ModelChoice } from '../arcade/models';
@@ -318,8 +318,11 @@ async function verbHonesty(sentence: string, spec: GameSpecV1, seed: number, pub
   const witnesses = runs === null ? [] : [...runs.bot.witnesses, ...runs.probes];
   // P71D T6: „find the lost crown“ čte záměr jako sběr; úkol tu jednu věc najde použitím (`interact` na ten předmět).
   const findsOne = spec.genre?.id === 'quest' && FIND_ONE.test(sentence.toLowerCase());
+  // P73A R2: „stack books into a tower“ – stohování staví právě tu věž, kterou jmenuje cíl hry („of the tower“).
+  const towers = new Set(spec.roles.filter(role => role.kind === 'exit').map(role => singular(role.label.toLowerCase()).split(' ').at(-1)));
   const met = (triple: IntentTriple, witness: (typeof witnesses)[number]) =>
-    matchesWitness(triple, witness) || (findsOne && triple.verb === 'collect' && matchesWitness({ ...triple, verb: 'interact' }, witness));
+    matchesWitness(triple, witness) || (findsOne && triple.verb === 'collect' && matchesWitness({ ...triple, verb: 'interact' }, witness))
+    || (triple.verb === 'build' && towers.has(triple.object ?? '') && witness.verb === 'build' && witness.evidence === 'stack-completed');
   const unmet = triples.filter(triple => !witnesses.some(witness => met(triple, witness)));
   // P44C: sloveso přiblížené tabulkou se jmenuje slovem z věty, ne kanonickým kusem.
   const mapped = intent.items.filter(item => item.mapped === true && item.essential);
@@ -332,14 +335,27 @@ async function verbHonesty(sentence: string, spec: GameSpecV1, seed: number, pub
     return { kind: 'played_as', closest: closestOf(spec), reason: `${rest.length === 0 ? first : `${first}, ${listed(rest)}`}.` };
   }
   const said = (triple: IntentTriple) => mapped.find(item => item.verb === triple.verb && item.actor === triple.actor && item.object === triple.object);
+  // P73A R1: sloveso cizího aktéra, které hra hraje hráčem („books fly at you“ hraje let na koštěti) – chybí aktér, ne
+  // sloveso; „Gliding isn't here yet“ by si odporovalo s hrou. Aktér, kterého svět má, se dál přiznává slovesem.
+  const bindings = made.ok ? made.roleBindings : [];
+  const heroDoes = (triple: IntentTriple) => triple.actor !== 'hero' && witnesses.some(w => w.actor.player && w.verb === triple.verb) && !bindings.some(b => namesActor(triple, b));
+  const text = sentence.toLowerCase();
+  const pluralLabels = new Set(PLURAL_LABELS);
   const missing = [...new Set(unmet.map(triple => {
     const item = said(triple);
+    if (heroDoes(triple)) {
+      const word = intent.items.find(i => i.verb === triple.verb && i.actor === triple.actor && i.object === triple.object)?.said ?? triple.verb;
+      const many = new RegExp(`\\b${plural(triple.actor, 2)}\\b`).test(text);
+      const label = `the ${gerund(vocabVerb(word)?.lemma ?? word)} ${many ? plural(triple.actor, 2) : triple.actor}`;
+      if (many) pluralLabels.add(label);
+      return label;
+    }
     // Kus bez popisku se jmenuje činností („Beating isn't here yet“), ne holým slovesem.
     return item === undefined ? (LABELS[triple.verb] ?? gerund(triple.verb)) : gerund(lemmaOf(item));
   }))];
   const closest = spec.control === 'steer' && !witnesses.some(w => w.verb === 'race') ? 'a driving game' : closestOf(spec);
-  const plural = missing.length > 1 || PLURAL_LABELS.has(missing[0]!);
-  return { kind: 'actions', unmet, closest, reason: `${capital(listed(missing))} ${plural ? "aren't" : "isn't"} here yet – here's ${closest}.` };
+  const are = missing.length > 1 || pluralLabels.has(missing[0]!);
+  return { kind: 'actions', unmet, closest, reason: `${capital(listed(missing))} ${are ? "aren't" : "isn't"} here yet – here's ${closest}.` };
 }
 
 export async function sentenceOf(versions: Pick<VersionStore, 'get'>, game: PublishedGame): Promise<string | null> {
