@@ -1,0 +1,22 @@
+{
+  "a": "http://127.0.0.1:3208",
+  "b": "http://127.0.0.1:3207",
+  "labelA": "main e8998770 (P74, bez P75)",
+  "labelB": "P76 po T3",
+  "sentences": [
+    "A cat delivering pizzas across rooftops while avoiding seagulls",
+    "Find the lost crown in an old castle",
+    "An underwater race between a turtle and a shark",
+    "Balance a tower of pancakes on a windy day",
+    "Play mini golf in a candy land",
+    "A farmer catches falling apples in the orchard",
+    "Escape a volcano before the lava reaches you",
+    "A knight jumps across floating islands to rescue a dragon egg"
+  ],
+  "profiles": ["pixel7-cpu4"],
+  "runs": 3,
+  "pauseMs": 5000,
+  "timeoutMs": 120000,
+  "rawDir": "D:/tmp/p76-t3-raw",
+  "out": "evals/play/p76/perf-first-playable-t3.json"
+}

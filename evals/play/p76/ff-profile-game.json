@@ -1,0 +1,763 @@
+{
+ "measuredAt": "2026-11-07T20:15:25.238Z",
+ "path": "game",
+ "a": "http://127.0.0.1:3208",
+ "b": "http://127.0.0.1:3207",
+ "blockA": null,
+ "blockB": null,
+ "after": 4000,
+ "sentences": [
+  "s3",
+  "s8",
+  "s5"
+ ],
+ "runs": 3,
+ "sides": {
+  "A": {
+   "n": 9,
+   "firstDraw": 5027,
+   "programs": 23,
+   "linkMs": 2,
+   "waitMs": 1049,
+   "texMs": 17,
+   "textures": 49,
+   "draws": 60
+  },
+  "B": {
+   "n": 9,
+   "firstDraw": 5126,
+   "programs": 23,
+   "linkMs": 1,
+   "waitMs": 1058,
+   "texMs": 17,
+   "textures": 49,
+   "draws": 49
+  }
+ },
+ "diff": [
+  {
+   "key": "js",
+   "A": 3403,
+   "B": 3434,
+   "diff": 31
+  },
+  {
+   "key": "(program)",
+   "A": 430,
+   "B": 419,
+   "diff": -12
+  },
+  {
+   "key": "gl:getProgramInfoLog",
+   "A": 1032,
+   "B": 1038,
+   "diff": 6
+  },
+  {
+   "key": "(idle)",
+   "A": 34,
+   "B": 37,
+   "diff": 3
+  },
+  {
+   "key": "(garbage collector)",
+   "A": 55,
+   "B": 53,
+   "diff": -2
+  },
+  {
+   "key": "(anonymous native)",
+   "A": 14,
+   "B": 12,
+   "diff": -2
+  },
+  {
+   "key": "gl:getShaderInfoLog",
+   "A": 13,
+   "B": 15,
+   "diff": 2
+  },
+  {
+   "key": "gl:texSubImage2D",
+   "A": 23,
+   "B": 25,
+   "diff": 2
+  },
+  {
+   "key": "__export",
+   "A": 1,
+   "B": 0,
+   "diff": -1
+  },
+  {
+   "key": "addEventListener",
+   "A": 4,
+   "B": 2,
+   "diff": -1
+  },
+  {
+   "key": "createElement",
+   "A": 1,
+   "B": 1,
+   "diff": -1
+  },
+  {
+   "key": "gl:createImageBitmap",
+   "A": 1,
+   "B": 1,
+   "diff": -1
+  },
+  {
+   "key": "RegExp: ^[ \\t]*#include +<([\\w\\d./]+)>",
+   "A": 4,
+   "B": 3,
+   "diff": -1
+  },
+  {
+   "key": "bindAttribLocation",
+   "A": 1,
+   "B": 0,
+   "diff": -1
+  },
+  {
+   "key": "gl:linkProgram",
+   "A": 2,
+   "B": 1,
+   "diff": -1
+  },
+  {
+   "key": "type.<computed>",
+   "A": 5,
+   "B": 6,
+   "diff": 1
+  },
+  {
+   "key": "gl:getProgramParameter",
+   "A": 6,
+   "B": 5,
+   "diff": -1
+  },
+  {
+   "key": "shaderSource",
+   "A": 18,
+   "B": 19,
+   "diff": 1
+  },
+  {
+   "key": "createVertexArray",
+   "A": 2,
+   "B": 1,
+   "diff": -1
+  },
+  {
+   "key": "createShader",
+   "A": 0,
+   "B": 1,
+   "diff": 1
+  },
+  {
+   "key": "createBuffer",
+   "A": 1,
+   "B": 1,
+   "diff": 1
+  },
+  {
+   "key": "bindFramebuffer",
+   "A": 0,
+   "B": 1,
+   "diff": 1
+  },
+  {
+   "key": "gl:uniform1f",
+   "A": 1,
+   "B": 0,
+   "diff": -1
+  },
+  {
+   "key": "RegExp: [.*+?^${}()|[\\]\\\\]",
+   "A": 0,
+   "B": 1,
+   "diff": 1
+  },
+  {
+   "key": "requestAnimationFrame",
+   "A": 0,
+   "B": 1,
+   "diff": 1
+  }
+ ],
+ "later": {
+  "sides": {
+   "A": {
+    "n": 9,
+    "firstDraw": null,
+    "programs": 12,
+    "linkMs": 1,
+    "waitMs": 273,
+    "texMs": 17,
+    "textures": 196,
+    "draws": 11908
+   },
+   "B": {
+    "n": 9,
+    "firstDraw": null,
+    "programs": 12,
+    "linkMs": 0,
+    "waitMs": 216,
+    "texMs": 56,
+    "textures": 199,
+    "draws": 12168
+   }
+  },
+  "diff": [
+   {
+    "key": "js",
+    "A": 2639,
+    "B": 2758,
+    "diff": 119
+   },
+   {
+    "key": "gl:getProgramInfoLog",
+    "A": 266,
+    "B": 202,
+    "diff": -64
+   },
+   {
+    "key": "(idle)",
+    "A": 123,
+    "B": 114,
+    "diff": -8
+   },
+   {
+    "key": "bindVertexArray",
+    "A": 37,
+    "B": 43,
+    "diff": 6
+   },
+   {
+    "key": "(program)",
+    "A": 1115,
+    "B": 1110,
+    "diff": -5
+   },
+   {
+    "key": "gl:useProgram",
+    "A": 18,
+    "B": 15,
+    "diff": -3
+   },
+   {
+    "key": "depthMask",
+    "A": 8,
+    "B": 11,
+    "diff": 3
+   },
+   {
+    "key": "clear",
+    "A": 13,
+    "B": 11,
+    "diff": -2
+   },
+   {
+    "key": "(garbage collector)",
+    "A": 13,
+    "B": 11,
+    "diff": -2
+   },
+   {
+    "key": "bindFramebuffer",
+    "A": 20,
+    "B": 22,
+    "diff": 2
+   },
+   {
+    "key": "gl:uniform1f",
+    "A": 4,
+    "B": 5,
+    "diff": 2
+   },
+   {
+    "key": "getImageData",
+    "A": 8,
+    "B": 10,
+    "diff": 2
+   },
+   {
+    "key": "gl:getShaderInfoLog",
+    "A": 5,
+    "B": 5,
+    "diff": 1
+   },
+   {
+    "key": "type.<computed>",
+    "A": 11,
+    "B": 11,
+    "diff": 1
+   },
+   {
+    "key": "gl:bindTexture",
+    "A": 20,
+    "B": 19,
+    "diff": -1
+   },
+   {
+    "key": "getBoundingClientRect",
+    "A": 98,
+    "B": 97,
+    "diff": -1
+   },
+   {
+    "key": "fetch",
+    "A": 12,
+    "B": 12,
+    "diff": -1
+   },
+   {
+    "key": "close",
+    "A": 2,
+    "B": 2,
+    "diff": 1
+   },
+   {
+    "key": "ProgressEvent",
+    "A": 1,
+    "B": 0,
+    "diff": -1
+   },
+   {
+    "key": "querySelectorAll",
+    "A": 20,
+    "B": 20,
+    "diff": -1
+   },
+   {
+    "key": "frontFace",
+    "A": 1,
+    "B": 2,
+    "diff": 1
+   },
+   {
+    "key": "(anonymous native)",
+    "A": 6,
+    "B": 4,
+    "diff": -1
+   },
+   {
+    "key": "createObjectURL",
+    "A": 1,
+    "B": 1,
+    "diff": 1
+   },
+   {
+    "key": "removeChild",
+    "A": 1,
+    "B": 0,
+    "diff": -1
+   },
+   {
+    "key": "gl:bufferData",
+    "A": 3,
+    "B": 3,
+    "diff": 1
+   }
+  ]
+ },
+ "results": [
+  {
+   "run": 1,
+   "side": "A",
+   "sentence": "s3",
+   "firstDraw": 4628,
+   "epoch": 1794082336454.8,
+   "programs": 21,
+   "linkMs": 1.1999990940093994,
+   "waitMs": 690.8999996185303,
+   "texMs": 6.199999570846558,
+   "textures": 47,
+   "draws": 66,
+   "origin": 1794082331826.8,
+   "later": {
+    "programs": 12,
+    "linkMs": 0.5999999046325684,
+    "waitMs": 256.7000000476837,
+    "texMs": 7.200000286102295,
+    "textures": 34,
+    "draws": 13537
+   }
+  },
+  {
+   "run": 1,
+   "side": "B",
+   "sentence": "s3",
+   "firstDraw": 4270.599999904633,
+   "epoch": 1794082346588.5,
+   "programs": 22,
+   "linkMs": 1.1999998092651367,
+   "waitMs": 734.0999999046326,
+   "texMs": 6.500000238418579,
+   "textures": 47,
+   "draws": 67,
+   "origin": 1794082342317.9,
+   "later": {
+    "programs": 12,
+    "linkMs": 0.7000002861022949,
+    "waitMs": 274.7999987602234,
+    "texMs": 58.10000014305115,
+    "textures": 36,
+    "draws": 13845
+   }
+  },
+  {
+   "run": 1,
+   "side": "B",
+   "sentence": "s5",
+   "firstDraw": 5271.200000047684,
+   "epoch": 1794082357551.9001,
+   "programs": 25,
+   "linkMs": 1.700000286102295,
+   "waitMs": 1055.8999996185303,
+   "texMs": 20.699999570846558,
+   "textures": 49,
+   "draws": 49,
+   "origin": 1794082352280.6,
+   "later": {
+    "programs": 12,
+    "linkMs": 0.40000009536743164,
+    "waitMs": 152.89999961853027,
+    "texMs": 52.69999980926514,
+    "textures": 207,
+    "draws": 10938
+   }
+  },
+  {
+   "run": 1,
+   "side": "A",
+   "sentence": "s5",
+   "firstDraw": 5342.299999952316,
+   "epoch": 1794082368829.4,
+   "programs": 25,
+   "linkMs": 1.7000007629394531,
+   "waitMs": 1049.499998807907,
+   "texMs": 16.90000009536743,
+   "textures": 49,
+   "draws": 49,
+   "origin": 1794082363487,
+   "later": {
+    "programs": 10,
+    "linkMs": 0.09999990463256836,
+    "waitMs": 138.49999928474426,
+    "texMs": 17.100000143051147,
+    "textures": 196,
+    "draws": 10506
+   }
+  },
+  {
+   "run": 1,
+   "side": "A",
+   "sentence": "s8",
+   "firstDraw": 4852.5,
+   "epoch": 1794082379551.1,
+   "programs": 23,
+   "linkMs": 2.1000003814697266,
+   "waitMs": 1144.0999999046326,
+   "texMs": 18.59999990463257,
+   "textures": 49,
+   "draws": 52,
+   "origin": 1794082374698.6,
+   "later": {
+    "programs": 13,
+    "linkMs": 0.7000000476837158,
+    "waitMs": 391.5000009536743,
+    "texMs": 20.200000762939453,
+    "textures": 197,
+    "draws": 10619
+   }
+  },
+  {
+   "run": 1,
+   "side": "B",
+   "sentence": "s8",
+   "firstDraw": 5385.599999904633,
+   "epoch": 1794082390849.5,
+   "programs": 23,
+   "linkMs": 1.499999761581421,
+   "waitMs": 1109.9999995231628,
+   "texMs": 20.90000033378601,
+   "textures": 49,
+   "draws": 47,
+   "origin": 1794082385463.8,
+   "later": {
+    "programs": 13,
+    "linkMs": 0.40000009536743164,
+    "waitMs": 216.400000333786,
+    "texMs": 56.100000858306885,
+    "textures": 222,
+    "draws": 12654
+   }
+  },
+  {
+   "run": 2,
+   "side": "B",
+   "sentence": "s3",
+   "firstDraw": 4163.900000095367,
+   "epoch": 1794082400840,
+   "programs": 22,
+   "linkMs": 0.6999998092651367,
+   "waitMs": 728.5000002384186,
+   "texMs": 6.999999761581421,
+   "textures": 47,
+   "draws": 66,
+   "origin": 1794082396676.1,
+   "later": {
+    "programs": 12,
+    "linkMs": 0.2999999523162842,
+    "waitMs": 274.1000006198883,
+    "texMs": 52.50000047683716,
+    "textures": 36,
+    "draws": 13865
+   }
+  },
+  {
+   "run": 2,
+   "side": "A",
+   "sentence": "s3",
+   "firstDraw": 4117.200000047684,
+   "epoch": 1794082410789.7,
+   "programs": 21,
+   "linkMs": 1.799999713897705,
+   "waitMs": 682.8999998569489,
+   "texMs": 6.999999523162842,
+   "textures": 47,
+   "draws": 66,
+   "origin": 1794082406672.5,
+   "later": {
+    "programs": 12,
+    "linkMs": 0.7000000476837158,
+    "waitMs": 272.5,
+    "texMs": 7.500000238418579,
+    "textures": 34,
+    "draws": 13613
+   }
+  },
+  {
+   "run": 2,
+   "side": "A",
+   "sentence": "s5",
+   "firstDraw": 5369.5,
+   "epoch": 1794082421936,
+   "programs": 25,
+   "linkMs": 2.299999952316284,
+   "waitMs": 1050.999998807907,
+   "texMs": 19.90000057220459,
+   "textures": 49,
+   "draws": 60,
+   "origin": 1794082416566.5,
+   "later": {
+    "programs": 10,
+    "linkMs": 0.6000001430511475,
+    "waitMs": 131.900000333786,
+    "texMs": 18.40000033378601,
+    "textures": 196,
+    "draws": 10517
+   }
+  },
+  {
+   "run": 2,
+   "side": "B",
+   "sentence": "s5",
+   "firstDraw": 5536.5,
+   "epoch": 1794082433321,
+   "programs": 25,
+   "linkMs": 2.299999475479126,
+   "waitMs": 1082.8000009059906,
+   "texMs": 18.600000143051147,
+   "textures": 49,
+   "draws": 49,
+   "origin": 1794082427784.5,
+   "later": {
+    "programs": 12,
+    "linkMs": 0.20000004768371582,
+    "waitMs": 155.49999928474426,
+    "texMs": 52.59999990463257,
+    "textures": 199,
+    "draws": 10458
+   }
+  },
+  {
+   "run": 2,
+   "side": "B",
+   "sentence": "s8",
+   "firstDraw": 5126.099999904633,
+   "epoch": 1794082444453.9001,
+   "programs": 23,
+   "linkMs": 0.9000000953674316,
+   "waitMs": 1116.9999997615814,
+   "texMs": 16.899999618530273,
+   "textures": 49,
+   "draws": 47,
+   "origin": 1794082439327.8,
+   "later": {
+    "programs": 13,
+    "linkMs": 0.8000001907348633,
+    "waitMs": 229.29999995231628,
+    "texMs": 57.299999713897705,
+    "textures": 215,
+    "draws": 12113
+   }
+  },
+  {
+   "run": 2,
+   "side": "A",
+   "sentence": "s8",
+   "firstDraw": 5139.099999904633,
+   "epoch": 1794082455386.6,
+   "programs": 23,
+   "linkMs": 2.1000001430511475,
+   "waitMs": 1118.300000667572,
+   "texMs": 18.399999380111694,
+   "textures": 49,
+   "draws": 52,
+   "origin": 1794082450247.5,
+   "later": {
+    "programs": 13,
+    "linkMs": 1.0999999046325684,
+    "waitMs": 381.90000081062317,
+    "texMs": 24.099998712539673,
+    "textures": 213,
+    "draws": 11919
+   }
+  },
+  {
+   "run": 3,
+   "side": "A",
+   "sentence": "s3",
+   "firstDraw": 4284.900000095367,
+   "epoch": 1794082465567.5,
+   "programs": 21,
+   "linkMs": 1.6000001430511475,
+   "waitMs": 657.4999997615814,
+   "texMs": 7.000000238418579,
+   "textures": 47,
+   "draws": 65,
+   "origin": 1794082461282.6,
+   "later": {
+    "programs": 12,
+    "linkMs": 0.39999985694885254,
+    "waitMs": 277.70000076293945,
+    "texMs": 7,
+    "textures": 34,
+    "draws": 13699
+   }
+  },
+  {
+   "run": 3,
+   "side": "B",
+   "sentence": "s3",
+   "firstDraw": 4224.799999952316,
+   "epoch": 1794082475623.2,
+   "programs": 22,
+   "linkMs": 1.7000000476837158,
+   "waitMs": 689,
+   "texMs": 7.3999998569488525,
+   "textures": 47,
+   "draws": 66,
+   "origin": 1794082471398.4,
+   "later": {
+    "programs": 12,
+    "linkMs": 0.10000014305114746,
+    "waitMs": 261.9999997615814,
+    "texMs": 57.50000023841858,
+    "textures": 36,
+    "draws": 13679
+   }
+  },
+  {
+   "run": 3,
+   "side": "B",
+   "sentence": "s5",
+   "firstDraw": 5184.299999952316,
+   "epoch": 1794082486665.4001,
+   "programs": 25,
+   "linkMs": 1.9000003337860107,
+   "waitMs": 1058.3999989032745,
+   "texMs": 17.00000023841858,
+   "textures": 49,
+   "draws": 50,
+   "origin": 1794082481481.1,
+   "later": {
+    "programs": 12,
+    "linkMs": 0.7000000476837158,
+    "waitMs": 147.20000076293945,
+    "texMs": 56.500000953674316,
+    "textures": 199,
+    "draws": 10458
+   }
+  },
+  {
+   "run": 3,
+   "side": "A",
+   "sentence": "s5",
+   "firstDraw": 5148.100000143051,
+   "epoch": 1794082497791.4001,
+   "programs": 25,
+   "linkMs": 1.3000001907348633,
+   "waitMs": 1026.599999666214,
+   "texMs": 20.299999713897705,
+   "textures": 49,
+   "draws": 60,
+   "origin": 1794082492643.3,
+   "later": {
+    "programs": 10,
+    "linkMs": 0.39999985694885254,
+    "waitMs": 140.50000047683716,
+    "texMs": 17.000001668930054,
+    "textures": 183,
+    "draws": 9724
+   }
+  },
+  {
+   "run": 3,
+   "side": "A",
+   "sentence": "s8",
+   "firstDraw": 5026.899999856949,
+   "epoch": 1794082508715.2998,
+   "programs": 23,
+   "linkMs": 1.8000004291534424,
+   "waitMs": 1158.7999994754791,
+   "texMs": 17.200000047683716,
+   "textures": 49,
+   "draws": 52,
+   "origin": 1794082503688.4,
+   "later": {
+    "programs": 13,
+    "linkMs": 0.8000001907348633,
+    "waitMs": 394.19999980926514,
+    "texMs": 22.000000715255737,
+    "textures": 213,
+    "draws": 11908
+   }
+  },
+  {
+   "run": 3,
+   "side": "B",
+   "sentence": "s8",
+   "firstDraw": 5030.900000095367,
+   "epoch": 1794082519640.2998,
+   "programs": 23,
+   "linkMs": 1.3000004291534424,
+   "waitMs": 1105.7999997138977,
+   "texMs": 18.199999570846558,
+   "textures": 49,
+   "draws": 47,
+   "origin": 1794082514609.4,
+   "later": {
+    "programs": 13,
+    "linkMs": 0.8000001907348633,
+    "waitMs": 201.3999993801117,
+    "texMs": 52.39999985694885,
+    "textures": 216,
+    "draws": 12168
+   }
+  }
+ ]
+}
