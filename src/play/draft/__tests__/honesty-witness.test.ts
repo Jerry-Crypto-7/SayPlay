@@ -155,6 +155,14 @@ describe('P73A every substitution is said out loud', () => {
     120_000,
   );
 
+  // R2: stohovací hra věž staví – z položených dílů i jako „into a tower“; vítr v ní opravdu není.
+  it.each([
+    ['stack pancakes as high as you can in the wind', "The hazards aren't here yet – here's a timing game."],
+    ['stack books into a tower', null],
+  ])('%s admits no building in a game that builds the tower', async (sentence, line) => {
+    expect(await said(sentence)).toBe(line);
+  }, 120_000);
+
   it.each(['A haunted library where books fly at you and you must find the exit', 'escape a haunted library while books fly at you'])(
     '%s admits the missing flyers, not the flight the hero plays',
     async (sentence) => {

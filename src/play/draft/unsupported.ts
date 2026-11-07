@@ -15,7 +15,7 @@ import type { ArchetypeId } from '../registry';
 import type { ControlId, GameSpecV1 } from '../spec';
 import type { PublishedGame, VersionStore } from '../version';
 import { noVerbTopic } from './draft';
-import { plural } from './lexicon';
+import { plural, singular } from './lexicon';
 import { arcadeWorldOf, preloadPhysics } from '../arcade/compile';
 import { lookOf, type LookId } from '../arcade/look';
 import { RIGGED_ALIAS, enemyLabel, heroChoice, type ModelChoice } from '../arcade/models';
@@ -318,8 +318,11 @@ async function verbHonesty(sentence: string, spec: GameSpecV1, seed: number, pub
   const witnesses = runs === null ? [] : [...runs.bot.witnesses, ...runs.probes];
   // P71D T6: „find the lost crown“ čte záměr jako sběr; úkol tu jednu věc najde použitím (`interact` na ten předmět).
   const findsOne = spec.genre?.id === 'quest' && FIND_ONE.test(sentence.toLowerCase());
+  // P73A R2: „stack books into a tower“ – stohování staví právě tu věž, kterou jmenuje cíl hry („of the tower“).
+  const towers = new Set(spec.roles.filter(role => role.kind === 'exit').map(role => singular(role.label.toLowerCase()).split(' ').at(-1)));
   const met = (triple: IntentTriple, witness: (typeof witnesses)[number]) =>
-    matchesWitness(triple, witness) || (findsOne && triple.verb === 'collect' && matchesWitness({ ...triple, verb: 'interact' }, witness));
+    matchesWitness(triple, witness) || (findsOne && triple.verb === 'collect' && matchesWitness({ ...triple, verb: 'interact' }, witness))
+    || (triple.verb === 'build' && towers.has(triple.object ?? '') && witness.verb === 'build' && witness.evidence === 'stack-completed');
   const unmet = triples.filter(triple => !witnesses.some(witness => met(triple, witness)));
   // P44C: sloveso přiblížené tabulkou se jmenuje slovem z věty, ne kanonickým kusem.
   const mapped = intent.items.filter(item => item.mapped === true && item.essential);

@@ -606,7 +606,11 @@ export class WitnessRecorder {
     if (effect.kind === 'win' || effect.kind === 'stateChange' && effect.state === 1 && this.latches.has(effect.body)) {
       if ((ref.id === 'finish' || ref.id === 'finish_collected' || ref.id === 'rule_contact') && (code === ROLE.goal || ['exit', 'destination'].includes(this.binding(other, state)?.roleKind ?? ''))) this.add('reach', player, other, tick, 'finish-contact', state);
       if (ref.id === 'survive_time') this.add('survive', player, null, tick, 'survival-timer', state);
-      if (ref.id === 'judge' && this.stack && [...this.found.values()].some(w => w.verb === 'stack')) this.add('build', player, null, tick, 'stack-completed', state);
+      if (ref.id === 'judge' && this.stack) {
+        // Věž je z položených dílů (P73A R2): „stack pancakes“ staví z palačinek – bez předmětu by „build pancake“ nepotvrdil nikdo.
+        const stacked = [...this.found.values()].filter(w => w.verb === 'stack');
+        if (stacked.length > 0) this.add('build', player, stacked.find(w => w.object !== null)?.object?.body ?? null, tick, 'stack-completed', state);
+      }
       if (ref.id === 'rival_finish' && 'land' in ref.params) {
         const goal = [...this.bindings.values()].find(b => roleAt(state, b.body) === ROLE.goal);
         if (goal !== undefined) this.add('land', player, goal.body, tick, 'safe-landing', state);
