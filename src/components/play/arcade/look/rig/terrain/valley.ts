@@ -57,6 +57,11 @@ export function valleyPalette(look: Look): ValleyPalette {
 
 /** Proud lávy vedle cesty (P73D T5): pás za krajem hrací plochy, uvnitř řady kulis (`inner` = +1,5 m). */
 export const LAVA_BAND = [0.2, 1.4] as const;
+/**
+ * Láva svítí (P75 T5): barva vrcholu nad 1 – osvětlená je jasnější než zem kolem i ve stínu a záře ji chytí.
+ * Bez vlastního materiálu, takže žádné kreslicí volání navíc.
+ */
+export const LAVA_GLOW = 2.2;
 
 /** Výška vrcholu mimo hrací plochu: násep, svah do hor a hrbolatost, která s odstupem roste; `wall` násobí svah. */
 function reliefAt(x: number, z: number, wall: number): number {
@@ -145,7 +150,7 @@ export function buildValley({ look, from, to }: ValleyOptions): Valley & { reado
 
   const palette = valleyPalette(look);
   const colors = { shade: new Color(palette.shade), rock: new Color(palette.rock) };
-  const lava = palette.lava === undefined ? null : new Color(palette.lava);
+  const lava = palette.lava === undefined ? null : new Color(palette.lava).multiplyScalar(LAVA_GLOW);
   const ground = groundPainter(groundPalette(look, palette.surface));
   const cells = rows * (XS.length - 1);
   const positions = new Float32Array(cells * 18);

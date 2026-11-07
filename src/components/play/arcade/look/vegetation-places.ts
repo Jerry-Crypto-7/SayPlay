@@ -132,7 +132,7 @@ export function placeVegetation({ flora, seed, from, to, road, clear, profile }:
         for (let d0 = near; d0 < far; d0 += cell) {
           // Buňka u vnějšího okraje vrstvy je užší; počet je celá část hustoty plus náhoda, místo náhodné v buňce.
           const depth = Math.min(cell, far - d0);
-          const count = Math.floor(density * flora.density * cell * depth + next());
+          const count = Math.floor(density * flora.density * (layer === 'near' ? (flora.front ?? 1) : 1) * cell * depth + next());
           for (let k = 0; k < count; k += 1) {
             const z = z0 + next() * cell;
             const offset = d0 + next() * depth;

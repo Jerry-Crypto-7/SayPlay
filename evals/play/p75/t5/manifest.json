@@ -1,0 +1,224 @@
+{
+ "takenAt": "2026-11-07T16:11:41.179Z",
+ "hz": 60,
+ "moments": [
+  {
+   "id": "0start",
+   "second": 0
+  },
+  {
+   "id": "1play",
+   "second": 3
+  },
+  {
+   "id": "2play",
+   "second": 8
+  }
+ ],
+ "sentences": [
+  {
+   "id": "s1",
+   "seed": 73101,
+   "text": "Escape a volcano before the lava reaches you"
+  },
+  {
+   "id": "s2",
+   "seed": 73102,
+   "text": "An underwater race between a turtle and a shark"
+  },
+  {
+   "id": "s3",
+   "seed": 73103,
+   "text": "A cat delivering pizzas across rooftops while avoiding seagulls"
+  },
+  {
+   "id": "s4",
+   "seed": 73104,
+   "text": "Balance a tower of pancakes on a windy day"
+  },
+  {
+   "id": "s5",
+   "seed": 73105,
+   "text": "A knight jumps across floating islands to rescue a dragon egg"
+  },
+  {
+   "id": "s6",
+   "seed": 73106,
+   "text": "A spaceship shoots asteroids in deep space"
+  },
+  {
+   "id": "s7",
+   "seed": 73107,
+   "text": "Play mini golf in a candy land"
+  },
+  {
+   "id": "s8",
+   "seed": 73108,
+   "text": "Find the lost crown in an old castle"
+  },
+  {
+   "id": "s9",
+   "seed": 73109,
+   "text": "A bird flies through a stormy city"
+  },
+  {
+   "id": "s10",
+   "seed": 73110,
+   "text": "A farmer catches falling apples in the orchard"
+  },
+  {
+   "id": "s11",
+   "seed": 73111,
+   "text": "A dog races a cat through a candy land"
+  },
+  {
+   "id": "s12",
+   "seed": 73112,
+   "text": "A penguin slides down an icy mountain"
+  }
+ ],
+ "shots": [
+  {
+   "id": "s1",
+   "vp": "desktop",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s1-desktop-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 14,
+      "horizonNdc": 0.432,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.306
+      },
+      "targetNdc": {
+       "x": 0.009,
+       "y": 0.256
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s1-desktop-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 23.622,
+      "horizonNdc": 0.757,
+      "heroNdc": {
+       "x": -0.148,
+       "y": -0.4
+      },
+      "targetNdc": {
+       "x": 0.121,
+       "y": -0.386
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s1-desktop-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 17.66,
+      "horizonNdc": 0.551,
+      "heroNdc": {
+       "x": 0.138,
+       "y": -0.418
+      },
+      "targetNdc": {
+       "x": -0.001,
+       "y": 0.24
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "a99da30ef0f096fb31ffd82d74295529",
+   "genre": "runner",
+   "control": "runner",
+   "setting": "volcano",
+   "stage": "runner",
+   "look": "volcano",
+   "quality": "high"
+  },
+  {
+   "id": "s1",
+   "vp": "phone",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s1-phone-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 14,
+      "horizonNdc": 0.432,
+      "heroNdc": {
+       "x": -0.002,
+       "y": -0.307
+      },
+      "targetNdc": {
+       "x": 0.027,
+       "y": 0.136
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s1-phone-1play.jpg",
+     "tick": 180,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 28.527,
+      "horizonNdc": 0.941,
+      "heroNdc": {
+       "x": -0.564,
+       "y": -0.575
+      },
+      "targetNdc": {
+       "x": 0,
+       "y": -0.638
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s1-phone-2play.jpg",
+     "tick": 480,
+     "runState": "running",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 22.905,
+      "horizonNdc": 0.732,
+      "heroNdc": {
+       "x": 0.552,
+       "y": -0.547
+      },
+      "targetNdc": {
+       "x": 0.137,
+       "y": 0.009
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "a99da30ef0f096fb31ffd82d74295529",
+   "genre": "runner",
+   "control": "runner",
+   "setting": "volcano",
+   "stage": "runner",
+   "look": "volcano",
+   "quality": "medium"
+  }
+ ]
+}

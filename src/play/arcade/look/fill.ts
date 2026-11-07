@@ -37,6 +37,7 @@ export const CASTLE_FILL: Flora = {
   ],
   leaf: '#4d7c2f',
   density: 0.35,
+  front: 2.5,
   fill: true,
 };
 
@@ -59,6 +60,7 @@ export const CITY_FILL: Flora = {
   far: [],
   leaf: '#4f8a3a',
   density: 0.22,
+  front: 2,
   fill: true,
 };
 
@@ -108,6 +110,7 @@ export const SPACE_FILL: Flora = {
   ],
   leaf: '#8a7560',
   density: 0.3,
+  front: 2.5,
   fill: true,
 };
 
@@ -132,6 +135,7 @@ export const VOLCANO_FILL: Flora = {
   ],
   leaf: '#4a3b2e',
   density: 0.35,
+  front: 2.5,
   fill: true,
 };
 
@@ -181,6 +185,7 @@ export const UNDERWATER_FILL: Flora = {
   ],
   leaf: '#2f7a5a',
   density: 0.45,
+  front: 2.5,
   fill: true,
 };
 
