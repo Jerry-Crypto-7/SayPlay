@@ -110,12 +110,23 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 800 
     await page.setViewportSize(viewport);
     const draft = await draftFromSentence(request);
     await fakeUpgrade(page, draft, () => ({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' }));
+    // P74: délka toastu se měří hodinami stránky. Hodiny testu ji četly po krocích dotazů Playwrightu
+    // a po pomalých `boundingBox` nad velkým plátnem – 2,9 nebo 3,4 s při 3,00 s ve stránce.
+    await page.addInitScript(() => {
+      const marks: { toast?: number; hid?: number } = {};
+      (window as unknown as { __toastMarks: typeof marks }).__toastMarks = marks;
+      new MutationObserver(() => {
+        const el = document.querySelector('[data-testid="upgrade-state"]');
+        if (el === null) return;
+        if (marks.toast === undefined && el.classList.contains('sp-toast')) marks.toast = performance.now();
+        if (marks.toast !== undefined && marks.hid === undefined && el.classList.contains('play-version-switch')) marks.hid = performance.now();
+      }).observe(document, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] });
+    });
 
     await page.goto(draft.url);
     await running(page);
     const banner = page.getByTestId('upgrade-state');
     await expect(banner).toHaveClass(/sp-toast/, { timeout: 15_000 });
-    const shownAt = Date.now();
     const canvas = await page.locator('canvas').first().boundingBox();
     const toast = await banner.boundingBox();
     if (canvas === null || toast === null) throw new Error('canvas or toast has no box');
@@ -124,8 +135,9 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 800 
     // P74 R4: na telefonu přetékal přes pravý okraj (`width: max-content` kitu přebil `right`).
     expect(toast.x >= 0 && toast.x + toast.width <= viewport.width, `toast ${String(toast.x)}–${String(toast.x + toast.width)} vs viewport 0–${String(viewport.width)}`).toBe(true);
 
-    await expect(banner).toHaveClass(/play-version-switch/, { timeout: 3_200 });
-    expect(Date.now() - shownAt).toBeLessThanOrEqual(3_200);
+    await expect(banner).toHaveClass(/play-version-switch/, { timeout: 5_000 });
+    const marks = await page.evaluate(() => (window as unknown as { __toastMarks: { toast?: number; hid?: number } }).__toastMarks);
+    expect((marks.hid ?? Infinity) - (marks.toast ?? 0), `toast shown at ${String(marks.toast)} ms, hidden at ${String(marks.hid)} ms`).toBeLessThanOrEqual(3_200);
     await expect(banner).toHaveAttribute('data-kind', 'final');
     await expect(banner).not.toHaveClass(/sp-toast/);
     const retry = banner.getByTestId('upgrade-action');
