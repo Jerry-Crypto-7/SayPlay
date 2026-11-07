@@ -56,10 +56,16 @@ export function useQualityTier(surface: RefObject<HTMLDivElement | null>): Quali
     setTier(governor.current.tier);
   });
 
+  // Poměr pixelů jen jednou, podle startovní úrovně (P74 R2): emulovaný iPhone (WebKit) po zmenšení plátna za běhu
+  // (`medium` → `low`, 1,5 → 1) kreslil už jen barvu pozadí, u všech her. Pozdější úroveň mění jen efekty a stíny.
+  // simplified: telefon, který spadne z `medium` na `low`, si nechá 1,5 – zmenšovat plátno, až se ověří na skutečném iPhonu.
   useEffect(() => {
-    setDpr(Math.min(window.devicePixelRatio, TIER_SETTINGS[tier].dpr));
+    setDpr(Math.min(window.devicePixelRatio, TIER_SETTINGS[start.tier].dpr));
+  }, [setDpr, start]);
+
+  useEffect(() => {
     if (surface.current !== null) surface.current.dataset.quality = tier;
-  }, [setDpr, surface, tier]);
+  }, [surface, tier]);
 
   return tier;
 }
