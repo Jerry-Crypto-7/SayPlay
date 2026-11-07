@@ -509,6 +509,36 @@ describe('povel jde napsat i tam, kde není disk', () => {
     expectPaidOff(await killState(SHARED, dead));
   });
 
+  /**
+   * P74 R1: zkušební produkce 7. 11. 2026 odmítla 9 z 66 tvorb her `503 DISABLED`
+   * při zdravém obchodě. Jeden zakopnutý let (vypršel limit, chyba spojení,
+   * stav 5xx) nesmí zavřít placené dveře; trvalý výpadek je zavře dál, po dvou
+   * letech, ne po frontě.
+   */
+  it('jedno zakopnutí obchodu dveře nezavře, výpadek ano – a po dvou letech', async () => {
+    const stumbles: [string, () => Response | Promise<Response>][] = [
+      ['vypršel limit', () => new Promise<Response>((_resolve, reject) => setTimeout(() => reject(new DOMException('timeout', 'TimeoutError')), 5))],
+      ['chyba spojení', () => Promise.reject(new Error('connection reset'))],
+      ['stav 503', () => json({ e: 1 }, 503)],
+    ];
+    for (const [why, first] of stumbles) {
+      __resetControlWindows();
+      let flights = 0;
+      const fetchImpl = (async () => {
+        flights += 1;
+        return flights === 1 ? first() : json({ result: null });
+      }) as unknown as typeof fetch;
+      expect((await killState(SHARED, fetchImpl)).upstream, `${why}: placené dveře zavřel jeden let`).toBe(false);
+      expect(flights, why).toBe(2);
+    }
+
+    __resetControlWindows();
+    const { fetchImpl, calls } = storeFetch(() => json({ e: 1 }, 503));
+    expectPaidOff(await killState(SHARED, fetchImpl));
+    expect(calls, 'výpadek obchodu se zkouší pořád dokola').toHaveLength(2);
+    __resetControlWindows();
+  });
+
   it('bez sdíleného obchodu neproběhne jediný síťový let', async () => {
     const { fetchImpl, calls } = storeFetch(() =>
       json({ result: JSON.stringify({ off: ['all'] }) }),

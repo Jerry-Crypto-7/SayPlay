@@ -552,13 +552,22 @@ export function httpControlStore(
     id: 'http',
     key,
     async read() {
-      const response = await fetchImpl(`${config.url}/get/${encodeURIComponent(key)}`, {
-        headers: { authorization: `Bearer ${config.token}` },
-        // **Bez cache.** Vypínač, který platí až od vypršení cizí cache, není
-        // vypínač — týž důvod, proč se soubor čte při každém rozhodnutí znovu.
-        cache: 'no-store',
-        signal: AbortSignal.timeout(config.timeoutMs),
-      });
+      const flight = () =>
+        fetchImpl(`${config.url}/get/${encodeURIComponent(key)}`, {
+          headers: { authorization: `Bearer ${config.token}` },
+          // **Bez cache.** Vypínač, který platí až od vypršení cizí cache, není
+          // vypínač — týž důvod, proč se soubor čte při každém rozhodnutí znovu.
+          cache: 'no-store',
+          signal: AbortSignal.timeout(config.timeoutMs),
+        });
+
+      // **Jeden opakovaný let, ne víc** (P74 R1): zkušební produkce 7. 11. 2026
+      // odmítla 9 z 66 tvorb her `503 DISABLED`, ve dvou shlucích, při zdravém
+      // obchodě – jedno zakopnutí letu zavřelo placené dveře. Druhý let za
+      // nepovedeným prvním to pokryje a výpadek pořád zavře: dva lety za okno
+      // `CONTROL_CACHE_TTL_MS`, ne fronta.
+      let response = await flight().catch(() => null);
+      if (response === null || !response.ok) response = await flight();
 
       if (!response.ok)
         // Bez těla odpovědi, ze stejného důvodu jako u knihy: chybová stránka
@@ -597,7 +606,8 @@ export function httpControlStore(
  * `killState()` za strop frekvence samo nestačí a je to spočítané, ne
  * odhadnuté: strop instance pouští 400 požadavků za 10 s, tedy pořád 40
  * příkazů za sekundu, což je 3,4 milionu za den. S tímhle oknem vydá instance
- * **nejvýš jeden příkaz za sekundu** bez ohledu na to, kolik jich přijde.
+ * **nejvýš jeden příkaz za sekundu** bez ohledu na to, kolik jich přijde
+ * (dva, když první selže – opakovaný let v `httpControlStore()`, P74 R1).
  *
  * ⚠ **Je to odchylka od rozhodnutí ze 4. 9. 2026 („čerstvost, ne cache") a
  * takhle je zaplacená:** zamítnutá varianta byla cache **obnovovaná jinde**,
@@ -669,7 +679,11 @@ export function windowedControlStore(
       windows.set(cacheKey, { at, read });
       // Bez tohohle by odmítnutý let, ke kterému se do vypršení okna nikdo
       // nepřidá, spadl do Node jako neošetřené odmítnutí a shodil proces.
-      read.catch(() => undefined);
+      // Důvod jde do logu jednou za let (P74 R1: bez něj se `503 DISABLED`
+      // v produkci nedalo vysvětlit); zpráva nenese adresu ani token.
+      read.catch((thrown: unknown) => {
+        console.warn(`shared control key ${inner.key} could not be read: ${(thrown as Error).message}`);
+      });
       return read;
     },
   };
