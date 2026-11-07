@@ -680,9 +680,12 @@ export function windowedControlStore(
       // Bez tohohle by odmítnutý let, ke kterému se do vypršení okna nikdo
       // nepřidá, spadl do Node jako neošetřené odmítnutí a shodil proces.
       // Důvod jde do logu jednou za let (P74 R1: bez něj se `503 DISABLED`
-      // v produkci nedalo vysvětlit); zpráva nenese adresu ani token.
+      // v produkci nedalo vysvětlit). Cizí zpráva (chybná adresa, kus těla
+      // odpovědi) může nést adresu, proto z ní jde do logu jen jméno chyby.
       read.catch((thrown: unknown) => {
-        console.warn(`shared control key ${inner.key} could not be read: ${(thrown as Error).message}`);
+        const { name, message } = thrown as Error;
+        const reason = message.startsWith('control store answered') ? message : name;
+        console.warn(`shared control key ${inner.key} could not be read: ${reason}`);
       });
       return read;
     },

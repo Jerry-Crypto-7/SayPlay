@@ -536,7 +536,31 @@ describe('povel jde napsat i tam, kde není disk', () => {
     const { fetchImpl, calls } = storeFetch(() => json({ e: 1 }, 503));
     expectPaidOff(await killState(SHARED, fetchImpl));
     expect(calls, 'výpadek obchodu se zkouší pořád dokola').toHaveLength(2);
-    __resetControlWindows();
+  });
+
+  it('druhý let má vlastní, nevypršený limit – sdílený signál by opakování zabil', async () => {
+    const signals: AbortSignal[] = [];
+    const fetchImpl = (async (_url: unknown, init?: RequestInit) => {
+      signals.push(init!.signal!);
+      if (signals.length === 1) await new Promise((resolve) => setTimeout(resolve, 260));
+      return signals.length === 1 ? json({ e: 1 }, 503) : json({ result: null });
+    }) as unknown as typeof fetch;
+    expect((await killState(SHARED, fetchImpl)).upstream).toBe(false);
+    expect(signals).toHaveLength(2);
+    expect(signals[0]!.aborted, 'první let měl vypršet').toBe(true);
+    expect(signals[1]!.aborted, 'druhý let startoval s vypršeným limitem').toBe(false);
+  });
+
+  it('do logu jde důvod, ale ne tělo odpovědi ani adresa obchodu', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const html = (async () => new Response('<html>https://store.example.com/get?token=t</html>', { status: 200 })) as unknown as typeof fetch;
+    expectPaidOff(await killState(SHARED, html));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const logged = warn.mock.calls.map((call) => String(call[0])).join('\n');
+    warn.mockRestore();
+    expect(logged).toContain('worldsmith:spend:control');
+    expect(logged).not.toContain('store.example.com');
+    expect(logged).not.toContain('html');
   });
 
   it('bez sdíleného obchodu neproběhne jediný síťový let', async () => {
