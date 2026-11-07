@@ -64,3 +64,8 @@ Kontrola na řádek: hra se načte, snímek uprostřed hry, robot `playWitness()
 - **R4 – hláška „Couldn't make the full-detail version right now. Keep playing the quick…“ přetéká přes pravý okraj obrazovky** na obou telefonech (text i rámeček uříznuté, např. `shots/catch-pixel.jpg`).
 - **R5 – chyba stránky na iPhonu** `null is not an object (evaluating 'i.x')`, 1× z 28 (runner, první načtení).
   - T3 (7. 11.): **nereprodukováno, 0 z 30** – 12 načtení v čerstvém WebKitu nad místním `next start`, 10 nad zkušební produkcí, 8 celých řádků runner/iPhone skriptem (robot, hra rukou, výzva). Původní záznam nesl jen text chyby, bez místa v kódu; `i.x` je ve 26 souborech buildu. Skript teď ke každé chybě stránky zapíše dva rámce stacku. Oprava až podle nich; naslepo se nic neměnilo. Hru to neshodilo – řádek prošel.
+
+## Zřícenina za stohovací věží (P73D s4) – zapsáno, přeskočeno
+
+- **Příčina (změřeno sondou `__playLandmark()`, věta s4, semínko 73104, desktop 1440×900):** není to řada kulis, ale orientační bod sady hradu `gen3d-stone-water-well` v měřítku 3. Bod se zvětšuje (1,5–3×), dokud nemá v obraze cílovou výšku. Studna má 1,8 m, takže vždycky dostane 3× a vznikne z ní asi 5 m vysoký a stejně široký hnědý prstenec vpravo za věží.
+- **Proč bez opravy:** změna dat nestačí. Bez studny nemá velká aréna hradu (40 × 40 m) žádný bod. Do úzkého proužku za zdí se vejde jen nízký model a věž (6,6 m), vrátnice (5 m) ani padací most (4 m) se tam nevejdou. Test `p54b-landmark` „castle: aréna 40 × 40 m…“ pak padá. Oprava patří do výběru bodu (strop měřítka pro nízký a široký model), a to je víc než 20 řádků dat. Studna je bodem i u louky, kde hrozí totéž.
