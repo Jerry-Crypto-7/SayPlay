@@ -9,7 +9,7 @@ import { BoxGeometry, Group, Mesh, MeshStandardMaterial, type ShaderMaterial, Sh
 import { describe, expect, it } from 'vitest';
 
 import { mergeBody } from '../load';
-import { inkMeshes, setInkViewport } from '../rig/InkOutline';
+import { INK_PX, inkMeshes, setInkViewport } from '../rig/InkOutline';
 import { deformBody, deformPoint, type ToyUniforms } from '../toy-deform';
 
 function coin(): Group {
@@ -142,6 +142,9 @@ describe('deformBody', () => {
     expect((stillHull.material as ShaderMaterial).vertexShader).not.toContain('toyDeform');
     // Posun obrysu z velikosti plátna platí i pro ohnutý obal.
     setInkViewport(500, 250);
-    expect((material.uniforms.inkOffset!.value as Vector2).toArray()).toEqual([0.01, 0.02]);
+    // Posun v NDC = 2 · `INK_PX` / rozměr plátna (P75 T2 ztenčil obrys na 1,5 px).
+    const [x, y] = (material.uniforms.inkOffset!.value as Vector2).toArray();
+    expect(x).toBeCloseTo((2 * INK_PX) / 500, 9);
+    expect(y).toBeCloseTo((2 * INK_PX) / 250, 9);
   });
 });
