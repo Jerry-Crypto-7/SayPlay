@@ -4,7 +4,7 @@ Type one sentence and play a short 3D game made from it within seconds, in the b
 
 **Focus kategorie:** Browser-native creative tools
 
-**Submission draft, 5 November 2026.** The TODO(measure) lines are filled in from one run on the final build before submission. Third-party libraries, models, assets and APIs, and the AI tools that wrote the code, are listed in [DISCLOSURE.md](../../DISCLOSURE.md).
+**Submission draft, 7 November 2026.** Numbers dated 7 November 2026 come from the final build ([run file](../../evals/play/p74/run-2026-11-07.json)). Third-party libraries, models, assets and APIs, and the AI tools that wrote the code, are listed in [DISCLOSURE.md](../../DISCLOSURE.md).
 
 ## What the judge does
 
@@ -20,19 +20,21 @@ After a win the main button is **Dare a friend to beat it**. The friend opens th
 
 A deterministic runtime steps every game: arcade games at a fixed 60 Hz, the grid at 20 Hz, with seeded random streams and no wall-clock time inside the hashed state. Nothing unwinnable is published: the compiler tries up to four seeds, the robot must win the game and replay it to an equal state hash, and a game that a player who does nothing would win is refused. A game's id is a hash of its spec, world, seed and component versions, so a published game is never edited in place.
 
-The scene draws from a library of 783 catalogue models – 363 CC0 models, 56 built by code in Blender, 32 built by code in three.js and 332 generated offline from text through an image and mesh pipeline recorded per model – plus 15 rigged CC0 characters. Every game plays generated music and sound effects chosen by its look.
+The scene draws from a library of 1787 catalogue models – 362 CC0 models, 57 built by code in Blender, 32 built by code in three.js and 1336 generated offline from text through an image and mesh pipeline recorded per model – plus 15 rigged CC0 characters. Every game plays generated music and sound effects chosen by its look.
 
 The director is gpt-6-astra through the paid OpenAI API. It sits behind a server-side spend cap kept in shared storage, so the cap holds across serverless instances. <!-- verify-before-submit --> The demo and its backend stay online until at least 31 December 2026.
 
 ## Measured so far
 
-On a fixed set of 200 test sentences scored on 4 October 2026 ([report](../../evals/play/p37/o8.md)), the quick version alone, without the AI director, produced a playable game for 200/200 sentences; the robot won 200/200 and a player who does nothing lost 200/200. A blind vision judge looking at a three-frame clip of the robot's run recognised the verb in 18/200 sentences and the hero in 39/118 of the sentences that name one. The quick version read the verb from the words in 98/200 sentences.
+On a held-out set of 200 test sentences scored on 4 October 2026 ([report](../../evals/play/p37/o8.md)), the quick version alone, without the AI director, produced a playable game for 200/200 sentences; the robot won 200/200 and a player who does nothing lost 200/200. A blind vision judge looking at a three-frame clip of the robot's run recognised the verb in 18/200 sentences and the hero in 39/118 of the sentences that name one. The quick version read the verb from the words in 98/200 sentences.
 
-TODO(measure): the quick version on the same 200 sentences, rerun on the final build.
+On 7 November 2026 the same 200 held-out sentences went through the quick version again on the final build, offline and without the vision judge ([run file](../../evals/play/p74/run-2026-11-07.json)): 200/200 playable, the robot won 200/200 and a player who does nothing lost 199/200 (the exception is a submarine game, t182). The word check now counts the verb as read in 75/200 sentences, against 98/200 on 4 October. That check is older than several of the newer games: "sort recycling on a fast conveyor belt at the dump" now becomes a sorting game and still counts as not read, so part of the drop comes from the check, not from the game.
 
-TODO(measure): median time until the full-detail version is on screen, from one run of 20 sentences on the final build with gpt-6-astra.
+On the trial deployment on 7 November 2026, the quick version answered a new sentence in a median 1.8 s (5/5 sentences, [ai.json](../../evals/play/p74/ai.json)), and a game link loaded to its first frame in a median 1.4 s on an emulated iPhone 15 and 2.6 s on an emulated Pixel 7, 28 games on each phone, all 56 played through by the robot ([phones.json](../../evals/play/p74/phones.json)). On 6 November 2026 the emulated Pixel 7 with a four times slower CPU held a median 45–60 FPS in each of 8 games ([report](../../evals/play/p73/sceny/perf.md)). Both phones are emulated on a desktop PC; no real phone was measured.
 
-TODO(measure): cost per full-detail version from the spend ledger of that run.
+The full-detail version was not measured on the final build. On 7 November 2026 the trial deployment returned it for 0/5 sentences (`MODEL_UNAVAILABLE`, the director key was not accepted), and the local run had no director key, so no time until it is on screen and no cost per version could be taken; the run spent 0 USD. The last measurement is from 24 September 2026: the full-detail version for 30/30 sentences, AI time p50 12 s and p90 20 s ([report](../../evals/play/fidelity/README.md)).
+
+The stunt game is switched off in this build and is not part of the submission.
 
 ## What this does not claim
 
