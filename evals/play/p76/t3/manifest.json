@@ -1,0 +1,224 @@
+{
+ "takenAt": "2026-11-07T20:33:32.546Z",
+ "hz": 60,
+ "moments": [
+  {
+   "id": "0start",
+   "second": 0
+  },
+  {
+   "id": "1play",
+   "second": 3
+  },
+  {
+   "id": "2play",
+   "second": 8
+  }
+ ],
+ "sentences": [
+  {
+   "id": "s1",
+   "seed": 73101,
+   "text": "Escape a volcano before the lava reaches you"
+  },
+  {
+   "id": "s2",
+   "seed": 73102,
+   "text": "An underwater race between a turtle and a shark"
+  },
+  {
+   "id": "s3",
+   "seed": 73103,
+   "text": "A cat delivering pizzas across rooftops while avoiding seagulls"
+  },
+  {
+   "id": "s4",
+   "seed": 73104,
+   "text": "Balance a tower of pancakes on a windy day"
+  },
+  {
+   "id": "s5",
+   "seed": 73105,
+   "text": "A knight jumps across floating islands to rescue a dragon egg"
+  },
+  {
+   "id": "s6",
+   "seed": 73106,
+   "text": "A spaceship shoots asteroids in deep space"
+  },
+  {
+   "id": "s7",
+   "seed": 73107,
+   "text": "Play mini golf in a candy land"
+  },
+  {
+   "id": "s8",
+   "seed": 73108,
+   "text": "Find the lost crown in an old castle"
+  },
+  {
+   "id": "s9",
+   "seed": 73109,
+   "text": "A bird flies through a stormy city"
+  },
+  {
+   "id": "s10",
+   "seed": 73110,
+   "text": "A farmer catches falling apples in the orchard"
+  },
+  {
+   "id": "s11",
+   "seed": 73111,
+   "text": "A dog races a cat through a candy land"
+  },
+  {
+   "id": "s12",
+   "seed": 73112,
+   "text": "A penguin slides down an icy mountain"
+  }
+ ],
+ "shots": [
+  {
+   "id": "s8",
+   "vp": "desktop",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s8-desktop-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 14,
+      "horizonNdc": 0.432,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.297
+      },
+      "targetNdc": {
+       "x": -1.586,
+       "y": -0.498
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s8-desktop-1play.jpg",
+     "tick": 96,
+     "runState": "won",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 25,
+      "horizonNdc": 0.808,
+      "heroNdc": {
+       "x": -0.151,
+       "y": 0.308
+      },
+      "targetNdc": {
+       "x": -0.225,
+       "y": 0.268
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s8-desktop-2play.jpg",
+     "tick": 96,
+     "runState": "won",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 25,
+      "horizonNdc": 0.808,
+      "heroNdc": {
+       "x": -0.151,
+       "y": 0.308
+      },
+      "targetNdc": {
+       "x": -0.225,
+       "y": 0.268
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "39e3eede3e314558cb3eb6204d646de2",
+   "genre": "quest",
+   "control": "move_free",
+   "setting": "old castle",
+   "stage": "move_free",
+   "look": "castle",
+   "quality": "high"
+  },
+  {
+   "id": "s8",
+   "vp": "phone",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s8-phone-0start.jpg",
+     "tick": 0,
+     "runState": "ready",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 14,
+      "horizonNdc": 0.432,
+      "heroNdc": {
+       "x": 0,
+       "y": -0.296
+      },
+      "targetNdc": {
+       "x": -6.138,
+       "y": -0.49
+      }
+     }
+    },
+    {
+     "moment": "1play",
+     "file": "s8-phone-1play.jpg",
+     "tick": 96,
+     "runState": "won",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 25,
+      "horizonNdc": 0.808,
+      "heroNdc": {
+       "x": -0.692,
+       "y": 0.008
+      },
+      "targetNdc": {
+       "x": -0.917,
+       "y": 0.006
+      }
+     }
+    },
+    {
+     "moment": "2play",
+     "file": "s8-phone-2play.jpg",
+     "tick": 96,
+     "runState": "won",
+     "camera": {
+      "fov": 60,
+      "pitchDeg": 25,
+      "horizonNdc": 0.808,
+      "heroNdc": {
+       "x": -0.693,
+       "y": 0.016
+      },
+      "targetNdc": {
+       "x": -0.919,
+       "y": 0.007
+      }
+     }
+    }
+   ],
+   "errors": [],
+   "versionId": "39e3eede3e314558cb3eb6204d646de2",
+   "genre": "quest",
+   "control": "move_free",
+   "setting": "old castle",
+   "stage": "move_free",
+   "look": "castle",
+   "quality": "medium"
+  }
+ ]
+}

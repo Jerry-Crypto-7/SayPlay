@@ -119,16 +119,25 @@ export function Grading({ family, tier }: { readonly family: GradeFamily; readon
 }
 
 /**
- * Tilt-shift: síla rozostření a šíře přechodu od ostrého pásu k plnému rozostření (podíl úhlopříčky, míň = užší).
- * P75 T4: makro jako koncept A – v záběru zblízka (`RestShot`) silně, za hry slaběji, ať je trať před hrdinou čitelná
- * (P73D mělo 0,12 a 0,7 všude). Počet vzorků dává úroveň kvality (`TIER_SETTINGS.tilt`).
+ * Tilt-shift: síla rozostření (podíl úhlopříčky / 16, jak ji bere shader) a šíře přechodu od ostrého pásu k plnému
+ * rozostření ve **výškách obrazu** (míň = užší). V záběru zblízka (`RestShot`) silněji, za hry slaběji. Počet vzorků
+ * dává úroveň kvality (`TIER_SETTINGS.tilt`).
+ *
+ * P76 T1: P75 (0,18 / 0,32 a přechod jako podíl úhlopříčky 0,5 / 0,32) soudce proti `main` u hradu a tučňáka označil
+ * za „heavy blur obscures the environment“. Shader měří přechod úhlopříčkou, která je na telefonu na výšku jen ~1,1
+ * výšky (desktop 16:10 ~1,9) – telefon tak došel k plnému rozostření skoro dvakrát blíž u hrdiny. Přechod se proto
+ * počítá z výšky obrazu (`macroFocus`) a za hry je zpátky na síle P73D.
  */
-export const TILT = { play: { blur: 0.18, taper: 0.5 }, rest: { blur: 0.32, taper: 0.32 } } as const;
+export const TILT = { play: { blur: 0.12, taper: 1.2 }, rest: { blur: 0.2, taper: 0.8 } } as const;
 
-/** Tilt-shift snímku: herní ostrý pás `focus` (výška obrazu 0–1) prolnutý se záběrem zblízka váhou `weight` (0–1). */
-export function macroFocus(focus: number, weight: number): { readonly blur: number; readonly taper: number; readonly focus: number } {
+/**
+ * Tilt-shift snímku: herní ostrý pás `focus` (výška obrazu 0–1) prolnutý se záběrem zblízka váhou `weight` (0–1).
+ * `taper` je už pro shader (podíl úhlopříčky plátna `width` × `height`).
+ */
+export function macroFocus(focus: number, weight: number, width: number, height: number): { readonly blur: number; readonly taper: number; readonly focus: number } {
   const mix = (play: number, rest: number): number => play + (rest - play) * weight;
-  return { blur: mix(TILT.play.blur, TILT.rest.blur), taper: mix(TILT.play.taper, TILT.rest.taper), focus: mix(focus, REST_FOCUS) };
+  const heights = height / Math.hypot(width, height);
+  return { blur: mix(TILT.play.blur, TILT.rest.blur), taper: mix(TILT.play.taper, TILT.rest.taper) * heights, focus: mix(focus, REST_FOCUS) };
 }
 
 /**
@@ -138,8 +147,8 @@ export function macroFocus(focus: number, weight: number): { readonly blur: numb
  */
 function MacroFocus({ focus, samples, cross }: { readonly focus: number; readonly samples: number; readonly cross: boolean }) {
   const effects = useRef<(TiltShiftEffect | null)[]>([null, null]);
-  useFrame(({ camera }) => {
-    const at = macroFocus(focus, restWeightOf(camera));
+  useFrame(({ camera, size }) => {
+    const at = macroFocus(focus, restWeightOf(camera), size.width, size.height);
     for (const tilt of effects.current) {
       if (tilt === null) continue;
       tilt.blur = at.blur;

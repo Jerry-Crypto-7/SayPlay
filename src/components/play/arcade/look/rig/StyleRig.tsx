@@ -22,6 +22,7 @@ import {
   BackSide,
   Color,
   type DirectionalLight,
+  ImageBitmapLoader,
   LinearFilter,
   type Mesh,
   type Object3D,
@@ -30,8 +31,7 @@ import {
   ShaderMaterial,
   SphereGeometry,
   SRGBColorSpace,
-  type Texture,
-  TextureLoader,
+  Texture,
   Vector2,
   Vector3,
 } from 'three';
@@ -40,6 +40,7 @@ import { type Look, type LookId, NIGHT } from '@/play/arcade/look';
 
 import { Ambient } from '../Ambient';
 import { setCharacterRim } from '../load';
+import { loadsIdle } from '../pending-loads';
 import { darkness, setScenePalette } from './toon';
 import { Wind } from '../Vegetation';
 import { airOf, BACK_LIGHT, BACK_SKY, goldenHour, liftLight, SHADOW_RADIUS } from './fog-light';
@@ -210,6 +211,9 @@ function prepare(texture: Texture): Texture {
   return texture;
 }
 
+/** Nejdéle, kolik malovaná obloha čeká na modely scény (ms); pak se stahuje i tak. */
+const PAINT_DEFER_CAP_MS = 5000;
+
 /** Před první montáží oblohy: nic se nestahuje. */
 const IDLE = (): PaintStep => ({ amount: 0, busy: false });
 const WHITE = new Color(1, 1, 1);
@@ -225,28 +229,37 @@ function Sky({ look, control, painted }: { readonly look: Look; readonly control
     (material.uniforms.paintTint!.value as Color).copy(painted?.tint ?? WHITE);
   }, [material, painted]);
   // Malovaná obloha (P75 T3): stahuje se až po prvním snímku, pak se prolne; při chybě zůstane dnešní.
+  // P76 T3: na telefonu dekódování webp při nahrání do GPU stálo 35 ms hlavního vlákna v prvních sekundách hry –
+  // stahuje se proto až po modelech (`loadsIdle`) a dekóduje mimo hlavní vlákno (`createImageBitmap`).
   const url = painted?.url ?? null;
   const fade = useRef<(delta: number) => PaintStep>(IDLE);
   useEffect(() => {
     let alive = true;
     let texture: Texture | null = null;
     fade.current = paintFade(url, (src, ready, failed) =>
-      new TextureLoader().load(
-        src,
-        (next) => {
-          if (!alive) return void next.dispose();
-          texture = prepare(next);
-          material.uniforms.painted!.value = texture;
-          ready();
-          invalidate();
-        },
-        undefined,
-        failed,
-      ),
+      void loadsIdle(PAINT_DEFER_CAP_MS).then(() => {
+        if (!alive) return;
+        // Bitmapa ignoruje `flipY` textury: otočí se už při dekódování, `v` zdola jako u `TextureLoader`.
+        new ImageBitmapLoader().setOptions({ imageOrientation: 'flipY', premultiplyAlpha: 'none' }).load(
+          src,
+          (bitmap) => {
+            if (!alive) return void bitmap.close();
+            texture = prepare(new Texture(bitmap));
+            texture.flipY = false;
+            texture.needsUpdate = true;
+            material.uniforms.painted!.value = texture;
+            ready();
+            invalidate();
+          },
+          undefined,
+          failed,
+        );
+      }),
     );
     invalidate();
     return () => {
       alive = false;
+      (texture?.image as ImageBitmap | undefined)?.close();
       texture?.dispose();
       material.uniforms.painted!.value = null;
       material.uniforms.paint!.value = 0;

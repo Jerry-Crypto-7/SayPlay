@@ -119,3 +119,35 @@ describe('painted skies on disk', () => {
     expect(FEED_CARD).toBe('[data-testid="feed-card"]');
   });
 });
+
+// P76 T2: soudce proti `main` – hnědá zem a barevné domy malované oblohy „less convincing as a stormy city“.
+describe('P76 T2: bouřlivé město studeně', () => {
+  const rgb = (hex: string) => [1, 3, 5].map((at) => Number.parseInt(hex.slice(at, at + 2), 16)) as [number, number, number];
+  const lum = (hex: string) => rgb(hex).reduce((sum, channel) => sum + channel, 0);
+
+  it('gives the stormy city a cold wet ground and the overcast mood sky instead of the sunny painting', () => {
+    for (const stormy of [sceneLook({ setting: 'a stormy city', mood: '', look: 'city' }), sceneLook({ setting: 'a city', mood: '', look: 'city', weather: 'rain' })]) {
+      const [r, , b] = rgb(stormy.ground);
+      expect(b, stormy.ground).toBeGreaterThan(r);
+      expect(lum(stormy.ground)).toBeLessThan(lum(LOOKS.city.ground));
+      expect(paintedSkyOf(stormy, 'city', 'high')).toBeNull();
+      expect(paintedSkyOf(stormy, 'city', 'low')).toBeNull();
+    }
+  });
+
+  it('leaves the clear city and every place without a storm its P75 ground and painting', () => {
+    const clear = sceneLook({ setting: 'a city', mood: '', look: 'city' });
+    expect(clear.ground).toBe(LOOKS.city.ground);
+    expect(paintedSkyOf(clear, 'city', 'high')?.url).toBe('/play/env/diorama-city.webp');
+    for (const id of Object.keys(PAINTED_SKIES) as (keyof typeof PAINTED_SKIES)[]) {
+      const day = sceneLook({ setting: `a ${id}`, mood: '', look: id });
+      expect(day.storm, id).toBeUndefined();
+      const stormy = sceneLook({ setting: `a ${id}`, mood: '', look: id, weather: 'rain' });
+      const [[r0, , b0], [r1, , b1]] = [rgb(day.ground), rgb(stormy.ground)];
+      // Déšť zem ztmaví (už tmavší než mokrá šedomodrá jen ochladí) a teplou ochladí aspoň o polovinu všude,
+      // nejen ve městě; studená se teplou nestane.
+      expect(r1 - b1, id).toBeLessThanOrEqual(Math.max(0, (r0 - b0) / 2));
+      expect(lum(stormy.ground), id).toBeLessThanOrEqual(Math.max(lum(day.ground), lum('#2c3e50')));
+    }
+  });
+});

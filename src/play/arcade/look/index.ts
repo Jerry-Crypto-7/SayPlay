@@ -653,6 +653,8 @@ export interface Look {
   readonly ambient: readonly AmbientKind[];
   /** Vítr ve vegetaci z nálady (P54B T13): násobek větru sady (`LOOK_WIND`), bouřka `STORM_WIND`; bez něj 1. */
   readonly wind?: number;
+  /** Bouřka z věty nebo počasí (P76 T2): zatažená obloha nálady místo malované oblohy místa (`paintedSkyOf`). */
+  readonly storm?: true;
 }
 
 /**
@@ -871,6 +873,8 @@ interface MoodShift {
   readonly sun: number;
   readonly glow: number;
   readonly fog: readonly [near: number, far: number];
+  /** Zem jde o `amount` k `tone` (bouřka: mokrá); bez něj zem sady. */
+  readonly ground?: { readonly tone: string; readonly amount: number };
 }
 
 /*
@@ -884,8 +888,9 @@ const MOOD_SHIFTS: Readonly<Record<Exclude<Mood, 'dusk' | 'cozy'>, MoodShift>> =
   gloom: { tone: '#283a3a', lightTone: '#a9bdc8', amount: 0.65, light: 0.9, sun: 0.45, glow: 0.15, fog: [0.6, 0.8] },
   // Strašidelno: šero do zelenomodra (ne do fialova) a hustší mlha.
   spooky: { tone: '#1d3a37', lightTone: '#a3d6c8', amount: 0.7, light: 0.85, sun: 0.3, glow: 0.15, fog: [0.45, 0.65] },
-  // Bouřka: tmavé šedé nebe; déšť kreslí `Weather.tsx`.
-  storm: { tone: '#3a4a4a', lightTone: '#b0bcc4', amount: 0.7, light: 0.9, sun: 0.35, glow: 0.08, fog: [0.6, 0.8] },
+  // Bouřka: tmavé šedé nebe; déšť kreslí `Weather.tsx`. Zem mokrá, tmavě šedomodrá (P76 T2): teplá hnědá zem města
+  // z P75 v dešti podle soudce „less convincing as a stormy city“.
+  storm: { tone: '#3a4a4a', lightTone: '#b0bcc4', amount: 0.7, light: 0.9, sun: 0.35, glow: 0.08, fog: [0.6, 0.8], ground: { tone: '#2c3e50', amount: 0.75 } },
   // Mlha: světlá a blíž.
   fog: { tone: '#c8d0d0', lightTone: '#e2e8ec', amount: 0.6, light: 1, sun: 0.6, glow: 0.4, fog: [0.3, 0.55] },
   // Jasno: barvy sady, silnější slunce a dohled dál.
@@ -938,6 +943,7 @@ function withMood(look: Look, shift: MoodShift): Look {
     sunColor: moody.sunColor,
     glow: look.glow * shift.glow,
     fog: [look.fog[0] * shift.fog[0], look.fog[1] * shift.fog[1]],
+    ...(shift.ground === undefined ? {} : { ground: mix(look.ground, shift.ground.tone, shift.ground.amount) }),
   };
 }
 
@@ -965,8 +971,8 @@ export function sceneLook(theme: { readonly setting: string; readonly mood: stri
   const time = theme.timeOfDay ?? placeTime(theme.setting) ?? (said === 'dusk' ? 'dusk' : null);
   const sky = theme.weather === undefined ? null : WEATHER_MOODS[theme.weather];
   const mood = MOOD_ORDER.find((entry) => entry === said || entry === sky);
-  // Noc přebije náladu světla, vítr bouřky ale fouká i v noci.
-  const wind = mood === 'storm' ? { wind: STORM_WIND } : {};
+  // Noc přebije náladu světla, vítr a zatažená obloha bouřky ale zůstanou i v noci.
+  const wind = mood === 'storm' ? { wind: STORM_WIND, storm: true as const } : {};
   if (time === 'night') return { ...placed, ...NIGHT, exposure: Math.min(placed.exposure, 1), ...wind };
   const timed = time === 'dusk' ? { ...placed, ...DUSK } : placed;
   return mood === undefined ? timed : { ...withMood(timed, MOOD_SHIFTS[mood]), ...wind };

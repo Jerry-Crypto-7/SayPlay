@@ -1,0 +1,422 @@
+{
+ "measuredAt": "2026-11-07T20:10:22.201Z",
+ "path": "sentence",
+ "a": "http://127.0.0.1:3208",
+ "b": "http://127.0.0.1:3207",
+ "sentences": [
+  "s3",
+  "s8",
+  "s5"
+ ],
+ "runs": 3,
+ "sides": {
+  "A": {
+   "n": 9,
+   "firstDraw": 4263,
+   "programs": 22,
+   "linkMs": 1,
+   "waitMs": 796,
+   "texMs": 2,
+   "textures": 45,
+   "draws": 52
+  },
+  "B": {
+   "n": 9,
+   "firstDraw": 4253,
+   "programs": 22,
+   "linkMs": 2,
+   "waitMs": 796,
+   "texMs": 2,
+   "textures": 45,
+   "draws": 52
+  }
+ },
+ "diff": [
+  {
+   "key": "js",
+   "A": 2536,
+   "B": 2585,
+   "diff": 49
+  },
+  {
+   "key": "(program)",
+   "A": 2120,
+   "B": 2135,
+   "diff": 15
+  },
+  {
+   "key": "setAttribute",
+   "A": 25,
+   "B": 28,
+   "diff": 3
+  },
+  {
+   "key": "(garbage collector)",
+   "A": 44,
+   "B": 47,
+   "diff": 3
+  },
+  {
+   "key": "gl:getProgramInfoLog",
+   "A": 785,
+   "B": 788,
+   "diff": 3
+  },
+  {
+   "key": "getActiveUniform",
+   "A": 3,
+   "B": 1,
+   "diff": -2
+  },
+  {
+   "key": "matchMedia",
+   "A": 5,
+   "B": 3,
+   "diff": -1
+  },
+  {
+   "key": "appendChild",
+   "A": 17,
+   "B": 16,
+   "diff": -1
+  },
+  {
+   "key": "(idle)",
+   "A": 46,
+   "B": 47,
+   "diff": 1
+  },
+  {
+   "key": "evaluate",
+   "A": 3,
+   "B": 3,
+   "diff": -1
+  },
+  {
+   "key": "(anonymous native)",
+   "A": 19,
+   "B": 18,
+   "diff": -1
+  },
+  {
+   "key": "json",
+   "A": 1,
+   "B": 0,
+   "diff": -1
+  },
+  {
+   "key": "removeEventListener",
+   "A": 0,
+   "B": 1,
+   "diff": 1
+  },
+  {
+   "key": "createObjectURL",
+   "A": 2,
+   "B": 2,
+   "diff": -1
+  },
+  {
+   "key": "RegExp: \\w+\\s+(\\w+)\\([\\w\\s,]*\\)\\s*{",
+   "A": 1,
+   "B": 2,
+   "diff": 1
+  },
+  {
+   "key": "gl:bufferData",
+   "A": 4,
+   "B": 3,
+   "diff": -1
+  },
+  {
+   "key": "type.<computed>",
+   "A": 6,
+   "B": 5,
+   "diff": -1
+  },
+  {
+   "key": "shaderSource",
+   "A": 21,
+   "B": 22,
+   "diff": 1
+  },
+  {
+   "key": "bindAttribLocation",
+   "A": 0,
+   "B": 1,
+   "diff": 1
+  },
+  {
+   "key": "gl:getShaderInfoLog",
+   "A": 21,
+   "B": 20,
+   "diff": -1
+  },
+  {
+   "key": "RegExp: ^[ \\t]*#include +<([\\w\\d./]+)>",
+   "A": 5,
+   "B": 4,
+   "diff": -1
+  },
+  {
+   "key": "gl:getProgramParameter",
+   "A": 8,
+   "B": 7,
+   "diff": -1
+  },
+  {
+   "key": "RegExp: #pragma unroll_loop_start\\s+for\\s*\\(\\s*int\\s+i\\s*=\\s*(\\d+)\\s*;\\s*i\\s*<\\s*(\\d+)\\s*;\\s*i\\s*\\+\\+\\s*\\)\\s*{([\\s\\S]+?)}\\s+#pragma unroll_loop_end",
+   "A": 2,
+   "B": 2,
+   "diff": 1
+  },
+  {
+   "key": "getAttribLocation",
+   "A": 1,
+   "B": 0,
+   "diff": -1
+  },
+  {
+   "key": "getUniformLocation",
+   "A": 2,
+   "B": 2,
+   "diff": 1
+  }
+ ],
+ "results": [
+  {
+   "run": 1,
+   "side": "A",
+   "sentence": "s3",
+   "programs": 21,
+   "linkMs": 1.4000000953674316,
+   "waitMs": 732.3000004291534,
+   "texMs": 1.799999713897705,
+   "textures": 45,
+   "draws": 52,
+   "firstDraw": 4263,
+   "fullNavigation": false
+  },
+  {
+   "run": 1,
+   "side": "B",
+   "sentence": "s3",
+   "programs": 21,
+   "linkMs": 1.5999999046325684,
+   "waitMs": 747.6999995708466,
+   "texMs": 1.6999995708465576,
+   "textures": 45,
+   "draws": 52,
+   "firstDraw": 4090.39990234375,
+   "fullNavigation": false
+  },
+  {
+   "run": 1,
+   "side": "B",
+   "sentence": "s5",
+   "programs": 22,
+   "linkMs": 1.000000238418579,
+   "waitMs": 826.3999993801117,
+   "texMs": 1.8999998569488525,
+   "textures": 45,
+   "draws": 52,
+   "firstDraw": 4321.800048828125,
+   "fullNavigation": false
+  },
+  {
+   "run": 1,
+   "side": "A",
+   "sentence": "s5",
+   "programs": 22,
+   "linkMs": 1.6000003814697266,
+   "waitMs": 831.3999996185303,
+   "texMs": 1.5999999046325684,
+   "textures": 45,
+   "draws": 52,
+   "firstDraw": 4329.2998046875,
+   "fullNavigation": false
+  },
+  {
+   "run": 1,
+   "side": "A",
+   "sentence": "s8",
+   "programs": 22,
+   "linkMs": 1.6999998092651367,
+   "waitMs": 818.9999997615814,
+   "texMs": 2,
+   "textures": 45,
+   "draws": 52,
+   "firstDraw": 4100.699951171875,
+   "fullNavigation": false
+  },
+  {
+   "run": 1,
+   "side": "B",
+   "sentence": "s8",
+   "programs": 22,
+   "linkMs": 1.9000003337860107,
+   "waitMs": 808.2000000476837,
+   "texMs": 2.1000001430511475,
+   "textures": 45,
+   "draws": 52,
+   "firstDraw": 4156.10009765625,
+   "fullNavigation": false
+  },
+  {
+   "run": 2,
+   "side": "B",
+   "sentence": "s3",
+   "programs": 22,
+   "linkMs": 1.0999999046325684,
+   "waitMs": 816.0000007152557,
+   "texMs": 1.5,
+   "textures": 45,
+   "draws": 52,
+   "firstDraw": 4252.699951171875,
+   "fullNavigation": false
+  },
+  {
+   "run": 2,
+   "side": "A",
+   "sentence": "s3",
+   "programs": 22,
+   "linkMs": 1.3000001907348633,
+   "waitMs": 764.8000004291534,
+   "texMs": 2.4000003337860107,
+   "textures": 45,
+   "draws": 52,
+   "firstDraw": 4288.599853515625,
+   "fullNavigation": false
+  },
+  {
+   "run": 2,
+   "side": "A",
+   "sentence": "s5",
+   "programs": 22,
+   "linkMs": 1.4000000953674316,
+   "waitMs": 782.9999992847443,
+   "texMs": 2.0999999046325684,
+   "textures": 45,
+   "draws": 52,
+   "firstDraw": 4357.800048828125,
+   "fullNavigation": false
+  },
+  {
+   "run": 2,
+   "side": "B",
+   "sentence": "s5",
+   "programs": 22,
+   "linkMs": 1.299999713897705,
+   "waitMs": 841.900000333786,
+   "texMs": 1.8000004291534424,
+   "textures": 45,
+   "draws": 52,
+   "firstDraw": 4321.7998046875,
+   "fullNavigation": false
+  },
+  {
+   "run": 2,
+   "side": "B",
+   "sentence": "s8",
+   "programs": 22,
+   "linkMs": 1.5,
+   "waitMs": 795.5,
+   "texMs": 2.299999475479126,
+   "textures": 45,
+   "draws": 52,
+   "firstDraw": 4080.199951171875,
+   "fullNavigation": false
+  },
+  {
+   "run": 2,
+   "side": "A",
+   "sentence": "s8",
+   "programs": 22,
+   "linkMs": 2.4000000953674316,
+   "waitMs": 796.0999987125397,
+   "texMs": 2.200000047683716,
+   "textures": 45,
+   "draws": 52,
+   "firstDraw": 4131,
+   "fullNavigation": false
+  },
+  {
+   "run": 3,
+   "side": "A",
+   "sentence": "s3",
+   "programs": 22,
+   "linkMs": 1.3999996185302734,
+   "waitMs": 816.199999332428,
+   "texMs": 1.6999995708465576,
+   "textures": 45,
+   "draws": 52,
+   "firstDraw": 4141.5,
+   "fullNavigation": false
+  },
+  {
+   "run": 3,
+   "side": "B",
+   "sentence": "s3",
+   "programs": 22,
+   "linkMs": 1.5,
+   "waitMs": 781.5,
+   "texMs": 2.299999713897705,
+   "textures": 45,
+   "draws": 52,
+   "firstDraw": 4206.800048828125,
+   "fullNavigation": false
+  },
+  {
+   "run": 3,
+   "side": "B",
+   "sentence": "s5",
+   "programs": 21,
+   "linkMs": 1.200000286102295,
+   "waitMs": 744.599999666214,
+   "texMs": 2.299999713897705,
+   "textures": 45,
+   "draws": 52,
+   "firstDraw": 4253.10009765625,
+   "fullNavigation": false
+  },
+  {
+   "run": 3,
+   "side": "A",
+   "sentence": "s5",
+   "programs": 22,
+   "linkMs": 2.200000047683716,
+   "waitMs": 866.0999991893768,
+   "texMs": 1.3000004291534424,
+   "textures": 45,
+   "draws": 52,
+   "firstDraw": 4306.89990234375,
+   "fullNavigation": false
+  },
+  {
+   "run": 3,
+   "side": "A",
+   "sentence": "s8",
+   "programs": 22,
+   "linkMs": 1.3000001907348633,
+   "waitMs": 781.8000001907349,
+   "texMs": 1.4000005722045898,
+   "textures": 45,
+   "draws": 52,
+   "firstDraw": 4246.5,
+   "fullNavigation": false
+  },
+  {
+   "run": 3,
+   "side": "B",
+   "sentence": "s8",
+   "programs": 22,
+   "linkMs": 1.700000286102295,
+   "waitMs": 790.400000333786,
+   "texMs": 1.3000001907348633,
+   "textures": 45,
+   "draws": 52,
+   "firstDraw": 4448.800048828125,
+   "fullNavigation": false
+  }
+ ]
+}
