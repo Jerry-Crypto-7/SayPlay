@@ -17,7 +17,24 @@
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react';
-import { ACESFilmicToneMapping, BackSide, Color, type DirectionalLight, type Mesh, type Object3D, type PerspectiveCamera, ShaderMaterial, SphereGeometry, Vector2, Vector3 } from 'three';
+import {
+  ACESFilmicToneMapping,
+  BackSide,
+  Color,
+  type DirectionalLight,
+  LinearFilter,
+  type Mesh,
+  type Object3D,
+  type PerspectiveCamera,
+  RepeatWrapping,
+  ShaderMaterial,
+  SphereGeometry,
+  SRGBColorSpace,
+  type Texture,
+  TextureLoader,
+  Vector2,
+  Vector3,
+} from 'three';
 
 import { type Look, type LookId, NIGHT } from '@/play/arcade/look';
 
@@ -27,6 +44,7 @@ import { darkness, setScenePalette } from './toon';
 import { Wind } from '../Vegetation';
 import { airOf, BACK_LIGHT, BACK_SKY, goldenHour, liftLight, SHADOW_RADIUS } from './fog-light';
 import { LOOK_FAMILY } from './grade';
+import { type PaintedSky, paintedSkyOf, paintFade, type PaintStep } from './painted-sky';
 import { Post, useQualityTier } from './Post';
 import { TIER_SETTINGS } from './quality';
 
@@ -85,6 +103,11 @@ uniform float indoor;
 uniform vec3 ceiling;
 uniform vec3 lamp;
 uniform vec2 haze;
+uniform sampler2D painted;
+uniform float paint;
+uniform float paintHorizon;
+uniform vec3 paintTint;
+uniform float side;
 varying vec3 vDir;
 void main() {
   vec3 dir = normalize(vDir);
@@ -101,8 +124,22 @@ void main() {
   }
   gl_FragColor = vec4(color, 1.0);
   #include <tonemapping_fragment>
+  // Malovaná obloha (P75 T3) až po tónování, v barvách obrazu: dvakrát dokola (180° na šířku obrazu, 90° na výšku,
+  // stejné měřítko v obou směrech), řádek horizontu obrazu na obzoru, u obzoru opar v barvě oblohy jako mlha kulis.
+  if (paint > 0.0) {
+    float left = side > 0.5 ? -dir.z : dir.x;
+    float forward = side > 0.5 ? dir.x : dir.z;
+    vec2 uv = vec2(0.5 - atan(left, forward) / 3.14159265, paintHorizon + asin(clamp(dir.y, -1.0, 1.0)) / 1.57079633);
+    vec3 art = texture2D(painted, uv).rgb * paintTint;
+    art = mix(art, gl_FragColor.rgb, PAINT_HAZE * (1.0 - smoothstep(0.0, 0.18, dir.y)));
+    // Pod obzorem jen dnešní obloha v barvě mlhy: zem obrazu (písek, silnice s auty) by za koncem mlhy stála jako stěna.
+    gl_FragColor.rgb = mix(gl_FragColor.rgb, art, paint * smoothstep(-0.1, -0.01, dir.y));
+  }
   #include <colorspace_fragment>
 }`;
+
+/** Kolik barvy oblohy přimíchat do obrazu přímo na obzoru – navazuje na kulisy v mlze. */
+const PAINT_HAZE = 0.3;
 
 /**
  * Strop haly (m): výška nad zemí, nejmenší odstup nad kamerou (kamera arény nad stropem), rozteč světel a půl
@@ -126,8 +163,13 @@ export function skyMaterial(): ShaderMaterial {
       ceiling: { value: new Color() },
       lamp: { value: new Color() },
       haze: { value: new Vector2() },
+      painted: { value: null },
+      paint: { value: 0 },
+      paintHorizon: { value: 0.5 },
+      paintTint: { value: new Color(1, 1, 1) },
+      side: { value: 0 },
     },
-    defines: { CEILING_Y: CEILING.y.toFixed(1), CEILING_MIN: CEILING.min.toFixed(1), LAMP_GRID: CEILING.grid.toFixed(1), LAMP_HALF: `vec2(${CEILING.half.map((m) => m.toFixed(2)).join(', ')})` },
+    defines: { PAINT_HAZE: PAINT_HAZE.toFixed(2), CEILING_Y: CEILING.y.toFixed(1), CEILING_MIN: CEILING.min.toFixed(1), LAMP_GRID: CEILING.grid.toFixed(1), LAMP_HALF: `vec2(${CEILING.half.map((m) => m.toFixed(2)).join(', ')})` },
     vertexShader: SKY_VERTEX,
     fragmentShader: SKY_FRAGMENT,
     // Kamera je uvnitř koule.
@@ -156,12 +198,68 @@ export function paintSky(material: ShaderMaterial, look: Look, control: string):
     (uniforms.lamp!.value as Color).set(look.ceiling.lamp);
   }
   (uniforms.haze!.value as Vector2).set(air.near, air.far);
+  uniforms.side!.value = SIDE_VIEW.has(control) ? 1 : 0;
 }
 
-function Sky({ look, control }: { readonly look: Look; readonly control: string }) {
+/** Obraz oblohy: barvy sRGB, dokola opakovaný, bez mipmap (skok `atan` za kamerou by jinak kreslil šev). */
+function prepare(texture: Texture): Texture {
+  texture.colorSpace = SRGBColorSpace;
+  texture.wrapS = RepeatWrapping;
+  texture.minFilter = LinearFilter;
+  texture.generateMipmaps = false;
+  return texture;
+}
+
+/** Před první montáží oblohy: nic se nestahuje. */
+const IDLE = (): PaintStep => ({ amount: 0, busy: false });
+const WHITE = new Color(1, 1, 1);
+
+function Sky({ look, control, painted }: { readonly look: Look; readonly control: string; readonly painted: PaintedSky | null }) {
   const geometry = useMemo(() => new SphereGeometry(1, 32, 16), []);
   const material = useMemo(skyMaterial, []);
+  const invalidate = useThree((three) => three.invalidate);
+  const scene = useThree((three) => three.scene);
   useEffect(() => paintSky(material, look, control), [material, look, control]);
+  useEffect(() => {
+    material.uniforms.paintHorizon!.value = painted?.horizon ?? 0.5;
+    (material.uniforms.paintTint!.value as Color).copy(painted?.tint ?? WHITE);
+  }, [material, painted]);
+  // Malovaná obloha (P75 T3): stahuje se až po prvním snímku, pak se prolne; při chybě zůstane dnešní.
+  const url = painted?.url ?? null;
+  const fade = useRef<(delta: number) => PaintStep>(IDLE);
+  useEffect(() => {
+    let alive = true;
+    let texture: Texture | null = null;
+    fade.current = paintFade(url, (src, ready, failed) =>
+      new TextureLoader().load(
+        src,
+        (next) => {
+          if (!alive) return void next.dispose();
+          texture = prepare(next);
+          material.uniforms.painted!.value = texture;
+          ready();
+          invalidate();
+        },
+        undefined,
+        failed,
+      ),
+    );
+    invalidate();
+    return () => {
+      alive = false;
+      texture?.dispose();
+      material.uniforms.painted!.value = null;
+      material.uniforms.paint!.value = 0;
+      scene.userData.paintedSky = 0;
+    };
+  }, [url, material, invalidate, scene]);
+  useFrame((_, delta) => {
+    const step = fade.current(delta);
+    material.uniforms.paint!.value = step.amount;
+    // Kulisa (`HorizonBackdrop`) podle toho schová nejvzdálenější vrstvu siluet, kterou obraz nahrazuje.
+    scene.userData.paintedSky = step.amount;
+    if (step.busy) invalidate();
+  });
   useEffect(
     () => () => {
       geometry.dispose();
@@ -355,6 +453,9 @@ export function StyleRig({ look, lookId, control, surface }: { readonly look: Lo
   // Expozice se počítá ze světla sady (noc zvedá dál stejně), zvednutí jen přisvítí scénu (P70D T2).
   const shine = useMemo(() => liftLight(lit), [lit]);
   const air = useMemo(() => airOf(look), [look]);
+  // Úroveň kvality jen na začátku: výměna obrazu uprostřed hry by stáhla druhý a prolínala znovu.
+  const [paintTier] = useState(tier);
+  const painted = useMemo(() => paintedSkyOf(look, lookId, paintTier), [look, lookId, paintTier]);
   // Okrajový svit postav barvou oblohy sady (P54B T14): jen uniformy, materiály se nepřekládají.
   // Paleta, přimíchání a okraj toonu sady (P56B T6): také jen uniformy.
   useEffect(() => {
@@ -367,7 +468,7 @@ export function StyleRig({ look, lookId, control, surface }: { readonly look: Lo
       <fog attach="fog" args={[air.color, air.near, air.far]} />
       <FarAtFog far={air.far} />
       <Exposure exposure={exposureOf(lit)} />
-      <Sky look={golden} control={control} />
+      <Sky look={golden} control={control} painted={painted} />
       <hemisphereLight args={[...shine.light]} />
       <Sun look={golden} sun={shine.sun} control={control} mapSize={TIER_SETTINGS[tier].shadowMapSize} half={TIER_SETTINGS[tier].shadowHalf} />
       {backLit ? <directionalLight position={back.dir} color={back.color} intensity={shine.sun * BACK_LIGHT} /> : <></>}

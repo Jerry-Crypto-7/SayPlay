@@ -48,6 +48,27 @@ export const LOOK_IDS = [
 ] as const;
 export type LookId = (typeof LOOK_IDS)[number];
 
+/**
+ * Malovaná obloha venkovních míst ve stylu konceptu A (P75 T3): `public/play/env/diorama-<místo>.webp`
+ * z `scripts/play/p75-bake.mjs`. Číslo = řádek horizontu obrazu odshora (0–1), odečtený ze snímků:
+ * ten řádek leží na obzoru scény. Místo v hale (strop) malovanou oblohu nemá.
+ */
+export const PAINTED_SKIES: Readonly<Partial<Record<LookId, number>>> = {
+  volcano: 0.58,
+  underwater: 0.62,
+  city: 0.62,
+  castle: 0.57,
+  beach: 0.53,
+  space: 0.6,
+  meadow: 0.55,
+  snow: 0.66,
+  forest: 0.62,
+  jungle: 0.6,
+  desert: 0.55,
+  ocean: 0.52,
+  graveyard: 0.6,
+};
+
 export const PROP_KINDS = [
   'tree',
   'pine',
