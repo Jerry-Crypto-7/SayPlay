@@ -3513,6 +3513,8 @@ button.play-feed-card {
     left: var(--_side-l);
     right: var(--_side-r);
     transform: none;
+    /* `width: max-content` toastu kitu by přebil `right` a věta přetekla přes pravý okraj (P74 R4). */
+    width: auto;
     max-width: none;
     padding: var(--sp-space-2) var(--sp-space-3);
     gap: var(--sp-space-2);

@@ -121,6 +121,8 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 800 
     if (canvas === null || toast === null) throw new Error('canvas or toast has no box');
     const [middleTop, middleBottom] = [canvas.y + canvas.height / 3, canvas.y + (canvas.height * 2) / 3];
     expect(toast.y + toast.height <= middleTop || toast.y >= middleBottom, `toast ${String(toast.y)}–${String(toast.y + toast.height)} vs middle third ${String(middleTop)}–${String(middleBottom)}`).toBe(true);
+    // P74 R4: na telefonu přetékal přes pravý okraj (`width: max-content` kitu přebil `right`).
+    expect(toast.x >= 0 && toast.x + toast.width <= viewport.width, `toast ${String(toast.x)}–${String(toast.x + toast.width)} vs viewport 0–${String(viewport.width)}`).toBe(true);
 
     await expect(banner).toHaveClass(/play-version-switch/, { timeout: 3_200 });
     expect(Date.now() - shownAt).toBeLessThanOrEqual(3_200);
