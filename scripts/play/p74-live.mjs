@@ -147,7 +147,8 @@ async function context(browsers, phone, devices, n) {
 async function playOne(browsers, devices, base, shots, game, phone, n) {
   const row = { genre: game.genre, phone, versionId: game.versionId, errors: [] };
   const { ctx, page } = await context(browsers, phone, devices, n);
-  page.on('pageerror', (error) => row.errors.push(error.message.slice(0, 160)));
+  // Se dvěma rámci stacku (první řádek stacku opakuje zprávu): R5 (`i.x` na iPhonu, 1× z 28) bez nich nešla dohledat ani reprodukovat (0/30).
+  page.on('pageerror', (error) => row.errors.push([error.message.slice(0, 160), ...(error.stack ?? '').split('\n').slice(1, 3).map((line) => line.trim().slice(0, 200))].join(' | ')));
   const loadStarted = Date.now();
   try {
     await page.goto(`${base}/play/${game.versionId}`, { timeout: 120_000 });
