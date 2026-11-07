@@ -8,7 +8,9 @@ import { describe, expect, it } from 'vitest';
 import { LOOK_IDS, LOOKS } from '@/play/arcade/look';
 
 import { glowingCopy, mergeBody, patchedClone, plantMaterial, rimMaterial, toonLit } from '../load';
-import { COLOR, COMMON, DOT_NL, LIGHTS, PALETTE_MIX, paletteMix, type Rgb, scenePaletteOf, setScenePalette, toon, toonPatch } from '../rig/toon';
+import { colorHex } from '@/brand/tokens';
+
+import { CLAY_RIM, CLAY_ROUGHNESS, COLOR, COMMON, DIFFUSE, darkness, EMISSIVE, LIGHTS, PALETTE_MIX, PHYSICAL, paletteMix, type Rgb, scenePaletteOf, setScenePalette, toon, toonPatch } from '../rig/toon';
 
 function compiled(material: { onBeforeCompile(shader: never, renderer: never): void }) {
   const shader = { vertexShader: ShaderLib.standard.vertexShader, fragmentShader: ShaderLib.standard.fragmentShader, uniforms: {} as Record<string, unknown> };
@@ -44,32 +46,56 @@ function purple(color: Rgb): boolean {
 /** Kulisy, jaké knihovna kreslí: kámen, dřevo, tráva, cihla, voda, písek, sníh, břidlice. */
 const SCENERY = ['#808080', '#8b5a2b', '#4caf50', '#b5452f', '#1e88e5', '#e0c068', '#f2f2f2', '#37474f'].map(linear);
 
-describe('toon shading and the scene palette in one shader patch (P56B T6)', () => {
+describe('clay shading and the scene palette in one shader patch (P56B T6, P75 T2)', () => {
   it('finds every anchor it replaces exactly once in three', () => {
-    expect(count(ShaderChunk.lights_physical_pars_fragment, DOT_NL)).toBe(1);
-    for (const anchor of [LIGHTS, COLOR, COMMON]) expect(count(ShaderLib.standard.fragmentShader, anchor), anchor).toBe(1);
+    expect(count(ShaderChunk.lights_physical_pars_fragment, DIFFUSE)).toBe(1);
+    for (const anchor of [LIGHTS, COLOR, COMMON, EMISSIVE, PHYSICAL]) expect(count(ShaderLib.standard.fragmentShader, anchor), anchor).toBe(1);
   });
 
-  it('bands the direct light and switches the palette on and off', () => {
+  // P75 T2: modelína místo tří stupňů. Odlesk dál z nezabaleného úhlu, jinak by se leskla odvrácená strana.
+  it('wraps the diffuse light, keeps the specular on the true angle and clamps roughness to plastic', () => {
     const shader = compiled({ onBeforeCompile: (s: never) => toonPatch(s, true) });
-    expect(shader.fragmentShader).toContain('float dotNL = toonBands(');
+    expect(shader.fragmentShader).toContain('directDiffuse += clayWrap( dot( geometryNormal, directLight.direction ) )');
+    expect(shader.fragmentShader).not.toContain(DIFFUSE);
+    expect(shader.fragmentShader).toContain('float dotNL = saturate( dot( geometryNormal, directLight.direction ) );');
+    expect(shader.fragmentShader).toMatch(/directSpecular \+= irradiance \* BRDF_GGX/);
+    expect(shader.fragmentShader).toMatch(new RegExp(`roughnessFactor = clamp\\( roughnessFactor, ${CLAY_ROUGHNESS[0]}, ${CLAY_ROUGHNESS[1]} \\);\\s*#include <lights_physical_fragment>`));
+    expect(CLAY_ROUGHNESS[0]).toBeGreaterThan(0.3);
+    expect(CLAY_ROUGHNESS[1]).toBeLessThan(0.9);
+  });
+
+  it('switches the palette and the scenery rim on and off together', () => {
+    const shader = compiled({ onBeforeCompile: (s: never) => toonPatch(s, true) });
     expect(shader.fragmentShader).not.toContain(LIGHTS);
     expect(shader.fragmentShader).toMatch(/#include <color_fragment>\s*diffuseColor\.rgb = toonPaletteMix/);
+    expect(shader.fragmentShader).toMatch(/#include <emissivemap_fragment>\s*totalEmissiveRadiance \+= diffuseColor\.rgb \* toonRim/);
     expect(shader.uniforms.toonPalette).toBe(toon.palette);
+    expect(shader.uniforms.toonRim).toBe(toon.rim);
     const once = shader.fragmentShader;
     toonPatch(shader as never, true);
     expect(shader.fragmentShader).toBe(once);
     toonPatch(shader as never, false);
     expect(shader.fragmentShader).not.toContain('toonPaletteMix( diffuseColor');
+    expect(shader.fragmentShader).not.toContain('toonRim *');
     expect(count(shader.fragmentShader, 'uniform float toonMix;')).toBe(1);
   });
 
-  // Slepý soud T13 dvakrát: okraj zešedil koruny a kmeny ve dne (T13-R2) a výplň hřbitova v noci (T13-R1).
-  it('adds no rim light to scenery: faceted trees and props would turn grey', () => {
+  // Slepý soud T13 dvakrát: okraj barvou oblohy či bílé zešedil koruny a kmeny ve dne (T13-R2) a výplň hřbitova
+  // v noci (T13-R1). Okraj modelíny je jen násobek barvy povrchu (zjasní, šedou nepřimíchá) a v noci zhasne.
+  it('lights scenery edges only in their own colour, and not at night', () => {
     const plain = ShaderLib.standard.fragmentShader;
     const shader = compiled({ onBeforeCompile: (s: never) => toonPatch(s, true) });
-    expect(count(shader.fragmentShader, 'totalEmissiveRadiance')).toBe(count(plain, 'totalEmissiveRadiance'));
-    expect(shader.fragmentShader).not.toMatch(/dot\(\s*normal,\s*normalize\(\s*vViewPosition/);
+    expect(count(shader.fragmentShader, 'totalEmissiveRadiance')).toBe(count(plain, 'totalEmissiveRadiance') + 1);
+    const rim = shader.fragmentShader.split('\n').find((line) => line.includes('toonRim *'))!;
+    expect(rim).toMatch(/^\s*totalEmissiveRadiance \+= diffuseColor\.rgb \* toonRim \* pow\(/);
+    expect(rim).not.toMatch(/vec3\(\s*1\.0\s*\)|rimColor|mix\(/);
+    const day = LOOK_IDS.map((id) => LOOKS[id]).find((look) => darkness(look) === 0)!;
+    const night = LOOK_IDS.map((id) => LOOKS[id]).find((look) => darkness(look) === 1)!;
+    setScenePalette(day);
+    expect(toon.rim.value.r).toBeCloseTo(new Color(colorHex['sun-soft']).r * CLAY_RIM, 5);
+    expect(toon.rim.value.r).toBeGreaterThanOrEqual(toon.rim.value.b);
+    setScenePalette(night);
+    expect(toon.rim.value.toArray()).toEqual([0, 0, 0]);
   });
 
   it('pulls scenery towards the set palette at the same brightness, never purple, and leaves characters alone', () => {
@@ -101,7 +127,8 @@ describe('toon shading and the scene palette in one shader patch (P56B T6)', () 
     }
     for (const material of [rimMaterial(body), glowingCopy(body, 1), glowingCopy(new MeshStandardMaterial(), 1)]) {
       const { fragmentShader } = compiled(material);
-      expect(fragmentShader).toContain('float dotNL = toonBands(');
+      expect(fragmentShader).toContain('directDiffuse += clayWrap(');
+      expect(fragmentShader).not.toContain('toonRim *');
       expect(fragmentShader).not.toContain('toonPaletteMix( diffuseColor');
     }
   });
