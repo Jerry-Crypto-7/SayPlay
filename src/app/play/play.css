@@ -3960,6 +3960,12 @@ button.play-feed-card {
     --_thumb-h: calc(3 * var(--_thumb-step));
   }
 
+  /* Štítky zón stojí nad sloupcem kol palce (P74): pravý štítek („Strike“ souboje s dílem `fight`, „Jump“ plošinovky
+   * se střelbou) ležel na téže výšce pod kolem u pravého kraje. Bez kol `--_thumb-h` není a štítky zůstanou dole. */
+  .play-touch-zone {
+    bottom: calc(var(--_stack) + var(--_thumb-h, 0px));
+  }
+
   /* Nápověda míče z levého horního rohu (pod pilulkou postupu) dolů nad ovládání: jen dotyková věta, nejvýš dva
    * řádky, štítek kitu (papír, inkoustový obrys). Vpravo nechá místo liště feedu (kola `--sp-size-touch-min`). */
   .play-ball-hint {
