@@ -29,9 +29,21 @@ export interface PaintedSky {
   readonly tint: Color;
 }
 
-export function paintedSkyOf(look: Look, lookId: LookId, tier: QualityTier): PaintedSky | null {
+/** Karta feedu na `/play` (`feed/ReelCard.tsx`); jeviště hry v ní je náhled. */
+export const FEED_CARD = '[data-testid="feed-card"]';
+
+/** Kde scéna běží: ve hře, nebo jako náhled ve feedu (jeviště leží v kartě `FEED_CARD`). */
+export function stagePlace(stage: Element | null): 'game' | 'feed' {
+  return stage?.closest(FEED_CARD) == null ? 'game' : 'feed';
+}
+
+/**
+ * Náhled feedu na telefonu (P75 T7b) obraz nebere: na `/play` se stahoval a prolínal právě ve chvíli,
+ * kdy hráč odesílá větu, a vstup do hry se na telefonu zdržel o ~0,5 s. Hra a desktop beze změny.
+ */
+export function paintedSkyOf(look: Look, lookId: LookId, tier: QualityTier, place: 'game' | 'feed' = 'game'): PaintedSky | null {
   const row = PAINTED_SKIES[lookId];
-  if (row === undefined || look.ceiling !== undefined) return null;
+  if (row === undefined || look.ceiling !== undefined || (place === 'feed' && tier !== 'high')) return null;
   const [said, base] = [new Color(look.horizon), new Color(LOOKS[lookId].horizon)];
   const ratio = (scene: number, place: number) => (place <= 0.001 ? 1 : Math.min(TINT_MAX, scene / place));
   return {

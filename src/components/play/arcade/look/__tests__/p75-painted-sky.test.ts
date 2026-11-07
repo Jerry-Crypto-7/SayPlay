@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 
 import { LOOK_IDS, LOOKS, PAINTED_SKIES, sceneLook } from '@/play/arcade/look';
 
-import { PAINT_FADE_S, type PaintLoad, paintedSkyOf, paintFade } from '../rig/painted-sky';
+import { FEED_CARD, PAINT_FADE_S, type PaintLoad, paintedSkyOf, paintFade, stagePlace } from '../rig/painted-sky';
 
 const FRAME = 1 / 60;
 
@@ -102,5 +102,20 @@ describe('painted skies on disk', () => {
     const night = paintedSkyOf(sceneLook({ setting: 'a meadow at night', mood: '', look: 'meadow' }), 'meadow', 'high')!.tint;
     expect(Math.max(night.r, night.g, night.b)).toBeLessThan(0.8);
     expect(paintedSkyOf(sceneLook({ setting: 'a mall', mood: '', look: 'mall' }), 'mall', 'high')).toBeNull();
+  });
+
+  // T7b: na `/play` telefonu obraz zdržel vstup do hry; desktop feed a hra ho mají dál.
+  it('keeps the phone feed preview on the plain sky, not the game or the desktop feed', () => {
+    const day = sceneLook({ setting: 'a meadow', mood: '', look: 'meadow' });
+    expect(paintedSkyOf(day, 'meadow', 'low', 'feed')).toBeNull();
+    expect(paintedSkyOf(day, 'meadow', 'medium', 'feed')).toBeNull();
+    expect(paintedSkyOf(day, 'meadow', 'high', 'feed')?.url).toBe('/play/env/diorama-meadow.webp');
+    expect(paintedSkyOf(day, 'meadow', 'low', 'game')?.url).toBe('/play/env/diorama-meadow-low.webp');
+    expect(paintedSkyOf(day, 'meadow', 'medium')?.url).toBe('/play/env/diorama-meadow-low.webp');
+    expect(stagePlace(null)).toBe('game');
+    // Selektor karty musí sedět na kartu feedu, jinak náhled tiše dostane obraz zpátky.
+    const card = readFileSync(join(root, 'src/components/play/feed/ReelCard.tsx'), 'utf8');
+    expect(card).toMatch(/<article[^>]*data-testid="feed-card"/);
+    expect(FEED_CARD).toBe('[data-testid="feed-card"]');
   });
 });

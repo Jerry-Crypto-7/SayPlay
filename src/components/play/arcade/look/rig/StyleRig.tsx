@@ -44,7 +44,7 @@ import { darkness, setScenePalette } from './toon';
 import { Wind } from '../Vegetation';
 import { airOf, BACK_LIGHT, BACK_SKY, goldenHour, liftLight, SHADOW_RADIUS } from './fog-light';
 import { LOOK_FAMILY } from './grade';
-import { type PaintedSky, paintedSkyOf, paintFade, type PaintStep } from './painted-sky';
+import { type PaintedSky, paintedSkyOf, paintFade, type PaintStep, stagePlace } from './painted-sky';
 import { Post, useQualityTier } from './Post';
 import { TIER_SETTINGS } from './quality';
 
@@ -455,7 +455,8 @@ export function StyleRig({ look, lookId, control, surface }: { readonly look: Lo
   const air = useMemo(() => airOf(look), [look]);
   // Úroveň kvality jen na začátku: výměna obrazu uprostřed hry by stáhla druhý a prolínala znovu.
   const [paintTier] = useState(tier);
-  const painted = useMemo(() => paintedSkyOf(look, lookId, paintTier), [look, lookId, paintTier]);
+  const [place] = useState(() => stagePlace(surface.current));
+  const painted = useMemo(() => paintedSkyOf(look, lookId, paintTier, place), [look, lookId, paintTier, place]);
   // Okrajový svit postav barvou oblohy sady (P54B T14): jen uniformy, materiály se nepřekládají.
   // Paleta, přimíchání a okraj toonu sady (P56B T6): také jen uniformy.
   useEffect(() => {
