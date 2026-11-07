@@ -1,0 +1,82 @@
+{
+ "seed": 7309,
+ "judgedAt": "2026-11-07T20:58:24.996Z",
+ "ids": [
+  "s1",
+  "s2",
+  "s3",
+  "s4",
+  "s5",
+  "s6",
+  "s7",
+  "s8",
+  "s9",
+  "s10",
+  "s11",
+  "s12"
+ ],
+ "key": {
+  "s1": "right",
+  "s2": "right",
+  "s3": "left",
+  "s4": "left",
+  "s5": "right",
+  "s6": "right",
+  "s7": "left",
+  "s8": "left",
+  "s9": "left",
+  "s10": "left",
+  "s11": "right",
+  "s12": "right"
+ },
+ "answers": {
+  "s1": {
+   "winner": "right",
+   "reason": "The right scene has clearer depth, atmospheric lighting, and a readable path through a coherent volcanic landscape. Its detailed character, glowing lava, and distant erupting volcano feel more polished and fit the escape premise better than the left’s dark, obstructive geometry."
+  },
+  "s2": {
+   "winner": "right",
+   "reason": "The right scene has stronger underwater depth through luminous haze, layered reefs, and distant arches. Its recognizable turtle and shark also make the setting and race fit the sentence far better than the left’s vehicles."
+  },
+  "s3": {
+   "winner": "left",
+   "reason": "The left scene has richer lighting, warmer materials, and a layered city backdrop that gives it stronger depth and a more polished game look. Its colorful buildings also make the rooftop pizza-delivery setting feel more coherent than the right’s gray, sparse surroundings."
+  },
+  "s4": {
+   "winner": "left",
+   "reason": "The left scene has recognizable pancakes with rounded layers, warm shading, and grounded shadows, making the prompt visually coherent. The right uses plain orange blocks and oversized rock forms that obscure the setting and feel less polished."
+  },
+  "s5": {
+   "winner": "right",
+   "reason": "The right scene has richer depth from layered foliage, hazy distant islands, and warm atmospheric lighting. Its fuller tropical environment makes the floating-island quest feel more cohesive and visually polished."
+  },
+  "s6": {
+   "winner": "right",
+   "reason": "The right version’s luminous nebula and starfield create a stronger sense of deep space and layered depth, while the left has a flat gray backdrop. That richer sky makes the scene look more modern and better matches the spaceship-and-asteroids premise."
+  },
+  "s7": {
+   "winner": "left",
+   "reason": "The left scene has richer depth from layered candy trees, foreground scenery, and a fuller landscape, making the mini-golf course feel situated in a candy world. The right looks sparser, with a washed-out horizon and more empty green space."
+  },
+  "s8": {
+   "winner": "left",
+   "reason": "The left scene has stronger depth from the foreground knight, layered courtyard, and softly blurred castle towers, with warmer, richer lighting. The visible castle also gives the lost-crown search a more convincing setting than the right’s pale, sparse backdrop."
+  },
+  "s9": {
+   "winner": "right",
+   "reason": "The right scene has clearer depth, with layered city silhouettes, stronger foreground contrast, and more distinct trees and street objects. Its cooler storm lighting and sharper bird make the rainy city feel more coherent and polished."
+  },
+  "s10": {
+   "winner": "left",
+   "reason": "The left scene has warmer lighting, stronger atmospheric depth, and a richer orchard backdrop with distant trees and a farmhouse/windmill. Its larger foreground farmer also makes the apple-catching setting read more clearly, especially on the phone."
+  },
+  "s11": {
+   "winner": "right",
+   "reason": "The right scene has stronger depth from atmospheric haze, softer lighting, and clearer foreground-to-background separation. Its animal rivals also make the dog-versus-cat race more coherent than the left version’s cars, though neither setting clearly reads as candy land."
+  },
+  "s12": {
+   "winner": "right",
+   "reason": "The right scene has stronger depth from layered mountain peaks, atmospheric color, and denser scenery receding along the icy slope. Its rounder penguin and softer lighting give it a more polished, modern game look."
+  }
+ }
+}
