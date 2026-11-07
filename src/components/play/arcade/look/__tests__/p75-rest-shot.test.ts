@@ -19,12 +19,14 @@ import { TILT, macroFocus } from '../rig/Post';
 const FRAME_S = 1 / 60;
 
 describe('P75 T4: kdy je kamera zblízka', () => {
-  it('holds the close shot on the start card, in pause, after the end and for the first 1.5 s of play', () => {
+  it('holds the close shot on the start card, in pause and for the first 1.5 s of play, not on the result card (P76 T1)', () => {
     expect(restTarget(true, false, 0)).toBe(1);
     expect(restTarget(true, false, REST_SHOT.holdS * ARCADE_HZ - 1)).toBe(1);
     expect(restTarget(true, false, REST_SHOT.holdS * ARCADE_HZ)).toBe(0);
     expect(restTarget(true, true, 10 * ARCADE_HZ)).toBe(1);
-    expect(restTarget(false, false, 10 * ARCADE_HZ)).toBe(1);
+    expect(restTarget(false, false, 10 * ARCADE_HZ)).toBe(0);
+    expect(restTarget(false, false, 1)).toBe(0);
+    expect(restTarget(false, true, 10 * ARCADE_HZ)).toBe(0);
   });
 
   it('moves between the shots within 0.8 s, monotonic, and a long idle gap does not skip the move', () => {
@@ -117,16 +119,40 @@ describe('P75 T4: herní záběr pro čitelnost a kulisy', () => {
 describe('P75 T4: makro rozostření', () => {
   it('blurs harder with a narrower sharp band in the close shot, and moves the band onto the close hero', () => {
     const play = tiltFocus('runner')!;
-    const still = macroFocus(play, 0);
-    const rest = macroFocus(play, 1);
-    expect(still).toEqual({ blur: TILT.play.blur, taper: TILT.play.taper, focus: play });
+    const still = macroFocus(play, 0, 1280, 800);
+    const rest = macroFocus(play, 1, 1280, 800);
+    expect(still.blur).toBe(TILT.play.blur);
+    expect(still.focus).toBe(play);
     expect(rest.blur).toBeGreaterThan(still.blur);
     expect(rest.taper).toBeLessThan(still.taper);
     expect(rest.focus).toBe(REST_FOCUS);
     // Ostrý pás přes hrdinu záběru zblízka (střed v NDC −0,4 = výška obrazu 0,3).
     expect(REST_FOCUS).toBeGreaterThan((REST_FRAMING.hero + 1) / 2);
     expect(REST_FOCUS).toBeLessThan((REST_FRAMING.hero + 1) / 2 + REST_SHOT.share);
-    // P73D za hry rozostřovalo 0,12 – makro je silnější i za hry.
-    expect(TILT.play.blur).toBeGreaterThan(0.12);
+  });
+});
+
+describe('P76 T1: slabší rozostření', () => {
+  // Shader: plné rozostření `blur · úhlopříčka / 16` px, dosažené `taper · úhlopříčka` px od ostrého pásu.
+  const ramp = (weight: number, width: number, height: number) => {
+    const at = macroFocus(tiltFocus('runner')!, weight, width, height);
+    const diagonal = Math.hypot(width, height);
+    return { radius: (at.blur * diagonal) / 16 / height, reach: (at.taper * diagonal) / height };
+  };
+
+  it('keeps the play blur at most the P73D strength (P75 had 0.18) and the close shot well under P75 (0.32)', () => {
+    expect(TILT.play.blur).toBeLessThanOrEqual(0.12);
+    expect(TILT.rest.blur).toBeLessThanOrEqual(0.22);
+  });
+
+  it('reaches full blur at least a frame height above the band in play, as far on a portrait phone as on desktop', () => {
+    for (const [width, height] of [[1280, 800], [412, 915], [390, 844]] as const) {
+      expect(ramp(0, width, height).reach, `${width}×${height}`).toBeGreaterThanOrEqual(1.2 - 1e-9);
+      expect(ramp(1, width, height).reach, `${width}×${height}`).toBeGreaterThanOrEqual(0.8 - 1e-9);
+    }
+    // P75 na telefonu: přechod 0,5 úhlopříčky = jen ~0,55 výšky obrazu.
+    expect(ramp(0, 412, 915).reach).toBeCloseTo(ramp(0, 1280, 800).reach, 9);
+    // Na telefonu poloměr rozostření vůči výšce obrazu není větší než na desktopu.
+    expect(ramp(0, 412, 915).radius).toBeLessThanOrEqual(ramp(0, 1280, 800).radius);
   });
 });

