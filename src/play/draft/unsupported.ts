@@ -332,14 +332,27 @@ async function verbHonesty(sentence: string, spec: GameSpecV1, seed: number, pub
     return { kind: 'played_as', closest: closestOf(spec), reason: `${rest.length === 0 ? first : `${first}, ${listed(rest)}`}.` };
   }
   const said = (triple: IntentTriple) => mapped.find(item => item.verb === triple.verb && item.actor === triple.actor && item.object === triple.object);
+  // P73A R1: sloveso cizího aktéra, které hra hraje hráčem („books fly at you“ hraje let na koštěti) – chybí aktér, ne
+  // sloveso; „Gliding isn't here yet“ by si odporovalo s hrou. Aktér, kterého svět má, se dál přiznává slovesem.
+  const bindings = made.ok ? made.roleBindings : [];
+  const heroDoes = (triple: IntentTriple) => triple.actor !== 'hero' && witnesses.some(w => w.actor.player && w.verb === triple.verb) && !bindings.some(b => namesActor(triple, b));
+  const text = sentence.toLowerCase();
+  const pluralLabels = new Set(PLURAL_LABELS);
   const missing = [...new Set(unmet.map(triple => {
     const item = said(triple);
+    if (heroDoes(triple)) {
+      const word = intent.items.find(i => i.verb === triple.verb && i.actor === triple.actor && i.object === triple.object)?.said ?? triple.verb;
+      const many = new RegExp(`\\b${plural(triple.actor, 2)}\\b`).test(text);
+      const label = `the ${gerund(vocabVerb(word)?.lemma ?? word)} ${many ? plural(triple.actor, 2) : triple.actor}`;
+      if (many) pluralLabels.add(label);
+      return label;
+    }
     // Kus bez popisku se jmenuje činností („Beating isn't here yet“), ne holým slovesem.
     return item === undefined ? (LABELS[triple.verb] ?? gerund(triple.verb)) : gerund(lemmaOf(item));
   }))];
   const closest = spec.control === 'steer' && !witnesses.some(w => w.verb === 'race') ? 'a driving game' : closestOf(spec);
-  const plural = missing.length > 1 || PLURAL_LABELS.has(missing[0]!);
-  return { kind: 'actions', unmet, closest, reason: `${capital(listed(missing))} ${plural ? "aren't" : "isn't"} here yet – here's ${closest}.` };
+  const are = missing.length > 1 || pluralLabels.has(missing[0]!);
+  return { kind: 'actions', unmet, closest, reason: `${capital(listed(missing))} ${are ? "aren't" : "isn't"} here yet – here's ${closest}.` };
 }
 
 export async function sentenceOf(versions: Pick<VersionStore, 'get'>, game: PublishedGame): Promise<string | null> {

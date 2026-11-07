@@ -6,6 +6,7 @@ import { loadRapier } from '@/play/arcade/physics/world';
 import { nativeSpec } from '@/play/compose/native';
 import { draftGameSpecWithMeta } from '@/play/draft';
 import { compileGenre } from '@/play/genre';
+import { extractIntent } from '@/play/intent/extract';
 import { memoryVersionStore } from '@/play/version';
 
 import { honestyForSpec, honestyOf } from '../unsupported';
@@ -140,6 +141,26 @@ describe('P73A every substitution is said out loud', () => {
     '%s substitutes nothing and says nothing',
     async (sentence) => {
       expect(await said(sentence)).toBeNull();
+    },
+    120_000,
+  );
+
+  // R1 (oracle T7): přiznání slovesa, které si odporuje s hrou, čte se jako pravda – oko ho nehlídá.
+  it.each(['stack pancakes as high as you can in the wind', 'jump as high as you can on the clouds', 'run as fast as you can through the forest'])(
+    '%s reads no preposition as a verb',
+    async (sentence) => {
+      expect(extractIntent(sentence).items.map((item) => item.said)).not.toContain(sentence.match(/you can (\w+)/)![1]);
+      expect(await said(sentence) ?? '').not.toMatch(/\b(?:inning|oning|throughing)\b/i);
+    },
+    120_000,
+  );
+
+  it.each(['A haunted library where books fly at you and you must find the exit', 'escape a haunted library while books fly at you'])(
+    '%s admits the missing flyers, not the flight the hero plays',
+    async (sentence) => {
+      const line = await said(sentence);
+      expect(line).toMatch(/^The flying books aren't here yet – here's /);
+      expect(line).not.toMatch(/Gliding/);
     },
     120_000,
   );
