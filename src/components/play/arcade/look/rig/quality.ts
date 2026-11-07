@@ -33,8 +33,11 @@ export interface TierSettings {
   readonly dpr: number;
   /** Hranování: SMAA průchodem skládače, nebo MSAA jeho cíle kreslení. */
   readonly aa: 'smaa' | 'msaa';
-  /** Tilt-shift diorama (P73D T4): ostrý pás přes hrdinu, popředí a horizont měkce rozostřené. Jen `high`. */
-  readonly tilt: boolean;
+  /**
+   * Tilt-shift diorama (P73D T4): ostrý pás přes hrdinu, popředí a horizont rozostřené – vzorky rozostření, 0 = bez.
+   * P75 T4: i `medium` (telefon) s polovinou vzorků; `low` je záchranná úroveň pro FPS, bez něj.
+   */
+  readonly tilt: number;
 }
 
 /**
@@ -44,9 +47,9 @@ export interface TierSettings {
  * shadery všech materiálů a telefon (Pixel 7, CPU 4×) stál 1–2 s pod 10 FPS.
  */
 export const TIER_SETTINGS: Readonly<Record<QualityTier, TierSettings>> = {
-  high: { bloom: true, ao: 'full', shadowMapSize: 2048, shadowHalf: 18, dpr: 2, aa: 'smaa', tilt: true },
-  medium: { bloom: true, ao: 'half', shadowMapSize: 2048, shadowHalf: 12, dpr: 1.5, aa: 'smaa', tilt: false },
-  low: { bloom: false, ao: false, shadowMapSize: 1024, shadowHalf: 5, dpr: 1, aa: 'msaa', tilt: false },
+  high: { bloom: true, ao: 'full', shadowMapSize: 2048, shadowHalf: 18, dpr: 2, aa: 'smaa', tilt: 12 },
+  medium: { bloom: true, ao: 'half', shadowMapSize: 2048, shadowHalf: 12, dpr: 1.5, aa: 'smaa', tilt: 6 },
+  low: { bloom: false, ao: false, shadowMapSize: 1024, shadowHalf: 5, dpr: 1, aa: 'msaa', tilt: 0 },
 };
 
 /**

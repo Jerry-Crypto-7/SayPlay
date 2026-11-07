@@ -365,7 +365,8 @@ export function TimingScene({
       {/* Pro sondu záběru (P27A T6) je tolerance cíl a jezdec hrdina. */}
       <mesh position={[-target.x, top / 2 + 0.5, -depth / 2 - 0.02]} userData={{ frame: 'target' }}>
         <boxGeometry args={[target.w, top + 1, 0.02]} />
-        <meshBasicMaterial color="#16a34a" transparent opacity={0.28} />
+        {/* P75 T6: slabší – soudce četl plný sloupec jako zelený pruh přes palačinky. */}
+        <meshBasicMaterial color="#16a34a" transparent opacity={0.14} />
       </mesh>
       {/* Položený díl má jednotkovou šířku a `scale.x` mu dá šířku z jádra; díl stojí na zemi, proto o půl výšky níž. */}
       {/* Vnitřní skupina pózy (P45D T11) má počátek u paty dílu, ať se díl při dopadu zmáčkne na díl pod sebou. */}

@@ -31,6 +31,7 @@ import { HorizonBackdrop } from '../../look/Backdrop';
 import { FieldGround } from '../../look/FieldGround';
 import { DIORAMA_FRAMING } from '../../look/framing';
 import type { Box } from '../../look/ground';
+import { RestShot } from '../../look/rest-shot';
 import { Orchard } from '../../look/Vegetation';
 import { RiggedModel } from '../../RiggedModel';
 import { FittedModel, type WorldProps } from '../../World';
@@ -275,6 +276,8 @@ export function CatchScene({ session, cast, surface, scene: look, ghost }: Catch
 
   return (
     <>
+      {/* Záběr zblízka na startu, v pauze a po konci (P75 T4). */}
+      <RestShot session={session} />
       <FieldGround look={look} area={CATCH_LAND} y={-0.03} />
       <HorizonBackdrop look={look} seed={world.seed} clear={0} beyond={24} />
       {/* Světlá deska (P55 T5) s lemem a spárami povrchu sady (P56B T11): ovoce, bomby i bonusy na ní čtou dál než na zelené. */}

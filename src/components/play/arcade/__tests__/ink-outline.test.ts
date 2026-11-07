@@ -46,7 +46,7 @@ describe('ink outline on the hero and foes (P36C T6)', () => {
       expect(hull!.castShadow).toBe(false);
       // Rig stínů (`ShadowFlags`) dá stín každé síti bez značky – obal by se kreslil i do stínové mapy.
       expect(hull!.userData.rigShadow).toBe('off');
-      expect((hull!.material as ShaderMaterial).uniforms.color!.value.getHex()).toBe(INK_COLOR.hero);
+      expect((hull!.material as ShaderMaterial).uniforms.inkColor!.value.getHex()).toBe(INK_COLOR.hero);
     }
   });
 
@@ -73,9 +73,32 @@ describe('ink outline on the hero and foes (P36C T6)', () => {
   it('foes get the threat colour, not the ink', () => {
     const foe = new Mesh(new BoxGeometry(), new MeshStandardMaterial());
     inkMeshes(foe, 'foe');
-    const colour = (hullsOf(foe)[0]!.material as ShaderMaterial).uniforms.color!.value.getHex();
+    const colour = (hullsOf(foe)[0]!.material as ShaderMaterial).uniforms.inkColor!.value.getHex();
     expect(colour).toBe(INK_COLOR.foe);
     expect(colour).not.toBe(INK_COLOR.hero);
+  });
+
+  // P75 T2: obrys modelíny je tmavý odstín povrchu; nepřítel drží rajčatovou, ta je jeho signál hrozby.
+  it('a vertex-coloured hero takes a dark shade of its surface, a foe keeps the threat colour', () => {
+    const tinted = (): Mesh => {
+      const geometry = new BoxGeometry();
+      geometry.setAttribute('color', new Float32BufferAttribute(new Float32Array(geometry.getAttribute('position').count * 3).fill(0.8), 3));
+      return new Mesh(geometry, new MeshStandardMaterial({ vertexColors: true }));
+    };
+    const hero = tinted();
+    const foe = tinted();
+    inkMeshes(hero, 'hero');
+    inkMeshes(foe, 'foe');
+    const heroInk = hullsOf(hero)[0]!.material as ShaderMaterial;
+    const foeInk = hullsOf(foe)[0]!.material as ShaderMaterial;
+    expect(heroInk.vertexColors).toBe(true);
+    expect(heroInk.uniforms.inkSurface!.value).toBeGreaterThan(0.5);
+    expect(foeInk.uniforms.inkSurface!.value).toBe(0);
+    expect(heroInk.fragmentShader).toMatch(/ink = mix\(inkColor, vColor\.rgb \* 0\.\d+, inkSurface\)/);
+    // Textura bez barev ve vrcholech: inkoust, a vlastní materiál (jiný program než tónovaný).
+    const plain = new Mesh(new BoxGeometry(), new MeshStandardMaterial());
+    inkMeshes(plain, 'hero');
+    expect((hullsOf(plain)[0]!.material as ShaderMaterial).vertexColors).toBe(false);
   });
 
   it('leaves the flat shading of a non-indexed model alone', () => {
@@ -128,7 +151,7 @@ describe('ink outline on the hero and foes (P36C T6)', () => {
     expect(skin).not.toHaveBeenCalled();
   });
 
-  it('keeps the line 2.5 CSS px wide whatever the canvas size', () => {
+  it('keeps the line INK_PX CSS px wide whatever the canvas size', () => {
     const mesh = new Mesh(new BoxGeometry(), new MeshStandardMaterial());
     inkMeshes(mesh, 'hero');
     setInkViewport(400, 800);

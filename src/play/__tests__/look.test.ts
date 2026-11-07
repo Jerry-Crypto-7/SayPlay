@@ -121,7 +121,8 @@ describe('kulisy z katalogu', () => {
     ['volcano', ['gen3d-magma-rock', 'gen3d-steam-vent'], []],
     ['cave', ['gen3d-stalagmite', 'gen3d-crystal-geode', 'gen3d-glowing-mushroom'], []],
     ['space', ['gen3d-fuel-silo', 'gen3d-moon-flag'], []],
-    ['castle', ['gen3d-castle-tower', 'gen3d-stone-gatehouse'], []],
+    // Brána (`gen3d-stone-gatehouse`) od P75 T8 v kulisách hradu není: model vychází skoro černý, soudce psal „disconnected props“.
+    ['castle', ['gen3d-castle-tower'], []],
     ['graveyard', ['gen3d-iron-fence', 'gen3d-grave-lantern'], []],
   ] as const)('%s nese scenérii P46I (P46J)', (id, props, plants) => {
     const look = LOOKS[id];

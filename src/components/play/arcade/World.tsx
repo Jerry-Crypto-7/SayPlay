@@ -43,6 +43,7 @@ import { headingOf, turnToward } from './characterMotion';
 import { blinkHidden } from './effects/feel';
 import { type ArcadeGhost, GhostSlot } from './GhostSlot';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
+import { RestShot } from './look/rest-shot';
 import { loadBodyModel, loadedBody, rimLit, toonLit, toyPartsOf } from './look/load';
 import { boostPadGeometry } from './look/road-strip';
 import { deformBody } from './look/toy-deform';
@@ -743,6 +744,8 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
 
   return (
     <>
+      {/* Záběr zblízka na startu, v pauze a po konci (P75 T4); běžec a závod, ostatní ovládání ho nemají. */}
+      <RestShot session={session} />
       {backdrop ??
         (control === 'glide' ? <GlideBackdrop session={session} look={scene} collectibleModel={cast.props.coin} />
         : control === 'walker' ? <WalkerBackdrop session={session} look={scene} />

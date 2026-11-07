@@ -65,7 +65,7 @@ export const FRAMING_KEEP: Readonly<Record<string, string>> = {
 export const CENTRED_SUBJECT: ReadonlySet<string> = new Set(['timing']);
 
 /** Ostrý pás tilt-shiftu leží kousek nad bodem pod hrdinou (výška obrazu 0–1), ať je ostrý celý hrdina. */
-const TILT_LIFT = 0.05;
+export const TILT_LIFT = 0.05;
 
 /**
  * Kde má tilt-shift (P73D T4) ostrý pás – výška obrazu 0 (dole) až 1 (nahoře) přes hrdinu podle rámování.

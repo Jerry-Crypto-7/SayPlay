@@ -1,24 +1,39 @@
 /**
- * Kreslený vzhled (P56B T6): jeden shaderový patch nad `MeshStandardMaterial`, nasazený tam, kde
- * materiály už vznikají (`load.ts`). Dvě věci, žádná nová textura ani světlo:
- * - přímé světlo ve třech stupních (úzká hrana `smoothstep`), polokoule zůstává hladká a vyplní stíny;
- * - kulisy posunuté k odstínu nejbližší barvy palety sady (Oklab, světlost zůstane); hrdina, nepřátelé a záře věcí ne.
- * Paletu nesou sdílené uniformy (`setScenePalette` v rigu, vzor `setCharacterRim`): sada, nálada ani úroveň
+ * Vzhled modelíny (P75 T2, dřív toon P56B T6): jeden shaderový patch nad `MeshStandardMaterial`, nasazený tam,
+ * kde materiály už vznikají (`load.ts`). Žádná nová textura ani světlo:
+ * - přímé rozptýlené světlo zabalené (half-Lambert, `clayWrap`): měkký přechod do stínu místo tří stupňů; odlesk
+ *   dál počítá ze skutečného úhlu, aby se odvrácená strana neleskla;
+ * - měkký odlesk: drsnost sevřená do pásma plastu (`CLAY_ROUGHNESS`), matný model dostane široký lesk, lesklý se
+ *   nezrcadlí;
+ * - kulisy posunuté k odstínu nejbližší barvy palety sady (Oklab, světlost zůstane); hrdina, nepřátelé a záře věcí ne;
+ * - kulisy mají teplý okraj VLASTNÍ barvy (`toonRim`): Fresnel × barva povrchu × teplý tón, v noci nic.
+ * Paletu a okraj nesou sdílené uniformy (`setScenePalette` v rigu, vzor `setCharacterRim`): sada, nálada ani úroveň
  * kvality program nepřekládají.
  *
- * Kulisy nemají Fresnel okraj: modely s mnoha ploškami bokem k pohledu (koruny, kmeny, výplň hřbitova) a s
- * plochami otočenými od kamery jím zešedly – slepý soud T13 to dvakrát jmenoval („broken white materials“ v noci,
- * T13-R1; „grey, broken-looking tree textures“ ve dne, T13-R2). Obrys postav nese jejich svit (`setCharacterRim`).
+ * Proč okraj jen barvou povrchu: okraj barvou oblohy nebo bílé modely s mnoha ploškami bokem k pohledu (koruny,
+ * kmeny, výplň hřbitova) zešedil – slepý soud T13 to dvakrát jmenoval („broken white materials“ v noci, T13-R1;
+ * „grey, broken-looking tree textures“ ve dne, T13-R2). Násobek barvy povrchu ji jen zjasní, šedou nepřimíchá.
+ * Postavy nesou svůj svit (`setCharacterRim`), okraj kulis nedostanou.
  */
 import { Color, ShaderChunk, Vector3, type WebGLProgramParametersWithUniforms } from 'three';
 
+import { colorHex } from '@/brand/tokens';
 import type { Look } from '@/play/arcade/look';
 
 /** Kotvy v `ShaderChunk` three 0.185.1; `toon.test.ts` hlídá, že každá existuje právě jednou. */
-export const DOT_NL = 'float dotNL = saturate( dot( geometryNormal, directLight.direction ) );';
+export const DIFFUSE = 'reflectedLight.directDiffuse += irradiance * BRDF_Lambert( material.diffuseContribution );';
 export const LIGHTS = '#include <lights_physical_pars_fragment>';
 export const COLOR = '#include <color_fragment>';
 export const COMMON = '#include <common>';
+export const EMISSIVE = '#include <emissivemap_fragment>';
+export const PHYSICAL = '#include <lights_physical_fragment>';
+
+/** Pásmo drsnosti plastové hračky: pod ním by se model zrcadlil, nad ním by lesk zmizel. */
+export const CLAY_ROUGHNESS = [0.45, 0.75] as const;
+/** Síla teplého okraje kulis ve dne (násobek barvy povrchu na samé hraně siluety). */
+export const CLAY_RIM = 0.3;
+/** Tón okraje: světlo zlaté hodiny (kit `sun-soft`). */
+const CLAY_RIM_TINT = new Color(colorHex['sun-soft']);
 
 /** Kolik barev palety sady shader porovnává: `ground`, `tint` ×2, `block`, `track`, `horizon`. */
 export const PALETTE_SIZE = 6;
@@ -41,12 +56,14 @@ export function darkness(look: Pick<Look, 'horizon'>): number {
 export const toon = {
   palette: { value: Array.from({ length: PALETTE_SIZE }, () => new Vector3()) },
   mix: { value: 0 },
+  rim: { value: new Color(0, 0, 0) },
 };
 
 const HEAD = `
 uniform vec3 toonPalette[${PALETTE_SIZE}];
 uniform float toonMix;
-float toonBands( float x ) { return mix( 0.5 * smoothstep( 0.0, 0.06, x ), 1.0, smoothstep( 0.42, 0.48, x ) ); }
+uniform vec3 toonRim;
+float clayWrap( float x ) { return saturate( ( x + 0.5 ) / 1.5 ); }
 vec3 toonLab( vec3 c ) {
 	vec3 lms = pow( max( mat3( 0.4122214708, 0.2119034982, 0.0883024619, 0.5363325363, 0.6806995451, 0.2817188376, 0.0514459929, 0.1073969566, 0.6299787005 ) * c, 0.0 ), vec3( 1.0 / 3.0 ) );
 	return mat3( 0.2104542553, 1.9779984951, 0.0259040371, 0.7936177850, -2.4285922050, 0.7827717662, -0.0040720468, 0.4505937099, -0.8086757660 ) * lms;
@@ -66,22 +83,28 @@ vec3 toonPaletteMix( vec3 c ) {
 	}
 	return toonRgb( vec3( lab.x, mix( lab.yz, best.yz, toonMix ) ) );
 }`;
-const BANDED = 'float dotNL = toonBands( saturate( dot( geometryNormal, directLight.direction ) ) );';
+const WRAPPED = 'reflectedLight.directDiffuse += clayWrap( dot( geometryNormal, directLight.direction ) ) * directLight.color * BRDF_Lambert( material.diffuseContribution );';
+const SOFT_GLOSS = `\n\troughnessFactor = clamp( roughnessFactor, ${CLAY_ROUGHNESS[0]}, ${CLAY_ROUGHNESS[1]} );\n\t${PHYSICAL}`;
 const PALETTE_LINE = '\n\tdiffuseColor.rgb = toonPaletteMix( diffuseColor.rgb );';
+const RIM_LINE = '\n\ttotalEmissiveRadiance += diffuseColor.rgb * toonRim * pow( 1.0 - saturate( dot( normal, normalize( vViewPosition ) ) ), 3.0 );';
 
 /**
- * Vloží toon do programu, jednou; `palette` přimíchání palety zapne nebo (v kopii postavy či záře) vypne.
- * Kopie volají úpravu zdroje a pak tuto, proto opakované volání jen přepne paletu.
+ * Vloží modelínu do programu, jednou; `palette` přimíchání palety a teplý okraj kulis zapne nebo (v kopii
+ * postavy či záře) vypne. Kopie volají úpravu zdroje a pak tuto, proto opakované volání jen přepne paletu.
  */
 export function toonPatch(shader: WebGLProgramParametersWithUniforms, palette: boolean): void {
   if (!shader.fragmentShader.includes('uniform float toonMix;')) {
     shader.uniforms.toonPalette = toon.palette;
     shader.uniforms.toonMix = toon.mix;
-    shader.fragmentShader = shader.fragmentShader.replace(COMMON, `${COMMON}${HEAD}`).replace(LIGHTS, ShaderChunk.lights_physical_pars_fragment.replace(DOT_NL, BANDED));
+    shader.uniforms.toonRim = toon.rim;
+    shader.fragmentShader = shader.fragmentShader
+      .replace(COMMON, `${COMMON}${HEAD}`)
+      .replace(LIGHTS, ShaderChunk.lights_physical_pars_fragment.replace(DIFFUSE, WRAPPED))
+      .replace(PHYSICAL, SOFT_GLOSS.trimStart());
   }
   const mixed = shader.fragmentShader.includes(PALETTE_LINE);
-  if (palette && !mixed) shader.fragmentShader = shader.fragmentShader.replace(COLOR, `${COLOR}${PALETTE_LINE}`);
-  if (!palette && mixed) shader.fragmentShader = shader.fragmentShader.replace(PALETTE_LINE, '');
+  if (palette && !mixed) shader.fragmentShader = shader.fragmentShader.replace(COLOR, `${COLOR}${PALETTE_LINE}`).replace(EMISSIVE, `${EMISSIVE}${RIM_LINE}`);
+  if (!palette && mixed) shader.fragmentShader = shader.fragmentShader.replace(PALETTE_LINE, '').replace(RIM_LINE, '');
 }
 
 /** Paleta sady pro shader: šest barev, chybějící `block` nahradí `track`. */
@@ -107,7 +130,10 @@ function rgbOf([L, a, b]: Rgb): Rgb {
   return [Math.max(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, 0), Math.max(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, 0), Math.max(-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s, 0)];
 }
 
-/** Paleta (v Oklab) a přimíchání sady do sdílených uniform; `Color.set` převede hex z sRGB do lineární. */
+/**
+ * Paleta (v Oklab), přimíchání a teplý okraj sady do sdílených uniform; `Color.set` převede hex z sRGB do
+ * lineární. Okraj slábne s nocí: v noci by kulisy na hranách svítily (T13-R1).
+ */
 export function setScenePalette(look: Pick<Look, 'ground' | 'tint' | 'block' | 'track' | 'horizon'>): void {
   const color = new Color();
   scenePaletteOf(look).forEach((hex, index) => {
@@ -115,6 +141,7 @@ export function setScenePalette(look: Pick<Look, 'ground' | 'tint' | 'block' | '
     toon.palette.value[index]!.fromArray(oklab([color.r, color.g, color.b]));
   });
   toon.mix.value = PALETTE_MIX;
+  toon.rim.value.copy(CLAY_RIM_TINT).multiplyScalar(CLAY_RIM * (1 - darkness(look)));
 }
 
 /**

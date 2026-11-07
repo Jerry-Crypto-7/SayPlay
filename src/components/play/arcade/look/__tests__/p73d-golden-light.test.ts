@@ -17,8 +17,11 @@ import { GRADES, LOOK_FAMILY } from '../rig/grade';
 import { QUALITY_TIERS, TIER_SETTINGS } from '../rig/quality';
 
 describe('P73D T4: tilt-shift', () => {
-  it('runs only on high quality', () => {
-    for (const tier of QUALITY_TIERS) expect(TIER_SETTINGS[tier].tilt, tier).toBe(tier === 'high');
+  it('runs on high and, cheaper, on the phone tier; the rescue tier has none (P75 T4)', () => {
+    expect(TIER_SETTINGS.high.tilt).toBeGreaterThan(TIER_SETTINGS.medium.tilt);
+    expect(TIER_SETTINGS.medium.tilt).toBeGreaterThan(0);
+    expect(TIER_SETTINGS.low.tilt).toBe(0);
+    expect(QUALITY_TIERS).toHaveLength(3);
   });
 
   it('keeps the hero sharp in every diorama framing, and leaves side views and the cockpit alone', () => {

@@ -28,18 +28,32 @@ import { flagShadow } from './StyleRig';
 /** `obstacle` (P70D T2): překážka a nástraha v cestě inkoustem – v mlze a proti zemi splývaly. */
 export type Ink = 'hero' | 'foe' | 'obstacle';
 
-/** Tloušťka obrysu v CSS pixelech (kit: inkoustové obrysy 2,5 px). */
-export const INK_PX = 2.5;
+/**
+ * Tloušťka obrysu v CSS pixelech. Kit kreslí 2,5 px; modelína konceptu (P75 T2) má hranu jen naznačenou,
+ * plná čára z ní dělala kreslenou figurku.
+ */
+export const INK_PX = 1.5;
 
 export const INK_COLOR: Readonly<Record<Ink, number>> = { hero: colorHex.ink, foe: colorHex['tomato-deep'], obstacle: colorHex.ink };
 
+/**
+ * Kolik obrys hrdiny a překážky vezme z tmavého odstínu povrchu (barva vrcholů × `INK_SHADE`) místo inkoustu.
+ * Nepřítel zůstane rajčatový: barva obrysu je jeho signál hrozby. Model bez barev ve vrcholech (textura) má inkoust.
+ * Obal se nesvítí ani netónuje: odstín 0,35 a čistý povrch vyšly na snímku (P75 T2, želva) SVĚTLEJŠÍ než stínované
+ * tělo – světlá lemovka místo hrany. Proto tmavší odstín a třetina inkoustu.
+ */
+export const INK_SURFACE: Readonly<Record<Ink, number>> = { hero: 0.7, foe: 0, obstacle: 0.7 };
+const INK_SHADE = '0.2';
+
 const VERTEX = /* glsl */ `
 #include <common>
+#include <color_pars_vertex>
 #include <morphtarget_pars_vertex>
 #include <skinning_pars_vertex>
 #include <fog_pars_vertex>
 uniform vec2 inkOffset;
 void main() {
+  #include <color_vertex>
   #include <beginnormal_vertex>
   #include <morphnormal_vertex>
   #include <skinbase_vertex>
@@ -56,20 +70,27 @@ void main() {
 }`;
 
 const FRAGMENT = /* glsl */ `
-uniform vec3 color;
+uniform vec3 inkColor;
+uniform float inkSurface;
+#include <color_pars_fragment>
 #include <fog_pars_fragment>
 void main() {
-  gl_FragColor = vec4(color, 1.0);
+  vec3 ink = inkColor;
+  #ifdef USE_COLOR
+  ink = mix(inkColor, vColor.rgb * ${INK_SHADE}, inkSurface);
+  #endif
+  gl_FragColor = vec4(ink, 1.0);
   #include <colorspace_fragment>
   #include <fog_fragment>
 }`;
 
-const shaderOf = (uniforms: ShaderMaterial['uniforms'], vertexShader: string): ShaderMaterial =>
-  new ShaderMaterial({ uniforms, vertexShader, fragmentShader: FRAGMENT, side: BackSide, fog: true, toneMapped: false });
+const shaderOf = (uniforms: ShaderMaterial['uniforms'], vertexShader: string, vertexColors: boolean): ShaderMaterial =>
+  new ShaderMaterial({ uniforms, vertexShader, fragmentShader: FRAGMENT, side: BackSide, fog: true, toneMapped: false, vertexColors });
 
-/** Jeden materiál na barvu a renderer: posun (NDC na 2,5 px) se přepočítá z velikosti plátna. */
-function inkMaterial(ink: Ink): ShaderMaterial {
-  return shaderOf(UniformsUtils.merge([UniformsLib.fog, { color: { value: new Color(INK_COLOR[ink]) }, inkOffset: { value: new Vector2() } }]), VERTEX);
+/** Jeden materiál na barvu, druh sítě a renderer: posun (NDC na `INK_PX`) se přepočítá z velikosti plátna. */
+function inkMaterial(ink: Ink, vertexColors: boolean): ShaderMaterial {
+  const uniforms = { inkColor: { value: new Color(INK_COLOR[ink]) }, inkSurface: { value: INK_SURFACE[ink] }, inkOffset: { value: new Vector2() } };
+  return shaderOf(UniformsUtils.merge([UniformsLib.fog, uniforms]), VERTEX, vertexColors);
 }
 
 /**
@@ -78,7 +99,7 @@ function inkMaterial(ink: Ink): ShaderMaterial {
  * `setInkViewport` platí dál), uniformy deformace s tělem.
  */
 function deformedInk(base: ShaderMaterial, toy: ToyUniforms): ShaderMaterial {
-  return shaderOf({ ...base.uniforms, ...toy }, withToyDeform(VERTEX));
+  return shaderOf({ ...base.uniforms, ...toy }, withToyDeform(VERTEX), base.vertexColors);
 }
 
 /**
@@ -87,9 +108,10 @@ function deformedInk(base: ShaderMaterial, toy: ToyUniforms): ShaderMaterial {
  */
 const materials = new Map<string, ShaderMaterial>();
 function inkMaterialOf(ink: Ink, mesh: Mesh, geometry: BufferGeometry): ShaderMaterial {
-  const key = `${ink}:${(mesh as SkinnedMesh).isSkinnedMesh === true}:${geometry.morphAttributes.position !== undefined}:${geometry.morphAttributes.normal !== undefined}`;
+  const tinted = geometry.attributes.color !== undefined;
+  const key = `${ink}:${(mesh as SkinnedMesh).isSkinnedMesh === true}:${geometry.morphAttributes.position !== undefined}:${geometry.morphAttributes.normal !== undefined}:${tinted}`;
   let material = materials.get(key);
-  if (material === undefined) materials.set(key, (material = inkMaterial(ink)));
+  if (material === undefined) materials.set(key, (material = inkMaterial(ink, tinted)));
   return material;
 }
 

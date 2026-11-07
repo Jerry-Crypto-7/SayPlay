@@ -51,7 +51,8 @@ export function airOf(look: Pick<Look, 'fog' | 'horizon'>): Air {
  */
 export const GOLDEN_UP = 0.62;
 export const GOLDEN_SUN = '#ffc68c';
-export const GOLDEN_WARMTH: Readonly<Record<GradeFamily, number>> = { green: 0.3, warm: 0.25, cold: 0.12, water: 0, indoor: 0, dark: 0 };
+/** P75 T5: teplejší než P73D (0,3 / 0,25 / 0,12) – koncept A svítí zlatou hodinou i nad loukou a sněhem. */
+export const GOLDEN_WARMTH: Readonly<Record<GradeFamily, number>> = { green: 0.42, warm: 0.35, cold: 0.2, water: 0, indoor: 0, dark: 0 };
 const GOLDEN_GAIN_MOST = 1.2;
 /** Protisvětlo (obrys hrdiny): síla k slunci sady a podíl barvy oblohy u obzoru. */
 export const BACK_LIGHT = 0.45;

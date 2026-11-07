@@ -12,6 +12,7 @@
  * zaostávala. Jen vzhled: jádro o kulise neví, hash se nehne.
  */
 
+import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo } from 'react';
 import { DoubleSide, Mesh, MeshBasicMaterial, Vector3 } from 'three';
 
@@ -40,10 +41,12 @@ const eye = new Vector3();
 export function HorizonBackdrop({ look, seed, length = Infinity, clear, skirt = 0.05, ground, beyond = 0 }: HorizonBackdropProps) {
   const parts = useMemo(() => buildBackdrop(look, { seed, clear, skirt, beyond }), [look, seed, clear, skirt, beyond]);
   const material = useMemo(() => new MeshBasicMaterial({ vertexColors: true, side: DoubleSide }), []);
+  // Nejvzdálenější vrstvu nahrazuje malovaná obloha (P75 T3): vlastní materiál, ať se rozplyne sama.
+  const far = useMemo(() => new MeshBasicMaterial({ vertexColors: true, side: DoubleSide }), []);
   const meshes = useMemo(
     () =>
-      parts.map(({ layer, geometry }) => {
-        const mesh = new Mesh(geometry, material);
+      parts.map(({ layer, geometry }, index) => {
+        const mesh = new Mesh(geometry, index === 0 && parts.length > 1 ? far : material);
         mesh.name = `backdrop-${layer.kind}`;
         // Prstenec je všude kolem kamery; ořez by počítal se starou polohou.
         mesh.frustumCulled = false;
@@ -56,10 +59,27 @@ export function HorizonBackdrop({ look, seed, length = Infinity, clear, skirt = 
         };
         return mesh;
       }),
-    [parts, material, length, ground],
+    [parts, material, far, length, ground],
   );
+  // Průhledná jen během prolnutí: napořád průhledná vrstva by se řadila s vodou a částicemi.
+  useFrame(({ scene }) => {
+    const painted = (scene.userData.paintedSky as number | undefined) ?? 0;
+    const fading = painted > 0 && painted < 1;
+    if (far.transparent !== fading) {
+      far.transparent = fading;
+      far.needsUpdate = true;
+    }
+    far.opacity = 1 - painted;
+    far.visible = painted < 1;
+  });
   useEffect(() => () => parts.forEach(({ geometry }) => geometry.dispose()), [parts]);
-  useEffect(() => () => material.dispose(), [material]);
+  useEffect(
+    () => () => {
+      material.dispose();
+      far.dispose();
+    },
+    [material, far],
+  );
   return (
     <group name="backdrop">
       {meshes.map((mesh) => (

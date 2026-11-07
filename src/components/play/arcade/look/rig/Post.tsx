@@ -10,13 +10,14 @@
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { Bloom, EffectComposer, N8AO, SMAA, TiltShift2, ToneMapping } from '@react-three/postprocessing';
+import { Bloom, EffectComposer, N8AO, SMAA, TiltShift2, type TiltShiftEffect, ToneMapping } from '@react-three/postprocessing';
 import { ToneMappingMode } from 'postprocessing';
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { Look } from '@/play/arcade/look';
 
 import { tiltFocus } from '../framing';
+import { REST_FOCUS, restWeightOf } from '../rest-shot';
 import { GradeEffect, type GradeFamily, gradeFor } from './grade';
 import { GAP_MS, type QualityState, type QualityTier, TIER_SETTINGS, bloomThreshold, sampleQuality, startQuality } from './quality';
 
@@ -117,10 +118,41 @@ export function Grading({ family, tier }: { readonly family: GradeFamily; readon
   return <primitive object={effect} dispose={null} />;
 }
 
-/** Tilt-shift: síla rozostření, šíře ostrého pásu (0–1, víc = širší) a vzorky – jemně, hračka, ne rozmazaný obraz. */
-const TILT_BLUR = 0.12;
-const TILT_TAPER = 0.7;
-const TILT_SAMPLES = 8;
+/**
+ * Tilt-shift: síla rozostření a šíře přechodu od ostrého pásu k plnému rozostření (podíl úhlopříčky, míň = užší).
+ * P75 T4: makro jako koncept A – v záběru zblízka (`RestShot`) silně, za hry slaběji, ať je trať před hrdinou čitelná
+ * (P73D mělo 0,12 a 0,7 všude). Počet vzorků dává úroveň kvality (`TIER_SETTINGS.tilt`).
+ */
+export const TILT = { play: { blur: 0.18, taper: 0.5 }, rest: { blur: 0.32, taper: 0.32 } } as const;
+
+/** Tilt-shift snímku: herní ostrý pás `focus` (výška obrazu 0–1) prolnutý se záběrem zblízka váhou `weight` (0–1). */
+export function macroFocus(focus: number, weight: number): { readonly blur: number; readonly taper: number; readonly focus: number } {
+  const mix = (play: number, rest: number): number => play + (rest - play) * weight;
+  return { blur: mix(TILT.play.blur, TILT.rest.blur), taper: mix(TILT.play.taper, TILT.rest.taper), focus: mix(focus, REST_FOCUS) };
+}
+
+/**
+ * Tilt-shift, jehož pás a sílu každý snímek posune záběr zblízka (`restWeightOf` kamery); jen uniformy, žádný překlad
+ * shaderu. Efekt rozmazává jen jedním směrem (šmouhy po úhlopříčce); `cross` přidá druhý průchod napříč – kulaté
+ * rozostření jako makro v konceptu, za cenu průchodu navíc (skládač dva konvoluční efekty sám rozdělí).
+ */
+function MacroFocus({ focus, samples, cross }: { readonly focus: number; readonly samples: number; readonly cross: boolean }) {
+  const effects = useRef<(TiltShiftEffect | null)[]>([null, null]);
+  useFrame(({ camera }) => {
+    const at = macroFocus(focus, restWeightOf(camera));
+    for (const tilt of effects.current) {
+      if (tilt === null) continue;
+      tilt.blur = at.blur;
+      tilt.taper = at.taper;
+      tilt.start[1] = at.focus;
+      tilt.end[1] = at.focus;
+    }
+  }, BEFORE_COMPOSER);
+  const pass = (index: number, direction: [number, number]) => (
+    <TiltShift2 ref={(effect: TiltShiftEffect | null) => { effects.current[index] = effect; }} blur={TILT.play.blur} taper={TILT.play.taper} start={[0, focus]} end={[1, focus]} samples={samples} direction={direction} />
+  );
+  return cross ? <>{pass(0, [1, 1])}{pass(1, [1, -1])}</> : pass(0, [1, 1]);
+}
 
 /** Vzorky MSAA cíle skládače na úrovni bez SMAA. */
 const MSAA_SAMPLES = 4;
@@ -146,8 +178,8 @@ export function opaqueAo(pass: { autoDetectTransparency: boolean; configuration:
  */
 export function Post({ look, family, tier, control }: { readonly look: Look; readonly family: GradeFamily; readonly tier: QualityTier; readonly control: string }) {
   const { bloom, ao, aa, tilt } = TIER_SETTINGS[tier];
-  // Tilt-shift diorama (P73D T4) jen na `high` a jen u ovládání s rámováním diorama: ostrý pás přes hrdinu.
-  const focus = tilt ? tiltFocus(control) : null;
+  // Tilt-shift diorama (P73D T4) jen u ovládání s rámováním diorama: ostrý pás přes hrdinu; P75 T4 i na telefonu.
+  const focus = tilt > 0 ? tiltFocus(control) : null;
   return (
     <>
       <PostProbe effects={[ao === false ? '' : 'ao', aa === 'smaa' ? 'smaa' : '', bloom ? 'bloom' : '', focus === null ? '' : 'tilt', 'aces'].filter(Boolean).join(' ')} />
@@ -155,7 +187,7 @@ export function Post({ look, family, tier, control }: { readonly look: Look; rea
         {ao === false ? <></> : <N8AO ref={opaqueAo} aoRadius={1.2} distanceFalloff={1} intensity={2} halfRes={ao === 'half'} quality={ao === 'half' ? 'performance' : 'medium'} />}
         {aa === 'smaa' ? <SMAA /> : <></>}
         {bloom ? <Bloom mipmapBlur luminanceThreshold={bloomThreshold(look)} luminanceSmoothing={0.1} intensity={0.8} /> : <></>}
-        {focus === null ? <></> : <TiltShift2 blur={TILT_BLUR} taper={TILT_TAPER} start={[0, focus]} end={[1, focus]} samples={TILT_SAMPLES} />}
+        {focus === null ? <></> : <MacroFocus focus={focus} samples={tilt} cross={tier === 'high'} />}
         <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
         <Grading family={family} tier={tier} />
       </EffectComposer>
