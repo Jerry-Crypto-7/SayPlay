@@ -278,12 +278,13 @@ function describeTree(node: ReactNode): unknown[] {
  * `look` louky, města, podmoří a sopky přepsán v P73D T5: znak místa na obzoru (`skyline.marks`), sopka i kaňon.
  * `surface` přepsán v P73D T6: povrch dostal dvě barvy mantinelu (`wall`) a písek s hlínou drobky (`flecks`).
  * `look` a `surface` podmoří přepsány v P73D: trať jede po `seabed` (písek se svitem), pod tyrkysovým světlem byl zelený.
+ * P75 T6 přepsal `look` louky (bez studny), města (teplejší dlažba) a sopky (světlejší kulisy a výplň stínu).
  * P75 T5 přepsal `look` louky, města, pláže, podmoří, sněhu, sopky a vesmíru (opar k malovanému pozadí, husté popředí,
  * teplá zem sopky a města, písek podmoří) a s nimi `styled` města, podmoří a sopky a `agar` sopky.
  */
 const MAIN: Readonly<Record<string, { readonly look: string; readonly surface: string; readonly styled: string; readonly agar: string }>> = {
-  meadow: { look: '2cdc9b21', surface: '9b5032c0', styled: '922f522c', agar: 'af20e51a' },
-  city: { look: 'aa03f8b7', surface: '3d16a743', styled: 'afb97cca', agar: '7aad2795' },
+  meadow: { look: '61008c8f', surface: '9b5032c0', styled: '922f522c', agar: 'af20e51a' },
+  city: { look: '3081369f', surface: '3d16a743', styled: 'dcac3244', agar: '7aad2795' },
   forest: { look: 'c02971b5', surface: '9b5032c0', styled: '7a637744', agar: '94472e88' },
   jungle: { look: '54e2641a', surface: '9b5032c0', styled: 'cf1c9e6', agar: '12b41537' },
   desert: { look: '8322600b', surface: '353a5c9e', styled: '81172b7a', agar: 'fce62cb4' },
@@ -291,7 +292,7 @@ const MAIN: Readonly<Record<string, { readonly look: string; readonly surface: s
   ocean: { look: '1bf0d212', surface: 'fe1e5ae9', styled: '743053c4', agar: 'dbbcc4b6' },
   underwater: { look: '4ce728c2', surface: 'bfa38346', styled: 'f8a72eec', agar: '62d66877' },
   snow: { look: 'cab17557', surface: '2ee56f00', styled: 'c3ab0313', agar: '30849ad9' },
-  volcano: { look: 'e6a1fe18', surface: '9b5032c0', styled: 'feaab857', agar: '484043d8' },
+  volcano: { look: 'fc43f74c', surface: '9b5032c0', styled: '7fa5344', agar: '484043d8' },
   space: { look: 'd0ca2823', surface: '9b5032c0', styled: 'a1c003e6', agar: '63f2d812' },
   graveyard: { look: '5632e88f', surface: '9b5032c0', styled: 'e37d9b33', agar: 'af20e51a' },
 };
