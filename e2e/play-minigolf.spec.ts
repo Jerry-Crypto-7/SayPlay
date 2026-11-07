@@ -250,7 +250,7 @@ async function botShots(page: Page, shot: (name: string) => Promise<void>, prefi
 }
 
 /** Prahy kamery P71C T1/T2 (m, °): míření, první snímky po puštění, klid po zastavení. */
-const CAMERA_GATE = { aimFrame: 0.05, aimTotal: 0.3, releaseFrame: 0.1, releaseDeg: 1, releaseFrames: 3, swing: 0.02, settled: 0.005, restAfterMs: 1500 } as const;
+const CAMERA_GATE = { aimFrame: 0.05, aimTotal: 0.3, releaseFrame: 0.1, releaseDeg: 1, releaseMs: 50, swing: 0.02, settled: 0.005, restAfterMs: 1500 } as const;
 const CAMERA_OUT = process.env.P71_GOLF_OUT ?? join(process.cwd(), 'evals/play/p71/golf');
 
 interface CameraFrame {
@@ -367,7 +367,9 @@ async function cameraCheck(page: Page, info: TestInfo, cdp: CDPSession | null, n
   const aim = reel.slice(0, release < 0 ? reel.length : release);
   const aimMoves = aim.slice(1).map((frame, k) => gap(frame.p, aim[k]!.p));
   const aimTotal = Math.max(0, ...aim.map((frame) => gap(frame.p, aim[0]!.p)));
-  const releaseMoves = release <= 0 ? [] : reel.slice(release, release + CAMERA_GATE.releaseFrames).map((frame, k) => ({ m: gap(frame.p, reel[release + k - 1]!.p), deg: degBetween(frame.q, reel[release + k - 1]!.q) }));
+  // Okno po puštění v čase, ne ve snímcích: přechod kamery jede podle času, ve WebKitu (~20 FPS) je třetí snímek
+  // 0,1 s po ráně a plynulý rozjezd tam už ujede 0,19 m (P74). Při 60 FPS jsou v okně tytéž tři snímky jako dřív.
+  const releaseMoves = release <= 0 ? [] : reel.slice(release).filter((frame) => frame.t - reel[release]!.t < CAMERA_GATE.releaseMs).map((frame, k) => ({ m: gap(frame.p, reel[release + k - 1]!.p), deg: degBetween(frame.q, reel[release + k - 1]!.q) }));
   const final = reel.at(-1)!;
   const back = stop < 0 ? [] : reel.slice(stop).map((frame) => gap(frame.p, final.p));
   const swing = Math.max(0, ...back.slice(1).map((value, k) => value - back[k]!));
