@@ -1,0 +1,57 @@
+# Health probe for the hosted demo until the end of judging (31 Dec 2026).
+# Every 10 minutes: the demo, the backend health route, the /play page and the build id must answer 200.
+# A failure opens one "Demo down" issue (later failures comment on it) and marks the run red.
+# Targets must match `external.targets` in ops/monitoring/uptime.json (pinned by scripts/__tests__/health-probe-workflow.test.ts).
+name: health-probe
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: health-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe the demo
+        id: probe
+        run: |
+          failed=""
+          for url in \
+            https://worldstream-sigma.vercel.app \
+            https://worldstream-sigma.vercel.app/api/health \
+            https://worldstream-sigma.vercel.app/play \
+            https://worldstream-sigma.vercel.app/api/build-id; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 --retry 2 --retry-delay 15 "$url" || true)
+            echo "$url -> ${code:-000}"
+            if [ "$code" != "200" ]; then failed="$failed $url=${code:-000}"; fi
+          done
+          echo "failed=$failed" >> "$GITHUB_OUTPUT"
+
+      - name: Open or update the outage issue
+        if: steps.probe.outputs.failed != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FAILED: ${{ steps.probe.outputs.failed }}
+        run: |
+          title="Demo down: health probe failed"
+          body="Probe at $(date -u +%Y-%m-%dT%H:%M:%SZ) failed:$FAILED. Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          number=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "in:title \"$title\"" --json number --jq '.[0].number // empty')
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"
+          fi
+
+      - name: Mark the run red
+        if: steps.probe.outputs.failed != ''
+        run: exit 1
