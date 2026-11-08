@@ -10,7 +10,6 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
   issues: write
 
 concurrency:
@@ -20,7 +19,9 @@ concurrency:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    # A hanging URL costs at most --retry-max-time plus one --max-time attempt; four of them must finish well inside
+    # this limit, or the job dies before the issue step and a hanging demo goes unreported.
+    timeout-minutes: 10
     steps:
       - name: Probe the demo
         id: probe
@@ -31,7 +32,7 @@ jobs:
             https://worldstream-sigma.vercel.app/api/health \
             https://worldstream-sigma.vercel.app/play \
             https://worldstream-sigma.vercel.app/api/build-id; do
-            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 --retry 2 --retry-delay 15 "$url" || true)
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 --retry 2 --retry-delay 10 --retry-max-time 40 "$url" || true)
             echo "$url -> ${code:-000}"
             if [ "$code" != "200" ]; then failed="$failed $url=${code:-000}"; fi
           done
@@ -45,7 +46,8 @@ jobs:
         run: |
           title="Demo down: health probe failed"
           body="Probe at $(date -u +%Y-%m-%dT%H:%M:%SZ) failed:$FAILED. Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          number=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "in:title \"$title\"" --json number --jq '.[0].number // empty')
+          # Only the probe's own open issue with exactly this title; a stranger's look-alike issue is ignored.
+          number=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --author app/github-actions --search "in:title \"$title\"" --json number,title --jq "map(select(.title == \"$title\")) | .[0].number // empty")
           if [ -n "$number" ]; then
             gh issue comment "$number" --repo "$GITHUB_REPOSITORY" --body "$body"
           else

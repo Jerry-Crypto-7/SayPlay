@@ -43,8 +43,19 @@ describe('health probe workflow', () => {
     expect(workflow).toMatch(/Mark the run red\n\s+if: steps\.probe\.outputs\.failed != ''\n\s+run: exit 1/);
   });
 
-  it('the token can only read the repo and write issues; step output reaches the shell through env, not inline', () => {
-    expect(workflow).toMatch(/\npermissions:\n {2}contents: read\n {2}issues: write\n\n/);
+  it('four hanging URLs still leave time for the issue step (P78 T5 review)', () => {
+    const number = (pattern: RegExp): number => Number(pattern.exec(workflow)?.[1] ?? Number.NaN);
+    const perUrlSeconds = number(/--retry-max-time (\d+)/) + number(/--max-time (\d+)/);
+    expect(perUrlSeconds * probed().length).toBeLessThan(number(/timeout-minutes: (\d+)/) * 60 - 60);
+  });
+
+  it('comments only on the probe’s own issue with the exact title', () => {
+    expect(workflow).toContain('--author app/github-actions');
+    expect(workflow).toContain('map(select(.title == \\"$title\\"))');
+  });
+
+  it('the token can only write issues; step output reaches the shell through env, not inline', () => {
+    expect(workflow).toMatch(/\npermissions:\n {2}issues: write\n\n/);
     expect(workflow).not.toMatch(/write-all|pull-requests:|actions: write|contents: write/);
     expect(workflow).not.toMatch(/run: [^\n]*\$\{\{/);
     expect(workflow.split('\n').filter((line) => line.includes('${{')).map((line) => line.trim())).toEqual([
