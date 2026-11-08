@@ -1,0 +1,216 @@
+{
+ "about": "P78 T3: verb-read check on the held-out test-200 set, offline quick version, before and after the check learned the newer game types (native glide, walker and ball generators; games that carry their genre in spec.genre). Same meter as P74 T5 (offlineChain); nothing tuned on the set.",
+ "measuredOn": "2026-11-08",
+ "set": "evals/play/p30/test-200.json",
+ "before": {
+  "file": "evals/play/p74/run-2026-11-07.json",
+  "hit": 75,
+  "of": 200
+ },
+ "after": {
+  "hit": 100,
+  "of": 200
+ },
+ "changed": [
+  {
+   "id": "t002",
+   "text": "help me write a birthday poem for my mom",
+   "verb": "write",
+   "genre": "timing.stack",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t018",
+   "text": "renewing my passport at city hall",
+   "verb": "renew",
+   "genre": "timing.stack",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t024",
+   "text": "breaking up with my boyfriend over text",
+   "verb": "break up",
+   "genre": "duel",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t028",
+   "text": "negotiating a raise with my boss",
+   "verb": "negotiate",
+   "genre": "duel",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t031",
+   "text": "Write a haiku about autumn leaves",
+   "verb": "write",
+   "genre": "timing.stack",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t057",
+   "text": "sort recycling on a fast conveyor belt at the dump",
+   "verb": "sort",
+   "genre": "sort",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t061",
+   "text": "wrap presents at the north pole before christmas eve",
+   "verb": "wrap",
+   "genre": "rhythm",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t063",
+   "text": "a spider weaves a web between two lamp posts",
+   "verb": "weave",
+   "genre": "rhythm",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t097",
+   "text": "a sushi chef slices fish tossed into the air",
+   "verb": "slice",
+   "genre": "slice",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t102",
+   "text": "an elf archer defends the forest gate from orcs",
+   "verb": "defend",
+   "genre": "defense",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t103",
+   "text": "a vampire sneaks through a village without waking anyone",
+   "verb": "sneak",
+   "genre": "control:walker",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t106",
+   "text": "a phoenix rises from the ashes and flies over a burning desert",
+   "verb": "fly",
+   "genre": "control:glide",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t111",
+   "text": "a knight and a dragon play chess in a tower",
+   "verb": "play chess",
+   "genre": "duel",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t133",
+   "text": "a baby dragon learns to fly over a volcanic island",
+   "verb": "fly",
+   "genre": "control:glide",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t140",
+   "text": "a paper airplane glides through an office without hitting the ceiling fans",
+   "verb": "glide",
+   "genre": "control:glide",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t143",
+   "text": "shoot hoops with a gorilla at the zoo",
+   "verb": "shoot hoops",
+   "genre": "shooter",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t156",
+   "text": "aliens invade new york and you pilot a fighter jet",
+   "verb": "pilot",
+   "genre": "control:glide",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t157",
+   "text": "a sumo cat pushes dogs off a rooftop",
+   "verb": "push",
+   "genre": "push",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t158",
+   "text": "catch falling apples in a basket before they hit the ground",
+   "verb": "catch",
+   "genre": "catch",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t161",
+   "text": "a firefly lights the way through a dark swamp maze",
+   "verb": "light the way",
+   "genre": "control:walker",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t168",
+   "text": "fly a helicopter through a canyon full of wind turbines",
+   "verb": "fly",
+   "genre": "control:glide",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t175",
+   "text": "whack moles in a vegetable patch before they eat the carrots",
+   "verb": "whack",
+   "genre": "whack",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t187",
+   "text": "a hamster bartender slides drinks down a long counter",
+   "verb": "slide",
+   "genre": "runner",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t197",
+   "text": "hide from a T-rex in a jungle ranger station",
+   "verb": "hide",
+   "genre": "control:walker",
+   "before": false,
+   "after": true
+  },
+  {
+   "id": "t200",
+   "text": "a snail must cross a highway at rush hour",
+   "verb": "cross",
+   "genre": "hop",
+   "before": false,
+   "after": true
+  }
+ ]
+}
