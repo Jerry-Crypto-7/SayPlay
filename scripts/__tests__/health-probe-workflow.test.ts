@@ -54,6 +54,10 @@ describe('health probe workflow', () => {
     expect(workflow).toContain('map(select(.title == \\"$title\\"))');
   });
 
+  it('follows the root redirect to /play, so a healthy demo is not reported down', () => {
+    expect(workflow).toMatch(/code=\$\(curl [^\n]*--location /);
+  });
+
   it('the token can only write issues; step output reaches the shell through env, not inline', () => {
     expect(workflow).toMatch(/\npermissions:\n {2}issues: write\n\n/);
     expect(workflow).not.toMatch(/write-all|pull-requests:|actions: write|contents: write/);

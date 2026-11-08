@@ -32,7 +32,8 @@ jobs:
             https://worldstream-sigma.vercel.app/api/health \
             https://worldstream-sigma.vercel.app/play \
             https://worldstream-sigma.vercel.app/api/build-id; do
-            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 --retry 2 --retry-delay 10 --retry-max-time 40 "$url" || true)
+            # --location: the root answers 307 to /play by design (src/app/page.tsx); judge the page it lands on.
+            code=$(curl -s -o /dev/null -w '%{http_code}' --location --max-time 10 --retry 2 --retry-delay 10 --retry-max-time 40 "$url" || true)
             echo "$url -> ${code:-000}"
             if [ "$code" != "200" ]; then failed="$failed $url=${code:-000}"; fi
           done
