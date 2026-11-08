@@ -413,7 +413,10 @@ export function placeTrackFraming({ camera, look, area, hero, ground = flat }: P
   if (tall.length === 0) return [];
   // Druhý kus jiný, jen když není o víc než čtvrtinu nižší – jinak by vpravo rámoval keřík.
   const framing = [tall[0]!, tall.find((id, i) => i > 0 && modelHeight(id) >= 0.75 * modelHeight(tall[0]!)) ?? tall[0]!];
-  const dir = camera.getWorldDirection(new Vector3()).z < 0 ? -1 : 1;
+  const forward = camera.getWorldDirection(new Vector3());
+  // Kamera z boku (plošinovka na šířku): kus vedle trati stojí mezi ní a hrdinou a zakryje ho (T4, s5 maják).
+  if (Math.abs(forward.z) < 0.8 * Math.hypot(forward.x, forward.z)) return [];
+  const dir = forward.z < 0 ? -1 : 1;
   const z0 = hero?.z ?? camera.position.z + dir * 6;
   const lanes = area.filter((box) => box.z0 <= z0 && z0 <= box.z1);
   const left = Math.min(...lanes.map((box) => box.x0));
