@@ -9,7 +9,7 @@ Jen čtecí kontroly; historie se nepřepisovala. Nálezy se tu necitují, jen s
 | kontrola | výsledek | co dál |
 |---|---|---|
 | `blind-check` (všech 6) | **6/6 PASS** | po sloučení P77 a P79 znovu (~55 min) |
-| gitleaks nad celou historií | **3 nálezy → 0** (testovací fixtury, `0e760a51`) | po sloučení znovu (~40 s) |
+| gitleaks nad celou historií | **3 nálezy → 0** (testovací fixtury, `0e760a51` a následný commit s novým testovacím klíčem) | po sloučení znovu (~40 s) |
 | gitleaks nad trackovaným stromem | **1 nález → 0** (tatáž fixtura) | – |
 | `submission-check` (8 kontrol, plný běh) | **5 PASS, 3 FAIL**; kontrola 6 opravená (`532b09e6`) | zbývá repo (10. 11.) a video (P80) |
 
@@ -36,7 +36,7 @@ V režimu hooku, aby běžela i kontrola 5 (cíl pushe). 10:44–11:40, nad `9fc
 | `evals/worldstream/__tests__/measure-create.test.ts` | 678 | `c8a79b39` | falešný tvar klíče pro test detektoru tajemství | ne |
 | `evals/worldstream/__tests__/measure-create.test.ts` | 917 | `f1c7e62e` | falešná adresa s klíčem na doméně `example` pro týž test | ne |
 
-**Oprava v kódu (`0e760a51`):** `.gitleaksignore` s otisky těch tří nálezů a komentář `# gitleaks:allow` na řádku v `HEAD` (testy `ops/env` 19/19). Pak: historie **0 nálezů**, trackovaný strom (`git archive` indexu, 455 MB, `gitleaks dir`) **0 nálezů**.
+**Oprava v kódu:** `.gitleaksignore` s otisky těch tří nálezů (`0e760a51`; otisk nese commit, takže stejný řádek v novém commitu se hlásí dál). Testovací klíč v `HEAD` je teď `env-test-key`, který gitleaks nehlásí, takže v aktuálním stromu žádná výjimka není – nezávislá revize upozornila, že inline `# gitleaks:allow` by schoval i skutečný klíč vložený později na týž řádek. Testy `ops/env` 19/19. Pak: historie **0 nálezů**, trackovaný strom (`git archive` indexu, 455 MB, `gitleaks dir`) **0 nálezů**.
 
 `gitleaks dir .` nad pracovním adresářem hlásí 8 nálezů, ale prochází i netrackované `node_modules` (junction) a `test-results` – do klonu repozitáře se nic z toho nedostane.
 

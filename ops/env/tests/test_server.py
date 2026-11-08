@@ -15,7 +15,7 @@ from fastapi.testclient import TestClient
 
 import server
 
-KEY = "s3cret-Env-key-for-tests"  # gitleaks:allow (test key)
+KEY = "env-test-key"
 
 
 class FakeGenerator:
