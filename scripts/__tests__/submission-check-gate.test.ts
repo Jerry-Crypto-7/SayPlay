@@ -565,6 +565,16 @@ describe('[6] disclosure napříč pěti třídami', () => {
     expect(detailOf(results, 6)).toContain('src/embedded.ts');
   });
 
+  it('stejný literál v nástroji a ve vyjmenovaném vlastním textu projde (P79 T7)', async () => {
+    const dir = repo();
+    const literal = `export const data = '${'a'.repeat(LITERAL_BYTES_LIMIT + 1)}';\n`;
+    write(dir, 'scripts/expected-output.mjs', literal);
+    write(dir, 'src/play/__tests__/long.test.ts', literal);
+    write(dir, 'src/play/read/prompt.ts', literal);
+    stage(dir);
+    expect(failed(await check(dir))).toEqual([]);
+  });
+
   it('selže na dlouhé kolekci, i když je v ní málo bajtů', async () => {
     const dir = repo();
     const items = Array.from({ length: COLLECTION_ITEMS_LIMIT + 1 }, (_, index) => index).join(',');

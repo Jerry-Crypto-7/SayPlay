@@ -228,14 +228,14 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
 
   it('AI verze nese původ (model z odpovědi, čas, cache, opravy), rychlá ne (P73C T4)', async () => {
     const named = answered(faithful({ hero: 'golden hamster' }));
-    director.script = [named.ok ? { ...named, provenance: { branch: 'fake', model: 'gpt-oss-test' } } : named];
+    director.script = [named.ok ? { ...named, provenance: { branch: 'fake', model: 'gpt-test' } } : named];
     const created = await publish({ sentence: SENTENCE });
     const draftId: string = created.body.versionId;
     await upgrade(draftId);
     const ready = await settled(draftId);
     expect(ready.status).toBe('ready');
     const child = await game(ready.versionId);
-    expect(child.provenance).toEqual({ model: 'gpt-oss-test', ms: expect.any(Number), cached: false, revised: 0 });
+    expect(child.provenance).toEqual({ model: 'gpt-test', ms: expect.any(Number), cached: false, revised: 0 });
     expect(Number.isInteger(child.provenance.ms)).toBe(true);
     expect(child.provenance.ms).toBeGreaterThanOrEqual(Math.floor(child.timings.directorMs));
     expect((await game(draftId)).provenance).toBeUndefined();

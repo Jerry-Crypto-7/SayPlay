@@ -508,6 +508,22 @@ export function isToolingPath(path) {
     || /[.](test|measure)[.](ts|tsx|mts|mjs|js)$/.test(path);
 }
 
+/**
+ * Soubory produktu, jejichž dlouhé literály jsou náš vlastní text, ne cizí
+ * datová sada. Část (d) kontroly 6 je přeskočí, jinak platí všechno ostatní.
+ *
+ * Výčet s důvodem, ne pravidlo: `kind: dataset` v registru vede jen skutečné
+ * cizí sady (WordNet…) a zapsat sem vlastní prózu jako dataset by disclosure
+ * zkreslilo. Nový soubor sem přibude jen vědomě, s vlastním řádkem.
+ *
+ * Rozhodnuto 8. 11. 2026 (P79 T7, varianta A) nad 13 nálezy: 11 v nástrojích
+ * (od té doby kryje `isToolingPath()`), 2 tady.
+ */
+export const OWN_PROSE = new Map([
+  ['src/play/arcade/witness.ts', 'own prose, not a third-party dataset: rule and role ids the play witness checks'],
+  ['src/play/read/prompt.ts', 'own prose, not a third-party dataset: the reader prompt we wrote'],
+]);
+
 /** Cesty deklarované položkami `kind: dataset`. */
 export function datasetPaths(registry) {
   const paths = [];
@@ -738,9 +754,11 @@ check(6, 'disclosure je úplná napříč pěti třídami', false, ({ repo, mani
     if (!coveredByPaths(path, registered)) problems.push(`${path} leží v datovém adresáři, ale žádná položka kind: dataset ho nepokrývá`);
   }
 
-  // (d) `dataset` (ii) — váha literálů nad celým sledovaným stromem.
+  // (d) `dataset` (ii) — váha literálů nad produktem. Nástroj vynechaný ze
+  // stejného důvodu jako v (b): literál v testu nebo harnesu je očekávaný
+  // výstup, který se nikam nenasazuje. `OWN_PROSE` je vlastní text produktu.
   for (const [path, source] of sources) {
-    if (coveredByPaths(path, registered)) continue;
+    if (coveredByPaths(path, registered) || isToolingPath(path) || OWN_PROSE.has(path)) continue;
     const { bytes, items } = literalWeight(path, source);
     if (bytes > LITERAL_BYTES_LIMIT) {
       problems.push(`${path} nese ${bytes} B literálů (práh ${LITERAL_BYTES_LIMIT}) a není registrovaný jako kind: dataset`);
