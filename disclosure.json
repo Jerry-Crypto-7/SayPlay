@@ -98313,6 +98313,18 @@
       "reviewNote": "Measured director candidate, not used by the deployed demo: it was measured writing game specs on Groq's hosted API (OpenAI-compatible, configured by WORLDSMITH_MODEL_* in the environment), and on 5 Nov 2026 the owner chose gpt-6-astra as the director instead (see that entry). During development the same model also read the sentence on the fast path through PLAY_READER_* (P56A) and ran locally through llama.cpp on the author's GPU (ops/llm/start.ps1). The weights are not in the repository or the bundle. License read from the model card, 2026-09-26."
     },
     {
+      "name": "gpt-oss-20b-2508",
+      "kind": "model",
+      "firstParty": true,
+      "reason": "Vymyšlený identifikátor v src/server/__tests__/upstream-hosted.test.ts: podvržený upstream ho vrací v poli model a test ověřuje, že se do provenance propíše jméno od poskytovatele, ne nastavené. Žádné volání modelu tohoto jména neprobíhá."
+    },
+    {
+      "name": "gpt-oss-test",
+      "kind": "model",
+      "firstParty": true,
+      "reason": "Vymyšlený identifikátor v src/app/api/play/__tests__/upgrade.test.ts: falešná provenance režiséra, kterou test předá a zpět očekává. Žádný model tohoto jména neexistuje ani se nevolá."
+    },
+    {
       "name": "gpt-test",
       "kind": "model",
       "firstParty": true,
@@ -98535,12 +98547,18 @@
         "e2e/play-feed-reels.spec.ts",
         "evals/play/p41/final.measure.ts",
         "evals/play/p56c/judge.mjs",
+        "evals/play/p62/audit.mjs",
+        "evals/play/p66/genre-labels.mjs",
+        "evals/play/p70b/write-sealed.mjs",
         "scripts/__tests__/blind-check.test.ts",
+        "scripts/__tests__/cloud-check-env.test.ts",
         "scripts/__tests__/codex-subscription.test.ts",
         "scripts/__tests__/license-gate.test.ts",
         "scripts/__tests__/p32-shots.test.ts",
         "scripts/__tests__/play-fidelity-compare.test.ts",
+        "scripts/__tests__/quest-dev.test.ts",
         "scripts/__tests__/submission-check-gate.test.ts",
+        "scripts/__tests__/submission-check.test.ts",
         "scripts/assets/cc0/__tests__/select.test.ts",
         "scripts/assets/cc0/select.mjs",
         "scripts/assets/originals.mjs",
@@ -98556,8 +98574,11 @@
         "scripts/play-fidelity.mjs",
         "scripts/play-p39-blind.mjs",
         "scripts/play-p46g-blind.mjs",
+        "scripts/quest-dev.mjs",
         "scripts/submission-check.mjs",
         "src/app/api/play/__tests__/dare.test.ts",
+        "src/app/api/play/__tests__/director-seam.test.ts",
+        "src/app/api/play/__tests__/og.test.ts",
         "src/app/api/play/__tests__/remix-sentence.test.ts",
         "src/app/api/play/__tests__/routes.test.ts",
         "src/app/api/play/__tests__/upgrade.test.ts",
@@ -98581,6 +98602,8 @@
         "src/play/arcade/__tests__/slice.test.ts",
         "src/play/arcade/__tests__/verify-logic.test.ts",
         "src/play/arcade/look/index.ts",
+        "src/play/arcade/witness.ts",
+        "src/play/chain/__tests__/decide.test.ts",
         "src/play/director/critic.ts",
         "src/play/director/prompt.ts",
         "src/play/draft/draft.ts",
@@ -98590,7 +98613,9 @@
         "src/play/genre/classify.ts",
         "src/play/intent/__tests__/extract.test.ts",
         "src/play/intent/extract.ts",
+        "src/play/read/prompt.ts",
         "src/server/__tests__/admission.test.ts",
+        "src/server/__tests__/upstream-hosted.test.ts",
         "src/server/__tests__/upstream.test.ts",
         "src/sim/__tests__/totality.test.ts"
       ]
