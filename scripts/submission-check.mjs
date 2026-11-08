@@ -14,7 +14,7 @@
  *
  * ## Tři návratové kódy, ne dva
  *
- * `0` prošlo všech osm kontrol · `1` aspoň jedna selhala · **`2` aspoň jedna se
+ * `0` prošlo všech devět kontrol · `1` aspoň jedna selhala · **`2` aspoň jedna se
  * přeskočila**. Dvojka existuje kvůli `--offline`: přeskočená kontrola není
  * splněná kontrola, a kdyby offline běh vracel nulu, byl by to nejlevnější
  * způsob, jak si odklikat zelenou bránu bez nasazení. `T804` proto smí uznat
@@ -67,6 +67,7 @@ import ts from 'typescript';
 
 import { parseEnvFile } from './cloud/check-env.mjs';
 import { modelIdsIn, registeredModelNames } from './license-gate.mjs';
+import { claimProblems } from './readme-claims.mjs';
 
 /** Strom, který se kontroluje. Přepisuje ho `buildContext({ repo })` v testech. */
 const REPO = process.cwd();
@@ -854,6 +855,12 @@ check(8, 'blind-check prošel — odevzdané artefakty neprozrazují autora', fa
   return summarize(failures.length > 0 ? failures : [`blind-check skončil kódem ${result.status}`]);
 });
 
+check(9, 'README a popis: každé číslo má měření, žádný mrtvý odkaz', false, ({ repo }) =>
+  // P79: hodnotitel si ověřuje tvrzení odkazem. Pravidla a jejich hranice stojí
+  // v `readme-claims.mjs`; tady se jen spouští nad týmž stromem.
+  summarize(claimProblems(repo)),
+);
+
 // ---------------------------------------------------------------------------
 // Běh
 // ---------------------------------------------------------------------------
@@ -902,7 +909,7 @@ export async function main(argv = []) {
         '  node scripts/submission-check.mjs --offline   přeskočí síťové kontroly, exit 2',
         '',
         `Vstupy: ${MANIFEST_FILE}, ${REGISTRY_FILE}. Popis: aktuální Reality Compiler disclosure kontrakt.`,
-        'Exit 0 jen když prošlo všech osm kontrol. Přeskočená kontrola není splněná.',
+        `Exit 0 jen když prošlo všech ${checks.length} kontrol. Přeskočená kontrola není splněná.`,
       ].join('\n'),
     );
     return 0;

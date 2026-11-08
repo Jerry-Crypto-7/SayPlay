@@ -1,0 +1,59 @@
+# Claims in the README and the submission texts, with their proof
+
+Every number in [README.md](../../../README.md), [description.md](../../../docs/submission/description.md) and [demo-walkthrough.md](../../../docs/submission/demo-walkthrough.md) has a row here. Each row names the file in this repository that holds the measurement and an exact excerpt (`Evidence`) found in that file. `node scripts/readme-claims.mjs` checks that every number in those texts is listed here, that every file exists in the public repository, that every excerpt is in its file, and that no link in those texts is dead; `node scripts/submission-check.mjs` runs the same check as check 9.
+
+Several measurement reports are written in Czech, so some excerpts are Czech. A decimal comma (`1,8 s`) is the same number as `1.8 s`.
+
+## Measured results
+
+| ID | Claim | Numbers | Date | File | Evidence |
+|---|---|---|---|---|---|
+| M1 | Quick version on the held-out set of 200 sentences: a playable game for every sentence | 200/200 | 2026-11-07 | `evals/play/p74/run-2026-11-07.json` | `"measuredOn": "2026-11-07"` `"sentences": 200,` `"playable": {` `"hit": 200,` |
+| M2 | The robot player won every one of those games | 200/200 | 2026-11-07 | `evals/play/p74/run-2026-11-07.json` | `"robotWins": {` `"hit": 200,` |
+| M3 | A player who does nothing lost 199 of 200 (the exception is t182, a submarine game) | 199/200 | 2026-11-07 | `evals/play/p74/run-2026-11-07.json` | `"idleLoses": {` `"hit": 199,` |
+| M4 | The word check counted the verb as read in 75 of 200 sentences | 75/200 | 2026-11-07 | `evals/play/p74/run-2026-11-07.json` | `"verbRead": {` `"hit": 75,` |
+| M5 | 48 of the 200 held-out sentences are not game ideas (a speech, a tax audit, laundry); all 48 became playable games the robot won and an idle player lost | 48/48 | 2026-11-07 | `evals/play/p74/run-2026-11-07.json` | `"non-game": {` `"sentences": 48,` `"hit": 48,` |
+| M6 | What the non-game set is | 48/48 | 2026-09-27 | `evals/play/p30/README.md` | `outside game genres (a speech, a tax audit, laundry)` |
+| M7 | Trial deployment: a new sentence became a playable quick version in a median 1.8 s, 5 of 5 sentences | 1.8 s, 5/5 | 2026-11-07 | `evals/play/p74/ai.json` | `"medianQuickMs": 1815,` |
+| M8 | Same run, in the report | 1.8 s, 5/5 | 2026-11-07 | `evals/play/p74/live.md` | `Rychlá hra 5/5, medián 1,8 s` |
+| M9 | Trial deployment: the AI version came back for 0 of 5 sentences (`MODEL_UNAVAILABLE`) | 0/5 | 2026-11-07 | `evals/play/p74/ai.json` | `"aiReady": 0,` `"reason": "MODEL_UNAVAILABLE"` |
+| M10 | Game link to first frame, emulated phones: median 1.4 s on iPhone 15, 2.6 s on Pixel 7; all 56 games played through | 1.4 s, 2.6 s, 56/56 | 2026-11-07 | `evals/play/p74/live.md` | `medián 1,4 s iPhone, 2,6 s Pixel` `56/56 prošlo` |
+| M11 | Emulated Pixel 7 with a 4× slower CPU: every one of 8 games held a median of at least 40 FPS; the medians were 45.3–59.6 FPS | 40 FPS, 45.3–59.6 | 2026-11-06 | `evals/play/p73/sceny/perf.md` | `Měřeno 6. 11. 2026.` `Medián ≥ 40 FPS: drží všech 8.` `45,3` `59,6` |
+| M12 | A blind judge (an AI model shown both versions side by side without labels) preferred the current scenes over the previous ones for 11 of 12 sentences | 11/12 | 2026-11-07 | `evals/play/p76/vs-main.md` | `Souzeno 2026-11-07 20:58` `vyhrálo 11/12` |
+| M13 | Vision judge on a three-frame clip of the robot's run: verb recognised in 18 of 200 sentences, hero in 39 of 118 sentences that name one | 18/200, 39/118 | 2026-10-04 | `evals/play/p37/o8.md` | `sloveso poznané v klipu \| 18/200` |
+| M14 | The hero recognised (second excerpt of M13) | 39/118 | 2026-10-04 | `evals/play/p37/o8.md` | `hrdina poznaný` `39/118` |
+| M15 | The quick version read the verb in 98 of 200 sentences on 4 October, with the same word check as M4 | 98/200 | 2026-10-04 | `evals/play/p37/o8.md` | `98/200` |
+| M16 | Last measured AI version on the paid production model (gpt-6-astra, OpenAI API): 12 of 12 published, median 56.7 s until it was playable | 12/12, 56.7 s | 2026-10-24 | `evals/play/p58b/director.json` | `"model": "gpt-6-astra",` `"ok": 12,` `"aiP50": 56740,` |
+| M17 | Cost of one AI version on that run: 0.62 USD per game, an upper bound (the ledger does not see the provider's cache discount) | 0.62 USD | 2026-10-24 | `evals/play/p58b/director.json` | `"perGameCleanBatch": 0.621628,` `prices are an upper bound` |
+| M18 | From 3 November the model provider refused director calls with HTTP 429 (rate limited or out of credit) | 429 | 2026-11-03 | `evals/play/p68/result.json` | `"measuredAt": "2026-11-03T11:01:05.419Z"` `the model provider answered 429 (rate limited or out of credit)` |
+| M19 | Model library: 1787 catalogue models – 362 CC0, 57 built by code in Blender, 32 built by code in three.js, 1336 generated offline – plus 144 rigged CC0 characters | 1787, 362, 57, 32, 1336, 144 | 2026-11-08 | `evals/play/p79/catalog.json` | `"catalogueModels": 1787,` `"cc0": 362,` `"blenderByCode": 57,` `"threeJsByCode": 32,` `"generatedOffline": 1336,` `"riggedCharacters": 144,` |
+
+## Spend limits (configuration of the public demo)
+
+| ID | Claim | Numbers | Date | File | Evidence |
+|---|---|---|---|---|---|
+| S1 | The AI director stops at a lifetime cap of 60 USD; each visitor gets 6 director calls a day (about one AI version) | 60 USD | 2026-11-06 | `scripts/cloud/env.production.example` | `WORLDSMITH_SPEND_CAP_USD=60` `PLAY_DIRECTOR_CALLS_PER_CALLER=6` |
+| S2 | The cap ledger is shared by all server instances (Upstash Redis), so the cap holds on serverless hosting | – | 2026-11-08 | `src/server/spend-store.ts` | `sdílená mezi instancemi` |
+
+## How it works (code, checked on 2026-11-08)
+
+| ID | Claim | Numbers | Date | File | Evidence |
+|---|---|---|---|---|---|
+| K1 | The model writes only a GameSpec, never code or a world | – | 2026-11-08 | `docs/play/director.md` | `Model píše jen GameSpec` |
+| K2 | The GameSpec chooses from a closed registry of controls | – | 2026-11-08 | `src/play/spec.ts` | `export const CONTROLS = ['tap_go', 'runner', 'platform'` |
+| K3 | The director's answer is validated against a strict schema | – | 2026-11-08 | `src/play/director/answer-schema.ts` | `.strict()` |
+| K4 | Arcade games step at a fixed 60 Hz | – | 2026-11-08 | `src/play/arcade/contract.ts` | `export const ARCADE_HZ = 60;` |
+| K5 | Grid games step at 20 Hz | – | 2026-11-08 | `src/play/compile/adapters/timer.ts` | `export const TICKS_PER_SECOND = 20;` |
+| K6 | Before publishing, the robot must win, an idle player must not win, and two replays must end in the same state hash | – | 2026-11-08 | `src/play/arcade/verify.ts` | `nečinný hráč nevyhraje` `const replayEqual = first.hash === second.hash && first.hash === bot.hash;` |
+| K7 | A game whose replays differ is refused | – | 2026-11-08 | `src/app/api/play/_publish.ts` | `code: 'NOT_DETERMINISTIC'` |
+| K8 | The compiler tries up to four seeds | – | 2026-11-08 | `src/app/api/play/_publish.ts` | `return [base, ...[1, 2, 3].map((attempt) => seedFrom({ base, attempt }))];` |
+| K9 | A game's id is a hash of its spec and world, so a published game never changes | – | 2026-11-08 | `src/play/contracts.ts` | `createHash('sha256').update(canonical({ ...fields, spec }))` |
+| K10 | A dare score counts only after the server replays the run; the browser's score is not read | – | 2026-11-08 | `src/app/api/play/games/[id]/dare/route.ts` | `scoredReplay(arcade!, inputs, patches)` |
+
+## Dropped
+
+Claims that had no file in this repository and were removed from the texts:
+
+- "15 rigged CC0 characters" (README before P79): the lists hold 144 (M19).
+- "Eleven controls": the registry has 29 control ids, 28 of them playable (K2; `stunt` is switched off).
+- "AI time p50 12 s, p90 20 s" (24 September): measured through a subscription CLI, not the production model; replaced by M16.
