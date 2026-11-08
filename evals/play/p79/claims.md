@@ -8,7 +8,7 @@ Several measurement reports are written in Czech, so some excerpts are Czech. A 
 
 | ID | Claim | Numbers | Date | File | Evidence |
 |---|---|---|---|---|---|
-| M1 | Quick version on the held-out set of 200 sentences: a playable game for every sentence | 200/200 | 2026-11-07 | `evals/play/p74/run-2026-11-07.json` | `"measuredOn": "2026-11-07"` `"sentences": 200,` `"playable": {` `"hit": 200,` |
+| M1 | Quick version on the held-out set of 200 sentences: a playable game for every sentence | 200, 200/200 | 2026-11-07 | `evals/play/p74/run-2026-11-07.json` | `"measuredOn": "2026-11-07"` `"sentences": 200,` `"playable": {` `"hit": 200,` |
 | M2 | The robot player won every one of those games | 200/200 | 2026-11-07 | `evals/play/p74/run-2026-11-07.json` | `"robotWins": {` `"hit": 200,` |
 | M3 | A player who does nothing lost 199 of 200 (the exception is t182, a submarine game) | 199/200 | 2026-11-07 | `evals/play/p74/run-2026-11-07.json` | `"idleLoses": {` `"hit": 199,` |
 | M4 | The word check counted the verb as read in 75 of 200 sentences | 75/200 | 2026-11-07 | `evals/play/p74/run-2026-11-07.json` | `"verbRead": {` `"hit": 75,` |
@@ -39,7 +39,7 @@ Several measurement reports are written in Czech, so some excerpts are Czech. A 
 
 | ID | Claim | Numbers | Date | File | Evidence |
 |---|---|---|---|---|---|
-| K1 | The model writes only a GameSpec, never code or a world | – | 2026-11-08 | `docs/play/director.md` | `Model píše jen GameSpec` |
+| K1 | The model writes only a GameSpec of 1–3.5 kB, never code or a world | 1–3.5 kB | 2026-11-08 | `docs/play/director.md` | `Model píše jen GameSpec (1–3,5 kB), nikdy kód ani` |
 | K2 | The GameSpec chooses from a closed registry of controls | – | 2026-11-08 | `src/play/spec.ts` | `export const CONTROLS = ['tap_go', 'runner', 'platform'` |
 | K3 | The director's answer is validated against a strict schema | – | 2026-11-08 | `src/play/director/answer-schema.ts` | `.strict()` |
 | K4 | Arcade games step at a fixed 60 Hz | – | 2026-11-08 | `src/play/arcade/contract.ts` | `export const ARCADE_HZ = 60;` |
