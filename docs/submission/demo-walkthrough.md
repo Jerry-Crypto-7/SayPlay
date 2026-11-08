@@ -27,6 +27,6 @@ npm run build
 node node_modules/next/dist/bin/next start
 ```
 
-Open `http://localhost:3000/play`. Without model configuration every game is the quick version. The full-detail version needs the server variables from `.env.example` (`WORLDSMITH_BRANCH=live`, `WORLDSMITH_MODEL_ENDPOINT`, `WORLDSMITH_MODEL_KEY`, `WORLDSMITH_MODEL`, `WORLDSMITH_SPEND_CAP_USD`). `npm run build` builds with webpack ([package.json](../../package.json)); under Turbopack the game page and the API each get their own in-memory store.
+Open `http://localhost:3000/play`. Without model configuration every game is the quick version. The full-detail version needs the server variables from `.env.example` (`WORLDSMITH_BRANCH=live`, `WORLDSMITH_MODEL_ENDPOINT`, `WORLDSMITH_MODEL_KEY`, `WORLDSMITH_MODEL`, `WORLDSMITH_SPEND_CAP_USD`). Build with webpack, as `npm run build` does ([package.json](../../package.json)), not Turbopack.
 
 More detail: [README](../../README.md), [director](../play/director.md), [arcade](../play/ARCADE.md), [feed](../play/feed.md).

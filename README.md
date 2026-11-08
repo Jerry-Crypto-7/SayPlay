@@ -11,7 +11,7 @@ Type one sentence and play a 3D game made from it, with its own rules, goal and 
 Open the demo, type a sentence, press **Make it!**, play with arrow keys or touch.
 
 1. `A penguin slides down an icy mountain` – a downhill runner: dodge, jump, reach the finish.
-2. `A spaceship shoots asteroids in deep space` – a shooter with waves that get faster.
+2. `A spaceship shoots asteroids in deep space` – a shooter against the asteroids.
 3. `Explain how volcanoes erupt to a ten year old` – not a game idea at all. It still becomes a playable game; this is what the system does with sentences outside its category.
 
 Then win, press **Dare a friend to beat it**, and open the link in a private window: the second player races your run.
@@ -25,8 +25,8 @@ A sentence becomes a **game with rules**, not a scene to look at. Every publishe
 - **Two versions of every idea.** A quick version is built from the words on the server and is playable in a median 1.8 s. In the background an AI director reads the same sentence and returns a richer GameSpec (controls, add-ons, look, setting, roles, goal); it goes through the same compiler and the same robot check and arrives as a new game linked to the quick one.
 - **The card before the start says what the game understood.** "You: spaceship · Against: asteroid · Place: deep space · Played as: shooter", and which checks it passed (right).
 - **28 kinds of play** from one closed registry: runner, platform, flap, steer, free movement, shooter, throw, timing, rhythm, duel, glide, mini golf, a shooting gallery, a shop shift, sorting, merging, catching and more.
-- **Dare, remix, feed.** A dare link replays the winner's run as a ghost; the server replays every dare run before its score counts. A remix chip ("Make it harder", "Swap the enemy") or a remix sentence makes a new game with a link back to its parent; the original never changes. The feed shows games one per screen.
-- **Show me how** replays the robot's winning run inside the game.
+- **Dare, remix, feed.** A dare link replays the winner's run as a ghost ([Ghost.tsx](src/components/play/arcade/Ghost.tsx)); on the deployed demo a dare sent from one browser opened in a second one for 56/56 games ([live.md](evals/play/p74/live.md)). The server replays every dare run before its score counts. A remix chip ("Make it harder", "Swap the enemy") or a remix sentence makes a new game with a link back to its parent; the original never changes. The feed shows games one per screen.
+- **Show me how** in the pause menu replays the robot's winning run inside the game ([session.ts](src/components/play/arcade/session.ts)).
 
 <br clear="right">
 
@@ -53,7 +53,7 @@ sentence ─► word draft ─► GameSpec ─► compiler ─► world + rules 
 
 **1. A closed registry instead of generated code.** The model writes only a GameSpec – choices from a fixed registry of controls, add-ons, looks and roles, plus a title and a goal line, 1–3.5 kB ([director.md](docs/play/director.md), [registry](src/play/spec.ts)). Its answer is validated against a strict schema ([answer-schema.ts](src/play/director/answer-schema.ts)) and it never writes code, rules or geometry. That gives three things at once: no model output is ever executed, every answer compiles into something playable, and the answer is short enough to be cheap. The cost of the choice: a sentence can only use mechanics the registry has, so an unusual verb becomes the closest game rather than a new mechanic.
 
-**2. Two layers: instant and AI.** The quick version needs no model, so the player is never blocked by one: median 1.8 s from a new sentence to a playable game on the deployed demo ([ai.json](evals/play/p74/ai.json)). The AI version takes longer – median 56.7 s on the production model in the last full run ([director.json](evals/play/p58b/director.json)) – and the page swaps it in when it is ready. If the AI is down or over its cap, the game stays the quick version and the page says so.
+**2. Two layers: instant and AI.** The quick version needs no model, so the player is never blocked by one: median 1.8 s from a new sentence to a playable game on the deployed demo ([ai.json](evals/play/p74/ai.json)). The AI version takes longer – median 56.7 s on the production model in the last full run ([director.json](evals/play/p58b/director.json)) – and when it is ready the page says "Full-detail version ready" with a **Play it** button ([UpgradeBanner.tsx](src/components/play/UpgradeBanner.tsx)). If the AI is down or over its cap, the game stays the quick version and the page says so.
 
 **3. Determinism and a robot gate.** Arcade games step at a fixed 60 Hz with seeded random streams ([contract.ts](src/play/arcade/contract.ts)); real time, particles, camera and sound stay outside the hashed state. Before a game is published the robot must win it, an idle player must not, and two replays must end in the same hash ([verify.ts](src/play/arcade/verify.ts)); a game that fails is refused ([_publish.ts](src/app/api/play/_publish.ts)), after trying up to four seeds. The same determinism makes scores trustworthy: a dare score counts only after the server replays the inputs ([dare route](src/app/api/play/games/[id]/dare/route.ts)), and a game's id is a hash of its spec and world ([contracts.ts](src/play/contracts.ts)), so a link always opens the same game.
 
@@ -91,10 +91,9 @@ Third-party libraries, models, assets and APIs, each with source, author, licenc
 ## Limits
 
 - **The AI version is not available on the deployed demo right now.** From 3 November the model provider answered HTTP 429 (rate limited or out of credit) ([result.json](evals/play/p68/result.json)), and on 7 November the deployed demo returned the AI version for 0/5 sentences ([ai.json](evals/play/p74/ai.json)). Every game is still playable as the quick version, and the page says the AI version is unavailable.
-- **The quick version maps unknown verbs to the nearest game,** most often collecting things. Our word check counted the verb as read in 75/200 held-out sentences; the check is older than several of the newer games, so part of that gap is the check.
+- **The quick version maps unknown verbs to the nearest game,** most often collecting things. Our word check counted the verb as read in 75/200 held-out sentences ([run file](evals/play/p74/run-2026-11-07.json)).
 - **A game can be won and still not look like the sentence.** A vision model shown three frames of the robot's run recognised the hero in 39/118 sentences that name one and the verb in 18/200 ([o8.md](evals/play/p37/o8.md), 4 Oct 2026, before the current scenes).
-- **Spawned projectiles are not drawn,** and **game keys listen on the whole window,** so typing a remix sentence on a shared link can lose letters.
-- **Phones are emulated** on a desktop PC; no real phone was measured. **No human playtest** yet; every result above is automated.
+- **Phones are emulated** on a desktop PC; no real phone was measured. **Every result above is automated** (robot players, emulated phones, AI judges); none comes from human players.
 
 ## Quick start
 
@@ -105,7 +104,7 @@ npm run build
 node node_modules/next/dist/bin/next start
 ```
 
-Open `http://localhost:3000/play`. Without model configuration every game is the quick version and the page says the AI is not available. The AI version needs the server-side variables in `.env.example` (`WORLDSMITH_BRANCH=live`, `WORLDSMITH_MODEL_ENDPOINT`, `WORLDSMITH_MODEL_KEY`, `WORLDSMITH_MODEL`, `WORLDSMITH_SPEND_CAP_USD`). Build with webpack (`npm run build`); under Turbopack the game page and the API get separate in-memory stores.
+Open `http://localhost:3000/play`. Without model configuration every game is the quick version. The AI version needs the server-side variables in `.env.example` (`WORLDSMITH_BRANCH=live`, `WORLDSMITH_MODEL_ENDPOINT`, `WORLDSMITH_MODEL_KEY`, `WORLDSMITH_MODEL`, `WORLDSMITH_SPEND_CAP_USD`). Build with webpack, as `npm run build` does ([package.json](package.json)), not Turbopack.
 
 Checks:
 
