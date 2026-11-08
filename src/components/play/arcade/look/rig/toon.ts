@@ -127,7 +127,7 @@ export function oklab([r, g, b]: Rgb): Rgb {
 }
 
 /** Oklab → lineární sRGB, záporné složky oříznuté – `toonRgb` v shaderu. */
-function rgbOf([L, a, b]: Rgb): Rgb {
+export function rgbOf([L, a, b]: Rgb): Rgb {
   const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
   const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
   const s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
