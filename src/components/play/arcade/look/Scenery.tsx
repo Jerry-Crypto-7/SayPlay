@@ -21,6 +21,7 @@ import type { FieldPiece } from './field-dressing';
 import { fieldPiecesNow, fieldPiecesOf } from './field-dressing-client';
 import { UNDER_PANORAMA } from './under-panorama';
 import { loadFlatModel, type PlantModel, paintedPlant, plantDepthMaterial, plantMaterial } from './load';
+import { loadPlaceModel } from './place-paint';
 import { PlayEnv } from './play-env';
 import { capSnow } from './rig/snowcap';
 import { useWarmed } from './warm-gate';
@@ -220,18 +221,19 @@ function Prop({ kind, tint: [main, accent] }: { readonly kind: PropKind; readonl
 /**
  * Model katalogu postavený na zem ve výšce kulisy (`modelHeight`); dokud se nenačte, nic. `cap` = sněhová čepička.
  * `cast = false`: stín jen přijímá – orientační bod a rámující kusy (P54B T8) nestojí stínový průchod navíc.
+ * `palette` = tóny místa (`Look.palette`): model se přebarví do nich (`loadPlaceModel`, P77 T2), bez ní je, jak je.
  */
-export function SceneryModelProp({ id, cap, cast = true }: { readonly id: SceneryModel; readonly cap?: string; readonly cast?: boolean }) {
+export function SceneryModelProp({ id, cap, cast = true, palette }: { readonly id: SceneryModel; readonly cap?: string; readonly cast?: boolean; readonly palette?: readonly string[] }) {
   const [model, setModel] = useState<Object3D | null>(null);
   useEffect(() => {
     let live = true;
-    void loadFlatModel(id).then((loaded) => {
+    void (palette === undefined ? loadFlatModel(id) : loadPlaceModel(id, palette)).then((loaded) => {
       if (live) setModel(loaded);
     });
     return () => {
       live = false;
     };
-  }, [id]);
+  }, [id, palette]);
   const fitted = useMemo(() => {
     if (model === null) return null;
     const copy = model.clone(true);
@@ -381,7 +383,7 @@ export function Scenery({ look, layout, inner, from, to, y = 0, size = 1, ground
 /** Kulisa sady: primitiva, rostlina vegetace v barvách sady, nebo model katalogu. */
 function SceneryPiece({ kind, look, plants, cap }: { readonly kind: SceneryKind; readonly look: Look; readonly plants: ReadonlySet<string>; readonly cap?: string }) {
   if (!isSceneryModel(kind)) return <Prop kind={kind} tint={look.tint} />;
-  return plants.has(kind) ? <PlantProp id={kind} flora={look.flora!} height={modelHeight(kind)} cap={cap} /> : <SceneryModelProp id={kind} cap={cap} />;
+  return plants.has(kind) ? <PlantProp id={kind} flora={look.flora!} height={modelHeight(kind)} cap={cap} /> : <SceneryModelProp id={kind} cap={cap} palette={look.palette} />;
 }
 
 // ---------------------------------------------------------------------------
@@ -452,7 +454,7 @@ export function FieldDressing({ look, world }: { readonly look: Look; readonly w
             <PlantProp id={piece.kind} flora={look.flora!} height={piece.height} cap={cap} />
           ) : (
             <group scale={piece.height / modelHeight(piece.kind)}>
-              <SceneryModelProp id={piece.kind} cap={cap} />
+              <SceneryModelProp id={piece.kind} cap={cap} palette={look.palette} />
             </group>
           )}
         </group>

@@ -194,17 +194,21 @@ export interface PlantModel {
   readonly double: boolean;
 }
 
-/** Texely textury barvy v bodě UV. Paletová textura low-poly sady má na plochu jednu barvu, vrchol ji přečte celou. */
-function texelsOf(texture: Texture): ((u: number, v: number, target: Color) => Color) | null {
+/**
+ * Texely textury barvy v bodě UV. Paletová textura low-poly sady má na plochu jednu barvu, vrchol ji přečte celou.
+ * `size` = textura zmenšená na čtverec `size` px: vrchol přečte průměrnou barvu okolí, ne detail (P77 T2).
+ */
+export function texelsOf(texture: Texture, size?: number): ((u: number, v: number, target: Color) => Color) | null {
   const image = texture.image as (CanvasImageSource & { readonly width: number; readonly height: number }) | null;
   if (image === null || !(image.width > 0)) return null;
   const canvas = document.createElement('canvas');
-  canvas.width = image.width;
-  canvas.height = image.height;
+  canvas.width = size ?? image.width;
+  canvas.height = size ?? image.height;
   const context = canvas.getContext('2d', { willReadFrequently: true });
   if (context === null) return null;
-  context.drawImage(image, 0, 0);
-  const { data, width, height } = context.getImageData(0, 0, image.width, image.height);
+  context.imageSmoothingQuality = 'high';
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  const { data, width, height } = context.getImageData(0, 0, canvas.width, canvas.height);
   const wrap = (t: number, size: number): number => Math.min(size - 1, Math.floor((t - Math.floor(t)) * size));
   return (u, v, target) => {
     // glTF: v = 0 je horní řádek obrázku, textura se nepřevrací (`flipY = false`).

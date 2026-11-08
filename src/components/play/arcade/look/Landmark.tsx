@@ -195,11 +195,11 @@ function heroCover(scene: Object3D, camera: PerspectiveCamera, own: readonly Obj
 }
 
 /** Kus ve scéně: pata, natočení a měřítko kolem modelu katalogu. */
-function Piece({ placed, register, mark }: { readonly placed: Placed; readonly register: (group: Group | null) => void; readonly mark: Record<string, string> }) {
+function Piece({ placed, register, mark, palette }: { readonly placed: Placed; readonly register: (group: Group | null) => void; readonly mark: Record<string, string>; readonly palette: readonly string[] }) {
   return (
     <group ref={register} position={[placed.x, placed.y, placed.z]} userData={mark}>
       <group rotation={[0, placed.turn, 0]} scale={placed.scale}>
-        <SceneryModelProp id={placed.id} cast={false} />
+        <SceneryModelProp id={placed.id} cast={false} palette={palette} />
       </group>
     </group>
   );
@@ -264,9 +264,9 @@ export function Landmark({ look, seed, area, follow, bend, ground, play }: Landm
   if (placement === null) return null;
   return (
     <>
-      {placement.landmark !== null && <Piece placed={placement.landmark} register={(group) => { landmark.current = group; }} mark={{ landmark: placement.landmark.id }} />}
+      {placement.landmark !== null && <Piece placed={placement.landmark} register={(group) => { landmark.current = group; }} mark={{ landmark: placement.landmark.id }} palette={look.palette} />}
       {placement.framing.map((placed, index) => (
-        <Piece key={index} placed={placed} register={(group) => { framing.current[index] = group; }} mark={{ framing: placed.id }} />
+        <Piece key={index} placed={placed} register={(group) => { framing.current[index] = group; }} mark={{ framing: placed.id }} palette={look.palette} />
       ))}
     </>
   );
