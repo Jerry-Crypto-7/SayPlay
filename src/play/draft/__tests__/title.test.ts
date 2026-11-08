@@ -12,6 +12,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { loadRapier } from '@/play/arcade/physics/world';
 import { draftGameSpecWithMeta } from '@/play/draft';
 import { noVerbTopic } from '@/play/draft/draft';
+import { honestyForSpec } from '@/play/draft/unsupported';
 import type { Reading } from '@/play/read/schema';
 
 interface Sentence { readonly id: string; readonly text: string }
@@ -132,5 +133,11 @@ describe('sentences in other alphabets keep whole words', () => {
   it.each(['those cats chasing mice', "this fucking duck won't stop quacking", 'the the the the the the'])('no article or pronoun plays the hero of "%s"', (sentence) => {
     const player = draftGameSpecWithMeta(sentence, 1, { reading: null }).spec.roles.find((role) => role.kind === 'player')?.label ?? '';
     expect(player).not.toMatch(/^(?:the|this|thi|that|these|those)$/);
+  });
+
+  it('says the stand-in line once when hero and foe share a name', async () => {
+    const sentence = 'Pikachu battles in a Pokemon gym';
+    const reason = (await honestyForSpec(sentence, draftGameSpecWithMeta(sentence, 1, { reading: null }).spec, 1))?.reason ?? '';
+    expect(reason.match(/pikachu isn't here yet/gi) ?? []).toHaveLength(1);
   });
 });
