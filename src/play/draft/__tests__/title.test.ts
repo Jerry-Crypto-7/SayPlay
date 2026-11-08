@@ -11,6 +11,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import { loadRapier } from '@/play/arcade/physics/world';
 import { draftGameSpecWithMeta } from '@/play/draft';
+import { noVerbTopic } from '@/play/draft/draft';
 import type { Reading } from '@/play/read/schema';
 
 interface Sentence { readonly id: string; readonly text: string }
@@ -110,4 +111,26 @@ describe('the game title comes from the sentence (P56A T8)', () => {
     const titles = AUDIT.map((sentence) => titleOf(sentence.text, withReading ? (AUDIT_READS.get(sentence.id) ?? null) : null));
     expect(new Set(titles).size).toBe(12);
   }, 120_000);
+});
+
+/** P78 T1: věta porotce v jiném jazyce (`evals/play/p78/hostile.json`) – titul a téma hlášky z celých slov, ne z kusů mezi diakritikou. */
+describe('sentences in other alphabets keep whole words', () => {
+  beforeAll(() => loadRapier(), 60_000);
+
+  it.each([
+    ['kočka skáče přes střechy a chytá ptáky', 'Kočka Skáče Přes Střechy'],
+    ['Ritter kämpft gegen Drachen in der Burg', 'Ritter Kämpft Gegen Drachen'],
+    ['猫が屋根の上を走る', '猫が屋根の上を走る'],
+  ])('titles "%s" as "%s"', (sentence, title) => {
+    expect(titleOf(sentence, null)).toBe(title);
+  });
+
+  it('names a whole word as the topic of the no-verb message', () => {
+    expect(noVerbTopic('kočka skáče přes střechy a chytá ptáky')).toBe('střechy');
+  });
+
+  it.each(['those cats chasing mice', "this fucking duck won't stop quacking", 'the the the the the the'])('no article or pronoun plays the hero of "%s"', (sentence) => {
+    const player = draftGameSpecWithMeta(sentence, 1, { reading: null }).spec.roles.find((role) => role.kind === 'player')?.label ?? '';
+    expect(player).not.toMatch(/^(?:the|this|thi|that|these|those)$/);
+  });
 });

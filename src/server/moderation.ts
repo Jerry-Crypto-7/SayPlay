@@ -135,6 +135,19 @@ export const PLAY_DENIED_TOPICS: readonly DeniedTopic[] = [
     pattern: /\b(?:how to|jak se|návod\w*)\b[\s\S]{0,40}\b(?:kill myself|commit suicide|sebevražd\w*)\b|\bjak se\s+zabít\b/i,
     detail: 'the sentence asks for a method of self-harm',
   },
+  // P78 T1 (nepřátelské věty proti produkci): „a game about a school shooting“ dal střílečku „About School Shooting“.
+  // Skutečný masakr hrou není; fantasy násilí („kill all the humans with a chainsaw“, zombie) dál projde.
+  {
+    id: 'real-atrocity',
+    pattern: /\bschool\s+shoot(?:ing|ings|er|ers)\b|\bshoot(?:s|ing)?\s+up\s+(?:a\s+|the\s+|my\s+|our\s+)?school\b|\bmass\s+shoot(?:ing|ings|er|ers)\b|\bterroris[tm]\w*\s+attacks?\b|\bgenocide\b|\bholocaust\b|\bethnic\s+cleansing\b/i,
+    detail: 'the sentence asks for a game about a real-world massacre',
+  },
+  // „torture a cat until it dies“ dal sběrací hru „Torture Cat Until Dies“. Sloveso s obětí, ne „torture chamber“ ani „a tortured ghost“.
+  {
+    id: 'torture',
+    pattern: /\btortur(?:e|es|ing)\s+(?:a|an|the|my|his|her|their|some|all|every|\d+|cats?|dogs?|kittens?|pupp(?:y|ies)|animals?|kids?|child(?:ren)?|bab(?:y|ies)|people|prisoners?)\b/i,
+    detail: 'the sentence asks to torture someone',
+  },
 ];
 
 /** Délku věty hlídají dveře `/play` samy (500 znaků, remix 140), tady jen obsah. */
