@@ -201,6 +201,15 @@ export const LOOK_STYLE: LookStyle = MIX_STYLE;
 const hsl = { h: 0, s: 0, l: 0 };
 const hex = (color: Color): string => `#${color.getHexString(SRGBColorSpace)}`;
 const mixHex = (from: string, to: string, t: number): string => hex(new Color(from).lerp(new Color(to), t));
+/**
+ * Teplá směs do modré jde přes fialovou šeď (červená roste rychleji než zelená): barva, která skončí v odstínu
+ * 250–320°, ztratí sytost na 0,04 – zůstane šedá, ne fialová.
+ */
+const warmMix = (from: string, to: string, t: number): string => {
+  const mixed = new Color(from).lerp(new Color(to), t);
+  const { h, s, l } = mixed.getHSL(hsl, SRGBColorSpace);
+  return h * 360 >= 250 && h * 360 <= 320 && s > 0.04 ? hex(mixed.setHSL(h, 0.04, l, SRGBColorSpace)) : hex(mixed);
+};
 /** Sytost a světlost v HSL (sRGB, jak barvu vidí oko). Odstín se nemění – nic nesklouzne do fialové. */
 const tone = (value: string, saturation: number, lightness: number): string => {
   const { h, s, l } = new Color(value).getHSL(hsl, SRGBColorSpace);
@@ -237,6 +246,18 @@ function neutralUnder(value: string, sun: Color, amount: number): string {
 }
 
 /**
+ * Barva `value` s lineárním jasem barvy `of`: sytost a ochlazení profilu zemi zůstanou, jas ne – hrdina a překážky
+ * (rajčatová, žlutá, inkoust, papír) se od ní dál liší jasem jako od země sady (u města by sytější zem skončila
+ * v jasu rajčatové; pin čitelnosti `look.test.ts`).
+ */
+function sameLuma(value: string, of: string): string {
+  const luma = (color: Color) => 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+  const color = new Color(value);
+  const k = luma(new Color(of)) / Math.max(1e-6, luma(color));
+  return hex(new Color(Math.min(1, color.r * k), Math.min(1, color.g * k), Math.min(1, color.b * k)));
+}
+
+/**
  * Teplé nízké slunce a opar (prototyp `golden`, varianta mix s `heat` 0,5): obloha, světlo, slunce. Polokoule
  * odspodu bere barvu země místa (ne hnědou), podlaha a dráha jsou vyjmuté z teplého nádechu (`floorNeutral`).
  */
@@ -254,14 +275,14 @@ function golden(look: Look, style: PaletteStyle): Look {
   const floor = (value: string) => neutralUnder(value, sun, style.floorNeutral);
   return {
     ...look,
-    skyTop: mixHex(look.skyTop, '#86b7d6', 0.35),
-    horizon: mixHex(look.horizon, '#ffbf7a', warm),
-    sky: mixHex(look.sky, '#ffbf7a', warm),
+    skyTop: warmMix(look.skyTop, '#86b7d6', 0.35),
+    horizon: warmMix(look.horizon, '#ffbf7a', warm),
+    sky: warmMix(look.sky, '#ffbf7a', warm),
     sunColor,
     sunDir: [(left / flat) * side, style.sunUp, (forward / flat) * side],
     sun: look.sun * style.sunGain,
     glow: Math.max(look.glow, 0.5) * style.glowGain,
-    light: [mixHex(look.light[0], '#ffd2a0', 0.45 * heat), mixHex(look.light[1], look.land ?? look.ground, 0.35 * heat), look.light[2] * 0.8],
+    light: [warmMix(look.light[0], '#ffd2a0', 0.45 * heat), warmMix(look.light[1], look.land ?? look.ground, 0.35 * heat), look.light[2] * 0.8],
     ground: floor(look.ground),
     track: floor(look.track),
     ...(look.land === undefined ? {} : { land: floor(look.land) }),
@@ -286,8 +307,11 @@ export function restyleLook(look: Look, id: LookId, sky: SkyKind, style: LookSty
   const palette = style.palette;
   if (palette === null || sky.night || look.storm === true || look.ceiling !== undefined || look.glow === 0 || LOOK_FAMILY[id] === 'dark') return look;
   const rich = saturated(look, palette.saturation, palette.lightness);
-  if (sky.overcast) return rich;
-  const lit = golden(rich, palette);
+  // Pod zataženou oblohou zem beze změny: světlo nálady je u noci (`withMood`), a světlejší sytější zem by se
+  // přiblížila jasu hrdiny a překážek – nálada by byla hůř čitelná než noc (pin `look.test.ts`).
+  if (sky.overcast) return { ...rich, ground: look.ground, track: look.track, ...(look.land === undefined ? {} : { land: look.land }), ...(look.terrain === undefined ? {} : { terrain: look.terrain }) };
+  const warmed = golden(rich, palette);
+  const lit = { ...warmed, ground: sameLuma(warmed.ground, look.ground), track: sameLuma(warmed.track, look.track), ...(look.land === undefined ? {} : { land: sameLuma(warmed.land ?? look.land, look.land) }) };
   // Poletující listí v zelených místech za slunce (předloha s4); `leaves` v `AMBIENT_KINDS`, jedno kreslení.
   return LOOK_FAMILY[id] === 'green' && !look.ambient.includes('leaves') ? { ...lit, ambient: [...look.ambient, 'leaves'] } : lit;
 }

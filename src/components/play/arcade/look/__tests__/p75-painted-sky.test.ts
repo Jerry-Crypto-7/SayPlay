@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { LOOK_IDS, LOOKS, PAINTED_SKIES, sceneLook } from '@/play/arcade/look';
-import { restyleLook } from '@/play/arcade/look/style';
+import { restyleLook, TODAY_STYLE } from '@/play/arcade/look/style';
 
 import { FEED_CARD, PAINT_FADE_S, type PaintLoad, paintedSkyOf, paintFade, stagePlace } from '../rig/painted-sky';
 
@@ -145,11 +145,13 @@ describe('P76 T2: bouřlivé město studeně', () => {
       const day = sceneLook({ setting: `a ${id}`, mood: '', look: id });
       expect(day.storm, id).toBeUndefined();
       const stormy = sceneLook({ setting: `a ${id}`, mood: '', look: id, weather: 'rain' });
-      const [[r0, , b0], [r1, , b1]] = [rgb(day.ground), rgb(stormy.ground)];
+      // Proti suché zemi místa bez profilu P81: profil zem jasné oblohy přebarví (jas drží, součet kanálů ne).
+      const dry = sceneLook({ setting: `a ${id}`, mood: '', look: id }, TODAY_STYLE);
+      const [[r0, , b0], [r1, , b1]] = [rgb(dry.ground), rgb(stormy.ground)];
       // Déšť zem ztmaví (už tmavší než mokrá šedomodrá jen ochladí) a teplou ochladí aspoň o polovinu všude,
       // nejen ve městě; studená se teplou nestane.
       expect(r1 - b1, id).toBeLessThanOrEqual(Math.max(0, (r0 - b0) / 2));
-      expect(lum(stormy.ground), id).toBeLessThanOrEqual(Math.max(lum(day.ground), lum('#2c3e50')));
+      expect(lum(stormy.ground), id).toBeLessThanOrEqual(Math.max(lum(dry.ground), lum('#2c3e50')));
     }
   });
 });

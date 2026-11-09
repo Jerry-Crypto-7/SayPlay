@@ -971,12 +971,21 @@ function luminance(hex: string): number {
 /** Světlo na matné ploše: polokoule shora a slunce. simplified: bez úhlů a ACES – stačí na srovnání nálady s nocí. */
 const brightness = (look: Pick<Look, 'light' | 'sun' | 'sunColor'>): number => look.light[2] * luminance(look.light[0]) + look.sun * luminance(look.sunColor);
 
-/** Sada v náladě. Světlo neklesne pod noc: hrdina a překážky zůstanou proti zemi čitelné aspoň jako v noci. */
+/** Barvy hrdiny a překážek z kitu (`color.tomato`, `sun`, `ink`, `paper` v `@/brand/tokens`), proti kterým se čte zem. */
+const FIGURES = ['#FF5A36', '#FFC530', '#1F1A17', '#FFFFFF'] as const;
+
+/**
+ * Sada v náladě. Světlo neklesne pod noc: hrdina a překážky zůstanou proti zemi čitelné aspoň jako v noci.
+ * Nálada, která přebarví zem (bouřka P76: studená mokrá zem), přiblíží zem jasu některé postavy – světlo se
+ * pak zvedne o tolik, o kolik se ten rozdíl jasu zmenšil (bez toho byla tmavá postava na mokré zemi hůř čitelná než v noci).
+ */
 function withMood(look: Look, shift: MoodShift): Look {
   const tone = (hex: string) => mix(hex, shift.tone, shift.amount);
   const toLight = (hex: string) => mix(hex, shift.lightTone, shift.amount);
   const moody = { light: [toLight(look.light[0]), tone(look.light[1]), look.light[2] * shift.light] as const, sun: look.sun * shift.sun, sunColor: toLight(look.sunColor) };
-  const lift = Math.max(1, brightness(NIGHT) / brightness(moody));
+  const ground = shift.ground === undefined ? look.ground : mix(look.ground, shift.ground.tone, shift.ground.amount);
+  const closer = Math.max(1, ...FIGURES.map((figure) => Math.abs(luminance(figure) - luminance(look.ground)) / Math.max(1e-6, Math.abs(luminance(figure) - luminance(ground)))));
+  const lift = Math.max(1, (brightness(NIGHT) / brightness(moody)) * closer);
   return {
     ...look,
     sky: tone(look.sky),
@@ -987,7 +996,7 @@ function withMood(look: Look, shift: MoodShift): Look {
     sunColor: moody.sunColor,
     glow: look.glow * shift.glow,
     fog: [look.fog[0] * shift.fog[0], look.fog[1] * shift.fog[1]],
-    ...(shift.ground === undefined ? {} : { ground: mix(look.ground, shift.ground.tone, shift.ground.amount) }),
+    ...(shift.ground === undefined ? {} : { ground }),
   };
 }
 
