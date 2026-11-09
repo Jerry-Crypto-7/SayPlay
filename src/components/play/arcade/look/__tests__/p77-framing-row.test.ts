@@ -38,15 +38,15 @@ function framingOf(track: (typeof TRACKS)[number], lookId: (typeof LOOK_IDS)[num
 
 describe('P77 T4: rámující řada po trati', () => {
   for (const track of TRACKS) {
-    it(`${track.id}: žádná kopie na hrací ploše, kopie stojí na zemi, telefon méně kopií`, () => {
+    it(`${track.id}: žádná kopie na hrací ploše, kopie stojí na zemi`, () => {
       for (const lookId of LOOK_IDS) {
-        for (const [tier, aspect] of Object.entries(ASPECTS) as [keyof typeof ASPECTS, number][]) {
+        for (const aspect of Object.values(ASPECTS)) {
           const { pieces, dir } = framingOf(track, lookId, aspect);
           for (const piece of pieces) {
             const seen = new Map<number, { x: number; z: number }>();
             for (let advance = 0; advance <= 600; advance += 5) {
-              const row = framingRow(piece, advance, dir, FRAMING_COPIES[tier]);
-              expect(row).toHaveLength(FRAMING_COPIES[tier]);
+              const row = framingRow(piece, advance, dir, FRAMING_COPIES.desktop);
+              expect(row).toHaveLength(FRAMING_COPIES.desktop);
               for (const copy of row) {
                 expect(onArea(track.area, copy.x, copy.z, footOf(copy))).toBe(false);
                 // Kopie m stojí pořád na stejném místě, jen přibývá vpředu a mizí za kamerou.
@@ -61,9 +61,13 @@ describe('P77 T4: rámující řada po trati', () => {
           }
         }
       }
-      expect(FRAMING_COPIES.phone).toBeLessThan(FRAMING_COPIES.desktop);
     });
   }
+
+  it('telefon řadu po trati nemá (T5: závod pod vodou s ní 35 FPS, pod mezí 40)', () => {
+    expect(FRAMING_COPIES.phone).toBe(0);
+    expect(FRAMING_COPIES.desktop).toBeGreaterThan(0);
+  });
 
   it('běžec dostane oba rámující kusy v každém místě, které je má (dřív 5 z 18)', () => {
     for (const lookId of LOOK_IDS) {

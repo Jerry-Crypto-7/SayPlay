@@ -439,8 +439,11 @@ const FRAMING_GROW_MAX = 1.6;
 
 /** Rozteč kopií rámujícího kusu po trati (m): kopie zmizí za kamerou dřív, než další dojede do rohu obrazu. */
 export const FRAMING_PERIOD_M = 14;
-/** Kopií jednoho rámujícího kusu najednou: počítač, telefon (P77 T4 – na telefonu méně kusů). */
-export const FRAMING_COPIES = { desktop: 4, phone: 2 } as const;
+/**
+ * Kopií jednoho rámujícího kusu najednou: počítač, telefon. Telefon žádnou (P77 T5): se dvěma kopiemi spadl závod
+ * pod vodou na Pixelu 7 (CPU 4×) z 43 na 35 FPS, pod mez 40; hry bez řady zůstaly v šumu.
+ */
+export const FRAMING_COPIES = { desktop: 4, phone: 0 } as const;
 
 /**
  * Rámující kus u kamery, která jede po trati (P77 T4, koncept: velké stromy v rozích popředí ubíhají s tratí).

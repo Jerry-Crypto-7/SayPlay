@@ -220,7 +220,7 @@ export function Landmark({ look, seed, area, follow, bend, ground, play }: Landm
   const framing = useRef<(Group | null)[]>([]);
   // Kolik roztečí `FRAMING_PERIOD_M` kamera po trati ujela: posune řadu rámujících kopií.
   const [step, setStep] = useState(0);
-  // Telefon (hrubý ukazatel, jako `Vegetation`): méně kopií. Pevně při startu.
+  // Telefon (hrubý ukazatel, jako `Vegetation`): žádná řada po trati (`FRAMING_COPIES`). Pevně při startu.
   const copies = useMemo(() => (window.matchMedia('(pointer: coarse)').matches ? FRAMING_COPIES.phone : FRAMING_COPIES.desktop), []);
 
   // Nová sada, semínko, plocha nebo velikost obrazu = nové místo. Plochu scény často staví každý snímek znovu: klíčem je její obsah.
@@ -243,7 +243,7 @@ export function Landmark({ look, seed, area, follow, bend, ground, play }: Landm
       const hero = heroBoxOf(heroNodeOf(scene));
       const input = { camera: rest, look, seed, area, hero, play: [...(play ?? []), ...targetsOf(scene)], ground };
       const dir = rest.getWorldDirection(new Vector3()).z < 0 ? -1 : 1;
-      setPlacement({ landmark: placeLandmark(input), framing: follow === 'camera' ? [] : follow === 'track' ? placeTrackFraming(input) : placeFraming(input), eye: [rest.position.x, rest.position.z], dir });
+      setPlacement({ landmark: placeLandmark(input), framing: follow === 'camera' || (follow === 'track' && copies === 0) ? [] : follow === 'track' ? placeTrackFraming(input) : placeFraming(input), eye: [rest.position.x, rest.position.z], dir });
       return;
     }
     if (follow === undefined) return;
