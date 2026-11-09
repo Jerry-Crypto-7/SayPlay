@@ -20,32 +20,11 @@ import { Effect } from 'postprocessing';
 import { Uniform, Vector3 } from 'three';
 
 import type { LookId } from '@/play/arcade/look';
-import { type Grade, type GradeFamily, LOOK_STYLE } from '@/play/arcade/look/style';
+import { type Grade, type GradeFamily, LOOK_FAMILY, LOOK_STYLE } from '@/play/arcade/look/style';
 
 import type { QualityTier } from './quality';
 
-export { GRADE_FAMILIES, type Grade, type GradeFamily } from '@/play/arcade/look/style';
-
-export const LOOK_FAMILY: Readonly<Record<LookId, GradeFamily>> = {
-  meadow: 'green',
-  forest: 'green',
-  jungle: 'green',
-  castle: 'green',
-  desert: 'warm',
-  beach: 'warm',
-  volcano: 'warm',
-  snow: 'cold',
-  ocean: 'water',
-  underwater: 'water',
-  city: 'indoor',
-  mall: 'indoor',
-  supermarket: 'indoor',
-  living_room: 'indoor',
-  factory: 'indoor',
-  cave: 'dark',
-  graveyard: 'dark',
-  space: 'dark',
-};
+export { GRADE_FAMILIES, type Grade, type GradeFamily, LOOK_FAMILY } from '@/play/arcade/look/style';
 
 /** Ladění rodin z profilu vzhledu (P81, `LOOK_STYLE.grade`). */
 export const GRADES: Readonly<Record<GradeFamily, Grade>> = LOOK_STYLE.grade.families;
@@ -65,6 +44,7 @@ export const gradeFor = (family: GradeFamily, tier: QualityTier): Grade =>
 const FRAGMENT = /* glsl */ `
 uniform vec3 lift;
 uniform vec3 gain;
+uniform float split;
 uniform float gamma;
 uniform float saturation;
 uniform float contrast;
@@ -73,7 +53,9 @@ uniform float vignette;
 void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
   vec3 c = pow(clamp(inputColor.rgb, 0.0, 1.0), vec3(1.0 / 2.2));
   float shade = 1.0 - smoothstep(0.3, 0.5, max(c.r, max(c.g, c.b)));
-  c = gain * (c + lift * (1.0 - c));
+  // Split-tone (P81): zisk jen ve světlech – tmavé a střední tóny (tučňák, podlaha ve stínu) bez teplého nádechu.
+  vec3 toned = mix(vec3(1.0), gain, smoothstep(0.45, 0.85, dot(c, vec3(0.2126, 0.7152, 0.0722))));
+  c = mix(gain, toned, split) * (c + lift * (1.0 - c));
   c = pow(max(c, 0.0), vec3(gamma));
   float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
   c = mix(vec3(l), c, saturation);
@@ -99,6 +81,7 @@ export class GradeEffect extends Effect {
       uniforms: new Map<string, Uniform>([
         ['lift', new Uniform(new Vector3())],
         ['gain', new Uniform(new Vector3(1, 1, 1))],
+        ['split', new Uniform(0)],
         ['gamma', new Uniform(1)],
         ['saturation', new Uniform(1)],
         ['contrast', new Uniform(1)],
@@ -111,6 +94,7 @@ export class GradeEffect extends Effect {
     const uniforms = this.uniforms;
     (uniforms.get('lift')!.value as Vector3).set(...grade.lift);
     (uniforms.get('gain')!.value as Vector3).set(...grade.gain);
+    uniforms.get('split')!.value = grade.split;
     uniforms.get('gamma')!.value = grade.gamma;
     uniforms.get('saturation')!.value = grade.saturation;
     uniforms.get('contrast')!.value = grade.contrast;

@@ -17,6 +17,7 @@
 import { CASTLE_FILL, CAVE_FILL, CITY_FILL, FACTORY_FILL, GRAVEYARD_FILL, LIVING_ROOM_FILL, MALL_FILL, OCEAN_FILL, SPACE_FILL, SUPERMARKET_FILL, UNDERWATER_FILL, VOLCANO_FILL } from './fill';
 import { placeMood, placeTime } from './sentence';
 import settingKits from './setting-kits.json';
+import { LOOK_STYLE, type LookStyle, restyleLook } from './style';
 
 /** Počasí a denní doba nad sadou (P29D): živá změna je píše do logu, sdílená verze do `theme`. */
 export const WEATHERS = ['clear', 'rain', 'snow', 'fog'] as const;
@@ -992,7 +993,7 @@ function withMood(look: Look, shift: MoodShift): Look {
  * jízda hrdiny, denní doba, počasí a nálada. Noc přebije náladu; věta bez slov nálady a denní doby má sadu beze změny.
  * Místo a náladu specu čte postaru (`placeMood`), novou větu nese uložená denní doba a počasí (P54B T11, `sentenceSky`).
  */
-export function sceneLook(theme: { readonly setting: string; readonly mood: string; readonly look?: LookId; readonly motion?: string; readonly timeOfDay?: TimeOfDay; readonly weather?: Weather }): Look {
+export function sceneLook(theme: { readonly setting: string; readonly mood: string; readonly look?: LookId; readonly motion?: string; readonly timeOfDay?: TimeOfDay; readonly weather?: Weather }, style: LookStyle = LOOK_STYLE): Look {
   const look = LOOKS[lookOf(theme)];
   const setting = theme.setting.toLowerCase();
   const ground = PLACE_GROUNDS.find(([pattern]) => pattern.test(setting))?.[1] ?? look.ground;
@@ -1015,5 +1016,7 @@ export function sceneLook(theme: { readonly setting: string; readonly mood: stri
   const wind = mood === 'storm' ? { wind: STORM_WIND, storm: true as const } : {};
   if (time === 'night') return { ...placed, ...NIGHT, exposure: Math.min(placed.exposure, 1), ...wind };
   const timed = time === 'dusk' ? { ...placed, ...DUSK } : placed;
-  return mood === undefined ? timed : { ...withMood(timed, MOOD_SHIFTS[mood]), ...wind };
+  const moody = mood === undefined ? timed : { ...withMood(timed, MOOD_SHIFTS[mood]), ...wind };
+  // Vzhled celého obrazu (P81): paleta místa podle profilu; zlatá hodina jen pod jasnou denní oblohou.
+  return restyleLook(moody, lookOf(theme), { night: false, overcast: time === 'dusk' || (mood !== undefined && mood !== 'bright') }, style);
 }

@@ -138,7 +138,8 @@ export const TILT = { play: { blur: 0.12, taper: 1.2 }, rest: { blur: 0.2, taper
 export function macroFocus(focus: number, weight: number, width: number, height: number): { readonly blur: number; readonly taper: number; readonly focus: number } {
   const mix = (play: number, rest: number): number => play + (rest - play) * weight;
   const heights = height / Math.hypot(width, height);
-  return { blur: mix(TILT.play.blur, TILT.rest.blur) * LOOK_STYLE.post.tilt, taper:mix(TILT.play.taper, TILT.rest.taper) * heights, focus: mix(focus, REST_FOCUS) };
+  // Profil (P81) zesílí rozostření jen úvodního a závěrečného záběru; za hry zůstává síla P73D.
+  return { blur: mix(TILT.play.blur, TILT.rest.blur * LOOK_STYLE.post.tilt), taper: mix(TILT.play.taper, TILT.rest.taper) * heights, focus: mix(focus, REST_FOCUS) };
 }
 
 /**

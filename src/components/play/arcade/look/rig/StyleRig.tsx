@@ -134,7 +134,8 @@ void main() {
     float forward = side > 0.5 ? dir.x : dir.z;
     vec2 uv = vec2(0.5 - atan(left, forward) / 3.14159265, paintHorizon + asin(clamp(dir.y, -1.0, 1.0)) / 1.57079633);
     vec3 art = texture2D(painted, uv).rgb * paintTint;
-    art = mix(art, gl_FragColor.rgb, PAINT_HAZE * (1.0 - smoothstep(0.0, 0.18, dir.y)));
+    // P81: pás oparu u obzoru (výška HAZE_BAND) a přechod obzor → zenit přes obraz nahoru (PAINT_GRADIENT).
+    art = mix(art, gl_FragColor.rgb, min(1.0, PAINT_HAZE * (1.0 - smoothstep(0.0, HAZE_BAND, dir.y)) + PAINT_GRADIENT * smoothstep(0.05, 0.9, dir.y)));
     // Pod obzorem jen dnešní obloha v barvě mlhy: zem obrazu (písek, silnice s auty) by za koncem mlhy stála jako stěna.
     gl_FragColor.rgb = mix(gl_FragColor.rgb, art, paint * smoothstep(-0.1, -0.01, dir.y));
   }
@@ -172,7 +173,7 @@ export function skyMaterial(): ShaderMaterial {
       paintTint: { value: new Color(1, 1, 1) },
       side: { value: 0 },
     },
-    defines: { PAINT_HAZE: PAINT_HAZE.toFixed(2), CEILING_Y: CEILING.y.toFixed(1), CEILING_MIN: CEILING.min.toFixed(1), LAMP_GRID: CEILING.grid.toFixed(1), LAMP_HALF: `vec2(${CEILING.half.map((m) => m.toFixed(2)).join(', ')})` },
+    defines: { PAINT_HAZE: PAINT_HAZE.toFixed(2), HAZE_BAND: LOOK_STYLE.sky.hazeBand.toFixed(2), PAINT_GRADIENT: LOOK_STYLE.sky.gradient.toFixed(2), CEILING_Y: CEILING.y.toFixed(1), CEILING_MIN: CEILING.min.toFixed(1), LAMP_GRID: CEILING.grid.toFixed(1), LAMP_HALF: `vec2(${CEILING.half.map((m) => m.toFixed(2)).join(', ')})` },
     vertexShader: SKY_VERTEX,
     fragmentShader: SKY_FRAGMENT,
     // Kamera je uvnitř koule.
