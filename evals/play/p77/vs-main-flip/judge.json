@@ -1,0 +1,82 @@
+{
+ "seed": 7309,
+ "judgedAt": "2026-11-09T14:00:17.964Z",
+ "ids": [
+  "s1",
+  "s2",
+  "s3",
+  "s4",
+  "s5",
+  "s6",
+  "s7",
+  "s8",
+  "s9",
+  "s10",
+  "s11",
+  "s12"
+ ],
+ "key": {
+  "s1": "left",
+  "s2": "left",
+  "s3": "right",
+  "s4": "right",
+  "s5": "left",
+  "s6": "left",
+  "s7": "right",
+  "s8": "right",
+  "s9": "right",
+  "s10": "right",
+  "s11": "left",
+  "s12": "left"
+ },
+ "answers": {
+  "s1": {
+   "winner": "right",
+   "reason": "The right scene has slightly clearer lighting and stronger separation between the runner, rocks, and distant volcano, giving the road more depth. Its lava-lined route reads naturally as an escape path through an erupting landscape."
+  },
+  "s2": {
+   "winner": "right",
+   "reason": "The right version’s cyan track markers sit more convincingly in the road’s perspective, making the racecourse feel coherent and three-dimensional. The coral-lined track and hazy underwater distance give the turtle-and-shark race a clear sense of place."
+  },
+  "s3": {
+   "winner": "right",
+   "reason": "Right has a slight edge in the phone gameplay view: the foreground cat, receding paving, and distant buildings give clearer depth. Both still read more like a courtyard than rooftops."
+  },
+  "s4": {
+   "winner": "right",
+   "reason": "The right scene has warmer, more coherent materials and clearer depth from its shadows and surface contrast. Its weathered stone and bronze details make the outdoor pancake-balancing setting feel more grounded than the left’s stark cyan accents."
+  },
+  "s5": {
+   "winner": "right",
+   "reason": "The right version has stronger depth from the shaded island faces, layered palms, and clearer separation between the knight and scenery. Its floating platforms and suspended hazards create a more convincing adventure setting for rescuing a dragon egg."
+  },
+  "s6": {
+   "winner": "right",
+   "reason": "The right scene has crisper metallic structures and stronger material contrast, making the distant scenery feel more dimensional and the sci-fi setting more coherent. Both resemble a planetary outpost more than deep space, but the right looks more polished."
+  },
+  "s7": {
+   "winner": "right",
+   "reason": "The right version has slightly clearer shading on the ball and course borders, giving the scene stronger depth. The candy-shaped trees and rolling green landscape form a coherent setting for candy-land mini golf."
+  },
+  "s8": {
+   "winner": "right",
+   "reason": "The right scene has a more coherent castle courtyard, with stone columns and clustered props giving the space clearer depth and structure. Its architectural staging makes the crown hunt feel more grounded in an old castle."
+  },
+  "s9": {
+   "winner": "right",
+   "reason": "The right scene has more cohesive materials and lighting, with traffic and roadside structures that feel grounded in the wet city street. Its clearer foreground-to-background depth makes the stormy flight setting more convincing."
+  },
+  "s10": {
+   "winner": "right",
+   "reason": "The right scene has slightly stronger depth from the shaded orchard rows and their recession toward the hazy hills. The farmer’s foreground catching area feels clearly situated within the orchard."
+  },
+  "s11": {
+   "winner": "right",
+   "reason": "The right version has slightly more convincing depth, with smaller racers and obstacles fitting the receding track more naturally. Its rounded trees and soft lighting give the scene a polished, playful setting, though the candy-land theme is subtle."
+  },
+  "s12": {
+   "winner": "left",
+   "reason": "The large ice formations create stronger foreground-to-background depth and make the slope feel like a coherent icy mountain. The right version’s scattered small rocks leave the scene flatter and less distinctive."
+  }
+ }
+}

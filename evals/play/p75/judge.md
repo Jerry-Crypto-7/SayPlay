@@ -15,6 +15,7 @@ Věta projde, když hra vyhraje nebo soudce řekne SAME. **Brána T8: aspoň 4/1
 | p77-base | `evals/play/p77/base` · 1play | 2026-11-08 07:54 | 7501 | **0/12** | A 6× · B 6× · SAME 0× |
 | p77-base-nohud | `evals/play/p77/base-nohud` · 1play | 2026-11-08 07:58 | 7501 | **0/12** | A 6× · B 6× · SAME 0× |
 | p77-after | `evals/play/p77/after` · 1play | 2026-11-09 13:36 | 7501 | **0/12** | A 6× · B 6× · SAME 0× |
+| p77-tuned | `evals/play/p77/after` · 1play | 2026-11-09 14:03 | 7501 | **0/12** | A 6× · B 6× · SAME 0× |
 
 ## main
 
@@ -134,3 +135,20 @@ Věta projde, když hra vyhraje nebo soudce řekne SAME. **Brána T8: aspoň 4/1
 | s10 | A farmer catches falling apples in the orchard | B | koncept | A has cohesive stylized models, warm lighting, and a polished orchard composition. B includes gameplay UI, but its harsh shadows, flat ground, and rougher character and trees make it look less finished. | [list](judge/p77-after/s10.jpg) |
 | s11 | A dog races a cat through a candy land | B | koncept | A has more polished lighting, cohesive materials, and a clearly recognizable dog in a candy-themed landscape. B looks rougher, with angular scenery and less readable characters. | [list](judge/p77-after/s11.jpg) |
 | s12 | A penguin slides down an icy mountain | A | koncept | B has more cohesive lighting, polished snow and tree shapes, and a stronger composition that clearly conveys a downhill slide. A feels less finished due to scattered props and cluttered UI. | [list](judge/p77-after/s12.jpg) |
+
+## p77-tuned
+
+| # | věta | hra na listu | výsledek | důvod soudce | list |
+|---|---|---|---|---|---|
+| s1 | Escape a volcano before the lava reaches you | A | koncept | B has more polished lighting, cohesive geometry, and a stronger composition centered on the runner and glowing lava. A looks more cluttered and prototype-like, with rougher scenery and UI. | [list](judge/p77-tuned/s1.jpg) |
+| s2 | An underwater race between a turtle and a shark | A | koncept | B has more polished lighting, richer materials, and a cohesive visual style, with both the turtle and shark clearly visible. A looks rougher, with flatter shading and less refined scenery. | [list](judge/p77-tuned/s2.jpg) |
+| s3 | A cat delivering pizzas across rooftops while avoiding seagulls | A | koncept | B has more polished lighting, cohesive materials, and a clear rooftop composition. The cat carrying pizza and the surrounding seagulls also communicate the intended gameplay much more clearly. | [list](judge/p77-tuned/s3.jpg) |
+| s4 | Balance a tower of pancakes on a windy day | B | koncept | A has cohesive, polished lighting, materials, and composition, with a clear pancake tower and windblown leaves that communicate the premise. B looks less finished, with scattered props, awkward pancake placement, and a comparatively flat environment. | [list](judge/p77-tuned/s4.jpg) |
+| s5 | A knight jumps across floating islands to rescue a dragon egg | A | koncept | B has more polished lighting, cohesive materials, and a clearer composition that highlights the jumping knight and dragon egg. A looks rougher, with crowded scenery and less refined geometry. | [list](judge/p77-tuned/s5.jpg) |
+| s6 | A spaceship shoots asteroids in deep space | B | koncept | A has more polished lighting, cohesive materials, and a stronger composition, with a spaceship visibly firing among asteroids in space. B feels less finished, with sparse terrain and blocky scenery that weakens the deep-space setting. | [list](judge/p77-tuned/s6.jpg) |
+| s7 | Play mini golf in a candy land | B | koncept | A has polished lighting, cohesive candy-themed details, and a well-composed mini-golf course. B looks rougher, with sparse geometry and a large demo-completion overlay obscuring the scene. | [list](judge/p77-tuned/s7.jpg) |
+| s8 | Find the lost crown in an old castle | A | koncept | B has a cohesive, polished castle setting, warm lighting, and a clearly visible crown. A looks unfinished, with scattered placeholder blocks and a large demo overlay obscuring the scene. | [list](judge/p77-tuned/s8.jpg) |
+| s9 | A bird flies through a stormy city | B | koncept | A has cohesive stylized buildings, a clearly visible bird, and polished lighting with dramatic storm clouds and lightning. B looks less finished, with murky scenery and dense rain obscuring the action. | [list](judge/p77-tuned/s9.jpg) |
+| s10 | A farmer catches falling apples in the orchard | B | koncept | A looks more polished, with cohesive lighting, soft shadows, refined models, and a balanced orchard composition. B has game UI, but its harsh colors, blocky geometry, and flatter lighting make it feel less finished. | [list](judge/p77-tuned/s10.jpg) |
+| s11 | A dog races a cat through a candy land | B | koncept | A looks more polished, with cohesive candy-themed scenery, warm lighting, and a clearly recognizable dog. B has game UI, but its rougher models and mostly ordinary landscape make it feel less finished and less like candy land. | [list](judge/p77-tuned/s11.jpg) |
+| s12 | A penguin slides down an icy mountain | A | koncept | B has more cohesive lighting, polished snow and tree shapes, and stronger composition, making it feel like a finished game scene. A’s flatter lighting and cluttered interface give it a more prototype-like appearance. | [list](judge/p77-tuned/s12.jpg) |

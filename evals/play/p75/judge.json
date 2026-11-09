@@ -594,6 +594,91 @@
      "reason": "B has more cohesive lighting, polished snow and tree shapes, and a stronger composition that clearly conveys a downhill slide. A feels less finished due to scattered props and cluttered UI."
     }
    }
+  },
+  "p77-tuned": {
+   "seed": 7501,
+   "judge": "codex",
+   "game": "evals/play/p77/after",
+   "moment": "1play",
+   "judgedAt": "2026-11-09T14:03:27.229Z",
+   "ids": [
+    "s1",
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s7",
+    "s8",
+    "s9",
+    "s10",
+    "s11",
+    "s12"
+   ],
+   "key": {
+    "s1": "A",
+    "s2": "A",
+    "s3": "A",
+    "s4": "B",
+    "s5": "A",
+    "s6": "B",
+    "s7": "B",
+    "s8": "A",
+    "s9": "B",
+    "s10": "B",
+    "s11": "B",
+    "s12": "A"
+   },
+   "answers": {
+    "s1": {
+     "winner": "B",
+     "reason": "B has more polished lighting, cohesive geometry, and a stronger composition centered on the runner and glowing lava. A looks more cluttered and prototype-like, with rougher scenery and UI."
+    },
+    "s2": {
+     "winner": "B",
+     "reason": "B has more polished lighting, richer materials, and a cohesive visual style, with both the turtle and shark clearly visible. A looks rougher, with flatter shading and less refined scenery."
+    },
+    "s3": {
+     "winner": "B",
+     "reason": "B has more polished lighting, cohesive materials, and a clear rooftop composition. The cat carrying pizza and the surrounding seagulls also communicate the intended gameplay much more clearly."
+    },
+    "s4": {
+     "winner": "A",
+     "reason": "A has cohesive, polished lighting, materials, and composition, with a clear pancake tower and windblown leaves that communicate the premise. B looks less finished, with scattered props, awkward pancake placement, and a comparatively flat environment."
+    },
+    "s5": {
+     "winner": "B",
+     "reason": "B has more polished lighting, cohesive materials, and a clearer composition that highlights the jumping knight and dragon egg. A looks rougher, with crowded scenery and less refined geometry."
+    },
+    "s6": {
+     "winner": "A",
+     "reason": "A has more polished lighting, cohesive materials, and a stronger composition, with a spaceship visibly firing among asteroids in space. B feels less finished, with sparse terrain and blocky scenery that weakens the deep-space setting."
+    },
+    "s7": {
+     "winner": "A",
+     "reason": "A has polished lighting, cohesive candy-themed details, and a well-composed mini-golf course. B looks rougher, with sparse geometry and a large demo-completion overlay obscuring the scene."
+    },
+    "s8": {
+     "winner": "B",
+     "reason": "B has a cohesive, polished castle setting, warm lighting, and a clearly visible crown. A looks unfinished, with scattered placeholder blocks and a large demo overlay obscuring the scene."
+    },
+    "s9": {
+     "winner": "A",
+     "reason": "A has cohesive stylized buildings, a clearly visible bird, and polished lighting with dramatic storm clouds and lightning. B looks less finished, with murky scenery and dense rain obscuring the action."
+    },
+    "s10": {
+     "winner": "A",
+     "reason": "A looks more polished, with cohesive lighting, soft shadows, refined models, and a balanced orchard composition. B has game UI, but its harsh colors, blocky geometry, and flatter lighting make it feel less finished."
+    },
+    "s11": {
+     "winner": "A",
+     "reason": "A looks more polished, with cohesive candy-themed scenery, warm lighting, and a clearly recognizable dog. B has game UI, but its rougher models and mostly ordinary landscape make it feel less finished and less like candy land."
+    },
+    "s12": {
+     "winner": "B",
+     "reason": "B has more cohesive lighting, polished snow and tree shapes, and stronger composition, making it feel like a finished game scene. A’s flatter lighting and cluttered interface give it a more prototype-like appearance."
+    }
+   }
   }
  }
 }

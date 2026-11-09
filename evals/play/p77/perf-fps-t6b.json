@@ -1,0 +1,105 @@
+{
+ "profile": "Pixel 7 UA/DPR, 390x844, CPU 4x, ANGLE d3d11, OpenXR off",
+ "a": "http://127.0.0.1:3207",
+ "b": "http://127.0.0.1:3208",
+ "repeats": 6,
+ "windowMs": 10000,
+ "gate": {
+  "fpsMin": 40,
+  "p95MaxMs": 33.3
+ },
+ "measuredAt": "2026-11-09T14:16:44.613Z",
+ "complete": true,
+ "pass": false,
+ "rows": [
+  {
+   "id": "s2",
+   "text": "An underwater race between a turtle and a shark",
+   "A": {
+    "fpsMedian": 42.4,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 39.2,
+      "p95Ms": 49.9,
+      "quality": "low",
+      "calls": 66
+     },
+     {
+      "fps": 44.2,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 66
+     },
+     {
+      "fps": 40.7,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 65
+     },
+     {
+      "fps": 44.9,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 66
+     },
+     {
+      "fps": 39.8,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 66
+     },
+     {
+      "fps": 45.5,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 65
+     }
+    ]
+   },
+   "B": {
+    "fpsMedian": 40.2,
+    "p95MedianMs": 33.5,
+    "runs": [
+     {
+      "fps": 38.7,
+      "p95Ms": 49.9,
+      "quality": "low",
+      "calls": 73
+     },
+     {
+      "fps": 40.2,
+      "p95Ms": 33.5,
+      "quality": "low",
+      "calls": 72
+     },
+     {
+      "fps": 40.2,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 72
+     },
+     {
+      "fps": 36,
+      "p95Ms": 49.9,
+      "quality": "low",
+      "calls": 72
+     },
+     {
+      "fps": 41.3,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 73
+     },
+     {
+      "fps": 41.3,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 72
+     }
+    ]
+   },
+   "passB": false
+  }
+ ]
+}
