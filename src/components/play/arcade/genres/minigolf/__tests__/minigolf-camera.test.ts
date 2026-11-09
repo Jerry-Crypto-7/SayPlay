@@ -16,7 +16,7 @@ import { minigolfAim, minigolfAxisToward } from '@/play/arcade/pieces/minigolf-r
 import { airOf } from '../../../look/rig/fog-light';
 import { type Plant, placeAround } from '../../../look/vegetation-places';
 import { type PlayRect, playRect } from '../../../portrait-frame';
-import { MINIGOLF_CAMERA, type MinigolfCameraPose, type MinigolfCourseView, minigolfCameraAxis, minigolfCameraPose, minigolfCameraRig, minigolfCameraStep, minigolfCourseView, minigolfFocus } from '../minigolf-camera';
+import { MINIGOLF_CAMERA, type MinigolfCameraPose, type MinigolfCourseView, minigolfCameraAxis, minigolfCameraPose, minigolfCameraRig, minigolfCameraStep, minigolfCourseView, minigolfFocus, minigolfReach } from '../minigolf-camera';
 import { type Putt, pullBack, puttInput } from '../minigolf-touch';
 import { minigolfDressing } from '../MinigolfScene';
 
@@ -268,10 +268,10 @@ describe('minigolf camera (P68 T8)', () => {
 
   it('a start card too tall for the course frames the whole play rect, so the course stays in front of the fog (P74 R3)', () => {
     // Karta „How I read it“ (P73B) měří na telefonu 330 px; obdélníky změřené na stránce 7. 11. (HUD nahoře, ovládání dole).
-    // Kamera dostane začátek mlhy jako ve scéně (`MinigolfScene`, `airOf(look)`); hřiště se měří proti mlze, kterou
-    // rig na telefonu na výšku opravdu kreslí (`airOf(…, portrait)`, P81 R3: od 0,75 dohledu, mlha profilu od 0,25).
+    // Kamera dostane dosah jako ve scéně (`MinigolfScene`, `minigolfReach(look)`, P81 R5: z mlhy sady, ne profilu); hřiště
+    // se měří proti mlze, kterou rig na telefonu na výšku opravdu kreslí (`airOf(…, portrait)`, P81 R3: od 0,75 dohledu).
     const farm = sceneLook({ setting: 'farm', mood: 'playful' });
-    const fogStart = airOf(farm).near;
+    const fogStart = minigolfReach(farm);
     const drawnFog = airOf(farm, true).near;
     expect(drawnFog).toBeGreaterThanOrEqual(fogStart);
     for (const phone of [{ width: 412, height: 839, top: 150, bottom: 663 }, { width: 393, height: 659, top: 151, bottom: 483 }]) {

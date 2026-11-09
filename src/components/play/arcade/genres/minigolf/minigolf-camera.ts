@@ -19,6 +19,7 @@
 import { Box3, MathUtils, PerspectiveCamera, Vector3 } from 'three';
 
 import { BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
+import type { Look } from '@/play/arcade/look';
 import type { MinigolfLayout } from '@/play/arcade/pieces/minigolf-hole';
 import { minigolfAim, minigolfAxisToward } from '@/play/arcade/pieces/minigolf-roll';
 
@@ -48,7 +49,19 @@ export const MINIGOLF_CAMERA = {
   maxDelta: 0.1,
   /** Klidová póza se pohnula o víc (m) než tohle = nový přechod (přeměřený hrací obdélník, zmizelá karta startu). */
   still: 0.05,
+  /**
+   * Přehled pod úvodní kartou platí, jen když míček i jamka leží blíž než tento podíl dohledu sady (`minigolfReach`) –
+   * začátek mlhy před P81 (P74 R3). Je to rozvržení, ne vzhled: opar profilu P81 (na šířku od 0,25 dohledu) dráhu
+   * na Pixelu pod kartu nevešel (R5), na výšku od 0,75 by tam poslal hřiště i pod vysokou kartu.
+   */
+  reach: 0.6,
 } as const;
+
+/** Kam nejdál (m) smí míček a jamka v přehledu pod úvodní kartou (`minigolfCameraPose`, `fogStart`): z mlhy sady, ne profilu. */
+export function minigolfReach(look: Pick<Look, 'fog'>): number {
+  const [near, far] = look.fog;
+  return Math.max(near, MINIGOLF_CAMERA.reach * far);
+}
 
 /**
  * Kamera scény mezi snímky (P71C T2) – jen obraz, mimo stav i hash. `eye` / `look` = kde kamera je; přechod jede
@@ -173,7 +186,7 @@ const scratch = { camera: new PerspectiveCamera(MINIGOLF_CAMERA.fov, 1, 0.1, 500
  * Póza kamery ze stavu: míček (hráč) a osa kamery (`minigolfCameraAxis`), pohyb podle `vx/vz`. `rect` = hrací obdélník
  * plátna (`usePlayRectRef`), `null` = nezměřený – pak póza bez fitu. `fov` = zorný úhel kamery plátna. `start` = plocha
  * pod úvodní kartou (P71C T2), dokud se čeká na první vstup: klidový přehled se rámuje do ní na výšku i na šířku.
- * `fogStart` = kde začíná mlha sady (m, `airOf(look).near`).
+ * `fogStart` = kam nejdál smí hřiště v přehledu pod kartou (m, `minigolfReach(look)`).
  */
 export function minigolfCameraPose(state: ArrayLike<number>, aspect: number, rect: PlayRect | null, course: MinigolfCourseView, fov: number = MINIGOLF_CAMERA.fov, start: PlayRect | null = null, fogStart = Number.POSITIVE_INFINITY): MinigolfCameraPose {
   const at = ballOf(state);
