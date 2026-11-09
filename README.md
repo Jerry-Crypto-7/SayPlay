@@ -36,8 +36,8 @@ A sentence becomes a **game with rules**, not a scene to look at. Every publishe
 |---|---|---|
 | Runs fully in the browser, no install | Next.js and three.js; a game is a link that opens on desktop and phone | Game link to first frame: median 1.4 s on an emulated iPhone 15, 2.6 s on an emulated Pixel 7, 56/56 games played through ([live.md](evals/play/p74/live.md)) |
 | Natural language → 3D scene **and working logic** | The sentence becomes a GameSpec; a compiler turns it into a world with rules, goal and loss; a robot must win it before it is published | Held-out set of 200 sentences: 200/200 playable, the robot won 200/200, an idle player lost 199/200 ([run file](evals/play/p74/run-2026-11-07.json)) |
-| Survives judges' own prompts, including prompts outside the focus area | No scripted demo: every game is compiled from the sentence; a verb it does not know becomes the nearest game it can build | 48/48 sentences that are not game ideas ("a tax audit", "summarize the French revolution") became playable games ([run file](evals/play/p74/run-2026-11-07.json), [set](evals/play/p30/README.md)) |
-| Backend live during judging | Serverless API on the demo host, durable game store, spend caps so traffic cannot exhaust the budget | Uptime monitor on the demo and `/api/health` ([ops/monitoring/uptime.json](ops/monitoring/uptime.json)), demo online until at least 31 December 2026 |
+| Survives judges' own prompts, including prompts outside the focus area | No scripted demo: every game is compiled from the sentence; a verb it does not know becomes the nearest game it can build | 48/48 sentences that are not game ideas ("a tax audit", "summarize the French revolution") became playable games ([run file](evals/play/p74/run-2026-11-07.json), [set](evals/play/p30/README.md)). On the deployed demo, 56 of 60 hostile sentences (other languages, nonsense, emoji only, violence, brand names, prompt injection) became games the robot won and 4 got a clear message, with 0 crashes or blank screens; the five defects that run found are fixed ([hostile.md](evals/play/p78/hostile.md)) |
+| Backend live during judging | Serverless API on the demo host, durable game store, spend caps so traffic cannot exhaust the budget | 20 visitors at once: 20/20 got a game, p95 8.6 s to an open game ([load.md](evals/play/p78/load.md)). A scheduled probe checks the demo and `/api/health` every 10 minutes and opens an issue on failure ([health-probe.yml](.github/workflows/health-probe.yml)). Games are kept 180 days ([store.ts](src/play/version/store.ts)); the demo stays online until at least 31 December 2026 |
 
 Focus category: **Browser-native creative tools**.
 
@@ -67,19 +67,21 @@ Every row is one measurement on a dated build. The full list, with the exact lin
 
 | What | Result | When, where | Source |
 |---|---|---|---|
-| Quick version, held-out set of 200 sentences (opened once, nothing tuned on it) | 200/200 playable, robot won 200/200, idle player lost 199/200 | 7 Nov 2026, final build, offline | [run-2026-11-07.json](evals/play/p74/run-2026-11-07.json) |
+| Quick version, held-out set of 200 sentences (opened once, nothing tuned on it) | 200/200 playable, robot won 200/200, idle player lost 199/200 | 7 Nov 2026 build, offline | [run-2026-11-07.json](evals/play/p74/run-2026-11-07.json) |
 | Sentences that are not game ideas | 48/48 playable, robot won 48/48, idle player lost 48/48 | same run | [run-2026-11-07.json](evals/play/p74/run-2026-11-07.json) |
+| Hostile sentences through the live form | 56 of 60 playable games, robot won 56/56, 4 clear messages; 0 crashes, 0 blank screens; median 2.5 s from click to a ready scene | 8 Nov 2026, deployed demo, before the fixes | [hostile.md](evals/play/p78/hostile.md) |
 | New sentence to playable quick version | median 1.8 s, 5/5 | 7 Nov 2026, deployed demo | [ai.json](evals/play/p74/ai.json) |
+| 20 visitors at once, one sentence each | 20/20 games, 0 errors, p95 8.6 s to create and open a game | 8 Nov 2026, deployed demo, one IP address | [load.md](evals/play/p78/load.md) |
 | Game link to first frame | median 1.4 s iPhone 15, 2.6 s Pixel 7; 56/56 played through | 7 Nov 2026, deployed demo, emulated phones | [live.md](evals/play/p74/live.md) |
-| Frame rate, emulated Pixel 7 with a 4× slower CPU | median at least 40 FPS in all 8 games (45.3–59.6 FPS) | 6 Nov 2026, local production build | [perf.md](evals/play/p73/sceny/perf.md) |
-| Blind AI judge, current scenes vs the previous ones | current scenes preferred for 11/12 sentences | 7 Nov 2026 | [vs-main.md](evals/play/p76/vs-main.md) |
+| Frame rate, emulated Pixel 7 with a 4× slower CPU | median at least 40 FPS in all 8 games, slowest 40.0, fastest 54.6 | 9 Nov 2026, final scene look, local production build | [perf.md](evals/play/p77/perf.md), [judge.md](evals/play/p77/judge.md) |
+| Blind AI judge, scenes side by side without labels | scenes of 7 Nov preferred over the build before for 11/12 sentences; the final pass of 9 Nov against 7 Nov is a tie (13/24 over both side orders) | 7 and 9 Nov 2026 | [vs-main.md](evals/play/p76/vs-main.md), [judge.md](evals/play/p77/judge.md) |
 | AI version on the production model | 12/12 published, median 56.7 s, 0.62 USD per game | 24 Oct 2026, paid OpenAI API | [director.json](evals/play/p58b/director.json) |
 | Model library | 1787 catalogue models, 144 rigged characters | 8 Nov 2026 | [catalog.json](evals/play/p79/catalog.json) |
 
 ## How to test it yourself
 
-- **Your own sentences.** Anything in English: a character, a place, an action. "A cat delivering pizzas across rooftops while avoiding seagulls" works as well as "My morning commute on a crowded train".
-- **Outside the category.** Ask it for a poem, an essay or a recipe. Instead of an error you get the nearest game it can build, and the start card tells you how it read the sentence.
+- **Your own sentences.** A character, a place, an action, for example "A cat delivering pizzas across rooftops while avoiding seagulls". Sentences in Czech, German, Spanish and Japanese also became games in the hostile run ([hostile.md](evals/play/p78/hostile.md)).
+- **Outside the category.** Ask it for an essay or the weather. Instead of an error you get the nearest game it can build with a note such as "No game verb found – here is a collecting game about …" ([hostile.md](evals/play/p78/hostile.md)), and the start card tells you how it read the sentence.
 - **On a phone.** Open a game link on your phone; touch controls are built in.
 - **Try to break the score.** Dare yourself from a private window. A score is accepted only after the server replays the run.
 - **Ask how it was won.** **Show me how** in the pause menu replays the robot's winning run – the same run the publish check passed.
@@ -90,8 +92,8 @@ The code in this repository is released under the [MIT License](LICENSE). Third-
 
 ## Limits
 
-- **The AI version is not available on the deployed demo right now.** From 3 November the model provider answered HTTP 429 (rate limited or out of credit) ([result.json](evals/play/p68/result.json)), and on 7 November the deployed demo returned the AI version for 0/5 sentences ([ai.json](evals/play/p74/ai.json)). Every game is still playable as the quick version, and the page says the AI version is unavailable.
-- **The quick version maps unknown verbs to the nearest game,** most often collecting things. Our word check counted the verb as read in 75/200 held-out sentences ([run file](evals/play/p74/run-2026-11-07.json)).
+- **The AI version was last verified end to end on 24 October** (12/12 published on the production model, [director.json](evals/play/p58b/director.json)). On 7 November the deployed demo returned it for 0/5 sentences, and on 8 November for none ([ai.json](evals/play/p74/ai.json), [ai-live.md](evals/play/p78/ai-live.md)). When it does not come, every game is still playable as the quick version and the page says so.
+- **The quick version maps unknown verbs to the nearest game,** most often collecting things. Our word check counts the verb as read in 100/200 held-out sentences, 93/200 without seven doubtful cases ([verb.md](evals/play/p78/verb.md)).
 - **A game can be won and still not look like the sentence.** A vision model shown three frames of the robot's run recognised the hero in 39/118 sentences that name one and the verb in 18/200 ([o8.md](evals/play/p37/o8.md), 4 Oct 2026, before the current scenes).
 - **Phones are emulated** on a desktop PC; no real phone was measured. **Every result above is automated** (robot players, emulated phones, AI judges); none comes from human players.
 

@@ -98505,7 +98505,7 @@
       "name": "README images (docs/README-assets)",
       "kind": "dataset",
       "firstParty": true,
-      "reason": "Screenshots of Sayplay games taken in this repository (P76 measurement run, evals/play/p76/after) and composed by scripts/readme-assets.mjs. The 3D models visible in them have their own kind: asset entries; the images add no third-party material.",
+      "reason": "Screenshots of Sayplay games taken in this repository (P77 measurement run, evals/play/p77/after) and composed by scripts/readme-assets.mjs. The 3D models visible in them have their own kind: asset entries; the images add no third-party material.",
       "paths": [
         "docs/README-assets"
       ]

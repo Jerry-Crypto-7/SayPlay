@@ -4,7 +4,8 @@
  * každý obrázek má za sebou měřicí běh a jeho manifest:
  *
  * - `docs/README-assets/scenes.jpg` – šest her ze šesti vět, snímek ve 3. s
- *   ukázky robota (`evals/play/p76/after`, P76, 7. 11. 2026), pod každou věta.
+ *   ukázky robota (`evals/play/p77/after`, P77, 9. 11. 2026 – vzhled, který je
+ *   v `main` a na produkci), pod každou věta.
  * - `docs/README-assets/start-card.jpg` – karta před startem na telefonu:
  *   jak hra větu přečetla a co prověřil robot (týž běh, `s6-phone-0start.jpg`).
  *
@@ -19,9 +20,10 @@ import { mkdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { SENTENCES } from './play/p73d-shots.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const SHOTS = join(ROOT, 'evals/play/p76/after');
+const SHOTS = join(ROOT, 'evals/play/p77/after');
 const OUT = join(ROOT, 'docs/README-assets');
 const { chromium } = createRequire(import.meta.url)('@playwright/test');
 
@@ -30,8 +32,8 @@ const SCENES = ['s1', 's6', 's12', 's2', 's10', 's5'];
 const CREAM = '#FFF3DF';
 const INK = '#1F1A17';
 
-const manifest = JSON.parse(readFileSync(join(SHOTS, 'manifest.json'), 'utf8'));
-const sentence = (id) => manifest.sentences.find((entry) => entry.id === id).text;
+/** Manifest P77 věty nenese; snímky jsou ze sady P73D, ze které je bere i `p77-vs-main.mjs`. */
+const sentence = (id) => SENTENCES.find((entry) => entry.id === id).text;
 /** Data URI: stránka ze `setContent` je `about:blank` a soubory z disku nenačte. */
 const url = (file) => `data:image/jpeg;base64,${readFileSync(join(SHOTS, file)).toString('base64')}`;
 
