@@ -58,8 +58,8 @@ export interface Grade {
   readonly vignette: number;
 }
 
-/** Druh obrysu: hrdina, nepřítel, překážka (`InkOutline.tsx`). */
-export type InkKind = 'hero' | 'foe' | 'obstacle';
+/** Druh obrysu: hrdina, nepřítel, překážka, kulisa a rekvizita (`InkOutline.tsx`). */
+export type InkKind = 'hero' | 'foe' | 'obstacle' | 'scenery';
 
 /** Přebarvení palety místa (`restyleLook`); `null` = paleta místa beze změny. */
 export interface PaletteStyle {
@@ -114,8 +114,11 @@ export interface LookStyle {
   readonly fog: { readonly start: number; readonly storm: number; readonly saturation: number };
   /** Podlaha arény a dráhy: drsnost země, ledu a stěn, násobek kontrastu spár a čára jízdního pruhu. */
   readonly floor: { readonly roughness: number; readonly ice: number; readonly wall: number; readonly seam: number; readonly laneLine: string };
-  /** Obrysy: tloušťka v CSS px a podíl tmavého odstínu povrchu místo inkoustu podle druhu. */
-  readonly ink: { readonly px: number; readonly surface: Readonly<Record<InkKind, number>> };
+  /**
+   * Obrysy: tloušťka v CSS px a podíl tmavého odstínu povrchu místo inkoustu podle druhu; `scenery` = obrys
+   * i kulis a rekvizit (ne zem a terén, na úrovni `low` vůbec).
+   */
+  readonly ink: { readonly px: number; readonly scenery: boolean; readonly surface: Readonly<Record<InkKind, number>> };
   /** Ladění: násobek expozice, kontrast navíc na telefonní úrovni a ladění rodin. */
   readonly grade: { readonly exposure: number; readonly lowContrast: number; readonly families: Readonly<Record<GradeFamily, Grade>> };
   /** Následné zpracování: síla bloomu a násobek rozostření tilt-shiftu v úvodním a závěrečném záběru. */
@@ -148,7 +151,7 @@ export const TODAY_STYLE: LookStyle = {
   fog: { start: 0.6, storm: 0.6, saturation: 0.18 },
   floor: { roughness: 0.9, ice: 0.45, wall: 0.85, seam: 1, laneLine: '#e2e8f0' },
   // Kit kreslí 2,5 px; modelína konceptu (P75 T2) má hranu jen naznačenou.
-  ink: { px: 1.5, surface: { hero: 0.7, foe: 0, obstacle: 0.7 } },
+  ink: { px: 1.5, scenery: false, surface: { hero: 0.7, foe: 0, obstacle: 0.7, scenery: 0.7 } },
   grade: {
     exposure: 1,
     lowContrast: 0.08,
@@ -184,6 +187,9 @@ export const MIX_STYLE: LookStyle = {
   // ve městě (s9) zmodral a zesvětlil zem pod hrdinou o 46° a skryl panoráma.
   fog: { start: 0.25, storm: 0.6, saturation: 0.06 },
   // Hala a město (rodina `indoor`) si ladění nechají – chladný zdvih zmodral tmavou mokrou zem s9.
+  // Obrys všech modelů 2 px s čtvrtinou tónu povrchu (prototyp `02ef2983`); překážka a nepřítel si barvu nechají
+  // (rajčatový obrys nepřítele = signál hrozby).
+  ink: { px: 2, scenery: true, surface: { hero: 0.25, foe: 0, obstacle: 0.7, scenery: 0.25 } },
   grade: { ...TODAY_STYLE.grade, families: { green: MIX_DAY, warm: MIX_DAY, cold: COLD, water: WATER, indoor: TODAY_STYLE.grade.families.indoor, dark: DARK } },
   // Silnější rozostření jen v úvodním a závěrečném záběru; za hry beze změny (P76 silnější rozmazání při hře vrátila).
   post: { bloom: 1, tilt: 1.6 },
@@ -280,5 +286,8 @@ export function restyleLook(look: Look, id: LookId, sky: SkyKind, style: LookSty
   const palette = style.palette;
   if (palette === null || sky.night || look.storm === true || look.ceiling !== undefined || look.glow === 0 || LOOK_FAMILY[id] === 'dark') return look;
   const rich = saturated(look, palette.saturation, palette.lightness);
-  return sky.overcast ? rich : golden(rich, palette);
+  if (sky.overcast) return rich;
+  const lit = golden(rich, palette);
+  // Poletující listí v zelených místech za slunce (předloha s4); `leaves` v `AMBIENT_KINDS`, jedno kreslení.
+  return LOOK_FAMILY[id] === 'green' && !look.ambient.includes('leaves') ? { ...lit, ambient: [...look.ambient, 'leaves'] } : lit;
 }

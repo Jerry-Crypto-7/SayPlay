@@ -96,6 +96,9 @@ describe('clay shading and the scene palette in one shader patch (P56B T6, P75 T
     expect(toon.rim.value.r).toBeGreaterThanOrEqual(toon.rim.value.b);
     setScenePalette(night);
     expect(toon.rim.value.toArray()).toEqual([0, 0, 0]);
+    // P81 T5: bouřka za dne (s9) okraj nemá – emisivní okraj v tmavém dešti přebil osvětlení kulis.
+    setScenePalette({ ...day, storm: true });
+    expect(toon.rim.value.toArray()).toEqual([0, 0, 0]);
   });
 
   it('pulls scenery towards the set palette at the same brightness, never purple, and leaves characters alone', () => {

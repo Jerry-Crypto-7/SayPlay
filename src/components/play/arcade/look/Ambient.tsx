@@ -101,6 +101,8 @@ const butterfly = (): BufferGeometry => triangles([...trunk(0.35, 0.45, 0.04), .
 // Bok (y) a hřbet (x): z boku i shora je to ryba, ne čára.
 const fish = (): BufferGeometry =>
   triangles([0, 0, 1, 0, 0.3, 0.15, 0, 0, -0.55, 0, 0, 1, 0, 0, -0.55, 0, -0.26, 0.15, 0, 0, -0.45, 0, 0.32, -1, 0, -0.32, -1, 0, 0, 1, -0.16, 0, 0.1, 0, 0, -0.55, 0, 0, 1, 0, 0, -0.55, 0.16, 0, 0.1]);
+// List: dvě poloviny čepele kolem žilky (+z), mávání je ohne jako list ve větru.
+const leaf = (): BufferGeometry => triangles(pair([0, 0, 0.9, 0.55, 0, 0.1, 0, 0, -0.9]));
 const mote = (): BufferGeometry => new OctahedronGeometry(1, 0);
 const streak = (): BufferGeometry => new OctahedronGeometry(1, 0).scale(0.07, 0.07, 1);
 
@@ -114,6 +116,8 @@ export const LIFE: Readonly<Record<AmbientKind, LifeSpec>> = {
   sparks: { count: 24, shape: mote, motion: 'rise', band: [0.8, 0.95], add: [0, 0], front: false, path: 0.6, lift: 5, body: 0.12, speed: [0.25, 0.45], colours: AMBIENT_COLOURS.sparks, glow: 3 },
   dust: { count: 40, shape: mote, motion: 'drift', band: [0.1, 0.9], add: [0.3, 0.5], front: true, path: 0.85, lift: 0.6, body: 0.09, speed: [0.5, 0.9], colours: AMBIENT_COLOURS.dust, glow: 1.6 },
   meteors: { count: 4, shape: streak, motion: 'fall', band: [1.3, 2], add: [3, 8], front: false, path: 0.9, lift: 6, body: 1.2, speed: [0.08, 0.14], shown: 0.12, colours: AMBIENT_COLOURS.meteors, glow: 3 },
+  // P81: listí ve slunci před orientačním bodem (předloha s4) – pomalé, pomalu se převrací.
+  leaves: { count: 14, shape: leaf, motion: 'flutter', band: [0.15, 0.8], add: [0.3, 0.8], front: true, path: 0.9, lift: 0.6, body: 0.16, speed: [0.3, 0.55], flap: [4, 0.2, 0.6], colours: AMBIENT_COLOURS.leaves },
 };
 
 /** Kusů na úrovni kvality: `low` polovinu. */

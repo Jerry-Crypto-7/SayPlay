@@ -558,7 +558,8 @@ export function markedFlora(look: Pick<Look, 'flora' | 'skyline'>): Flora | unde
  * Život v pozadí sady (P54B T10, `look/Ambient.tsx`): hejno ptáků, motýli, ryby pod hladinou,
  * ryby vyskakující z moře, netopýři, jiskry nad sopkou, prach ve světle interiéru, padající hvězdy.
  */
-export const AMBIENT_KINDS = ['birds', 'butterflies', 'fish', 'jumping-fish', 'bats', 'sparks', 'dust', 'meteors'] as const;
+// `leaves` (P81) přidává jen profil vzhledu (`restyleLook`), žádná sada ho nemá v datech.
+export const AMBIENT_KINDS = ['birds', 'butterflies', 'fish', 'jumping-fish', 'bats', 'sparks', 'dust', 'meteors', 'leaves'] as const;
 export type AmbientKind = (typeof AMBIENT_KINDS)[number];
 
 /** Barvy života v pozadí: teplé a neutrální (nic fialového), světlé září. Paleta patří sem, ne do `.tsx` (brand guard). */
@@ -571,6 +572,8 @@ export const AMBIENT_COLOURS: Readonly<Record<AmbientKind, readonly string[]>> =
   sparks: ['#fbbf24', '#f97316', '#fde68a'],
   dust: ['#fff7e6', '#ffedd5', '#fef3c7'],
   meteors: ['#fff6e8', '#e0f2fe', '#fde68a'],
+  // Listí ve slunci: světle zelené a zlatavé, ne hnědé (oranžový nádech nesmí převládnout).
+  leaves: ['#9cc65a', '#c9d86a', '#e3c25e', '#7fb24e'],
 };
 
 export interface Look {

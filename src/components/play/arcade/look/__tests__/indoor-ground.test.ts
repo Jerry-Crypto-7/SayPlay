@@ -152,7 +152,9 @@ describe('P62 T6: interiér má podlahu i mimo arénu', () => {
   it.each(INDOOR)('%s: běžec a zem polí kladou dlažbu sady, údolí je rovná podlaha', (id) => {
     const look = LOOKS[id];
     expectIndoorFloor(`${id} runner`, look, runnerGround(look));
-    expectIndoorFloor(`${id} shooter`, look, shooterGround(look));
+    // P81 T5: hradní nádvoří je pod otevřeným nebem – zem polí je zem místa (jako podlaha arény v T4), ne dlažba.
+    if (id === 'castle') expect(shooterGround(look).map, 'castle courtyard').toBeNull();
+    else expectIndoorFloor(`${id} shooter`, look, shooterGround(look));
     expect(Math.max(...buildValley({ look, from: -20, to: 200 }).heights), `${id} flat`).toBe(0);
   });
 

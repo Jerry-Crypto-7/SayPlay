@@ -146,10 +146,13 @@ const WALL_AO_M = 1.5;
  *
  * Interiér (P62 T6, `Look.interior`) má bílé vrcholy a UV v metrech: dlažbu dá
  * textura povrchu (`interiorFloorMap`), ne zem sady – ta se skvrnami a krajnicí
- * četla jako venek.
+ * četla jako venek. Hradní nádvoří (`stone`) je pod otevřeným nebem: zem místa jako venku (P81, jako podlaha
+ * arény v T4 – předloha s4 má měkkou trávu, ne mřížku dlaždic).
  */
+export const pavedFloor = (look: Pick<Look, 'interior'>): boolean => look.interior !== undefined && look.interior.floor !== 'stone';
+
 export function buildFieldGround(look: Look, area: Box, edge: (x: number, z: number) => number | null = () => null): BufferGeometry {
-  const paint = look.interior === undefined ? groundPainter(groundPalette(look)) : null;
+  const paint = pavedFloor(look) ? null : groundPainter(groundPalette(look));
   const columns = Math.max(1, Math.ceil((area.x1 - area.x0) / FIELD_CELL_M));
   const rows = Math.max(1, Math.ceil((area.z1 - area.z0) / FIELD_CELL_M));
   const count = (rows + 1) * (columns + 1);

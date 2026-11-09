@@ -1,0 +1,122 @@
+{
+ "profile": "Pixel 7 UA/DPR, 390x844, CPU 4x, ANGLE d3d11, OpenXR off",
+ "a": "http://127.0.0.1:3213",
+ "b": "http://127.0.0.1:3212",
+ "repeats": 3,
+ "windowMs": 10000,
+ "gate": {
+  "fpsMin": 40,
+  "p95MaxMs": 33.3
+ },
+ "measuredAt": "2026-11-09T19:03:56.446Z",
+ "complete": true,
+ "pass": false,
+ "rows": [
+  {
+   "id": "s4",
+   "text": "Balance a tower of pancakes on a windy day",
+   "A": {
+    "fpsMedian": 58.9,
+    "p95MedianMs": 16.8,
+    "runs": [
+     {
+      "fps": 58,
+      "p95Ms": 16.8,
+      "quality": "medium",
+      "calls": 65
+     },
+     {
+      "fps": 58.9,
+      "p95Ms": 16.8,
+      "quality": "medium",
+      "calls": 65
+     },
+     {
+      "fps": 59.1,
+      "p95Ms": 16.8,
+      "quality": "medium",
+      "calls": 65
+     }
+    ]
+   },
+   "B": {
+    "fpsMedian": 59,
+    "p95MedianMs": 16.8,
+    "runs": [
+     {
+      "fps": 59.3,
+      "p95Ms": 16.8,
+      "quality": "high",
+      "calls": 79
+     },
+     {
+      "fps": 58.5,
+      "p95Ms": 16.8,
+      "quality": "high",
+      "calls": 79
+     },
+     {
+      "fps": 59,
+      "p95Ms": 16.8,
+      "quality": "medium",
+      "calls": 78
+     }
+    ]
+   },
+   "passB": true
+  },
+  {
+   "id": "s1",
+   "text": "Escape a volcano before the lava reaches you",
+   "A": {
+    "fpsMedian": 43.2,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 45.7,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 60
+     },
+     {
+      "fps": 43.2,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 60
+     },
+     {
+      "fps": 42.7,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 60
+     }
+    ]
+   },
+   "B": {
+    "fpsMedian": 44.5,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 44.5,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 64
+     },
+     {
+      "fps": 51.2,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 64
+     },
+     {
+      "fps": 38.9,
+      "p95Ms": 33.5,
+      "quality": "low",
+      "calls": 64
+     }
+    ]
+   },
+   "passB": false
+  }
+ ]
+}

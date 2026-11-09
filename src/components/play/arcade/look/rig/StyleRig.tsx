@@ -50,6 +50,7 @@ import { LOOK_FAMILY } from './grade';
 import { type PaintedSky, paintedSkyOf, paintFade, type PaintStep, stagePlace } from './painted-sky';
 import { Post, useQualityTier } from './Post';
 import { TIER_SETTINGS } from './quality';
+import { inkMeshes, isInk, outlinable, setInkViewport } from './InkOutline';
 
 /**
  * Kamera končí tam, kde mlha (P28E-R1). Za koncem mlhy má každý pixel barvu oblohy,
@@ -380,14 +381,32 @@ function Sun({ look, sun: intensity, control, mapSize, half }: { readonly look: 
  * plochy (země, dráha, čáry) a plochy bez hloubky stín jen přijímají – vrhaly by ho
  * samy na sebe.
  */
-function ShadowFlags() {
+function ShadowFlags({ ink }: { readonly ink: boolean }) {
   const scene = useThree((three) => three.scene);
+  const size = useThree((three) => three.size);
   const frames = useRef(0);
+  // Úroveň `low` obrysy kulis nekreslí; návrat výš je ukáže, nové se pak dorovnají.
+  useEffect(() => {
+    scene.traverse((node) => {
+      if (node.userData.ink === 'scenery') node.visible = ink;
+    });
+  }, [scene, ink]);
   useFrame(() => {
+    // Scény bez obrysu hrdiny (`InkOutline`) by obrysům kulis nikdy nenastavily tloušťku.
+    if (ink) setInkViewport(size.width, size.height);
     if (frames.current++ % 30 !== 0) return;
     scene.traverse((node) => {
       const mesh = node as Mesh;
-      if (mesh.isMesh === true && mesh.userData.rigShadow === undefined) flagShadow(mesh);
+      if (mesh.isMesh !== true) return;
+      if (mesh.userData.rigShadow === undefined) flagShadow(mesh);
+      // Obrys kulis a rekvizit (P81): rozhodnutí jednou na síť; skrytá síť (zásobník efektů) počká na další průchod.
+      if (ink && mesh.userData.sceneryInk === undefined && mesh.visible) {
+        mesh.userData.sceneryInk = outlinable(mesh);
+        if (mesh.userData.sceneryInk === true && inkMeshes(mesh, 'scenery') > 0) {
+          // Zmrazená kulisa (`freeze`) svět matic dětí sama nepřepočítá: obal dostane polohu rodiče hned.
+          for (const child of mesh.children) if (isInk(child)) child.updateMatrixWorld(true);
+        }
+      }
     });
   });
   return null;
@@ -489,7 +508,7 @@ export function StyleRig({ look, lookId, control, surface }: { readonly look: Lo
       <hemisphereLight args={[shadeSky(shine.light[0], look.palette), shine.light[1], shine.light[2]]} />
       <Sun look={golden} sun={shine.sun} control={control} mapSize={TIER_SETTINGS[tier].shadowMapSize} half={TIER_SETTINGS[tier].shadowHalf} />
       {backLit ? <directionalLight position={back.dir} color={back.color} intensity={shine.sun * BACK_LIGHT} /> : <></>}
-      <ShadowFlags />
+      <ShadowFlags ink={LOOK_STYLE.ink.scenery && tier !== 'low'} />
       <SceneryWindow />
       {/* Život v pozadí kolem orientačního bodu scény (P54B T10) a vítr ve vegetaci (T13). */}
       <Ambient look={look} tier={tier} />

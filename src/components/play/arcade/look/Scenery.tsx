@@ -96,20 +96,24 @@ export function sceneryPlaces(props: readonly SceneryKind[], layout: SceneryLayo
   return places;
 }
 
+/**
+ * Primitivní kulisy. P81: hladké stínování a víc segmentů (koule 16 × 12, kužel a válec 16) – oblý „plastelínový“
+ * tvar předlohy místo hranatých ploch; plochý zůstal jen krystal.
+ */
 function Prop({ kind, tint: [main, accent] }: { readonly kind: PropKind; readonly tint: Look['tint'] }) {
   switch (kind) {
     case 'tree':
       return (
         <>
-          <mesh position={[0, 0.8, 0]}><cylinderGeometry args={[0.18, 0.25, 1.6, 6]} /><meshStandardMaterial color="#78350f" roughness={1} /></mesh>
-          <mesh position={[0, 2.2, 0]}><sphereGeometry args={[1.1, 8, 6]} /><meshStandardMaterial color={main} roughness={0.9} flatShading /></mesh>
+          <mesh position={[0, 0.8, 0]}><cylinderGeometry args={[0.18, 0.25, 1.6, 10]} /><meshStandardMaterial color="#78350f" roughness={1} /></mesh>
+          <mesh position={[0, 2.2, 0]}><sphereGeometry args={[1.1, 16, 12]} /><meshStandardMaterial color={main} roughness={0.9} /></mesh>
         </>
       );
     case 'pine':
       return (
         <>
-          <mesh position={[0, 0.4, 0]}><cylinderGeometry args={[0.15, 0.2, 0.8, 6]} /><meshStandardMaterial color="#78350f" roughness={1} /></mesh>
-          <mesh position={[0, 2, 0]}><coneGeometry args={[1, 2.8, 7]} /><meshStandardMaterial color={main} roughness={0.9} flatShading /></mesh>
+          <mesh position={[0, 0.4, 0]}><cylinderGeometry args={[0.15, 0.2, 0.8, 10]} /><meshStandardMaterial color="#78350f" roughness={1} /></mesh>
+          <mesh position={[0, 2, 0]}><coneGeometry args={[1, 2.8, 16]} /><meshStandardMaterial color={main} roughness={0.9} /></mesh>
         </>
       );
     case 'palm':
@@ -132,7 +136,7 @@ function Prop({ kind, tint: [main, accent] }: { readonly kind: PropKind; readonl
         </>
       );
     case 'rock':
-      return <mesh position={[0, 0.45, 0]} scale={[1.3, 0.8, 1]}><dodecahedronGeometry args={[0.7, 0]} /><meshStandardMaterial color={accent} roughness={1} flatShading /></mesh>;
+      return <mesh position={[0, 0.45, 0]} scale={[1.3, 0.8, 1]}><dodecahedronGeometry args={[0.7, 1]} /><meshStandardMaterial color={accent} roughness={1} /></mesh>;
     case 'building':
       return (
         <>
@@ -177,8 +181,8 @@ function Prop({ kind, tint: [main, accent] }: { readonly kind: PropKind; readonl
     case 'tower':
       return (
         <>
-          <mesh position={[0, 2.5, 0]}><cylinderGeometry args={[1, 1.1, 5, 8]} /><meshStandardMaterial color={main} roughness={1} flatShading /></mesh>
-          <mesh position={[0, 5.8, 0]}><coneGeometry args={[1.3, 1.6, 8]} /><meshStandardMaterial color={accent} roughness={0.8} /></mesh>
+          <mesh position={[0, 2.5, 0]}><cylinderGeometry args={[1, 1.1, 5, 16]} /><meshStandardMaterial color={main} roughness={1} /></mesh>
+          <mesh position={[0, 5.8, 0]}><coneGeometry args={[1.3, 1.6, 16]} /><meshStandardMaterial color={accent} roughness={0.8} /></mesh>
         </>
       );
     case 'grave':
@@ -205,7 +209,7 @@ function Prop({ kind, tint: [main, accent] }: { readonly kind: PropKind; readonl
     case 'volcano':
       return (
         <>
-          <mesh position={[0, 2.5, 0]}><cylinderGeometry args={[1.2, 3.8, 5, 10, 1, true]} /><meshStandardMaterial color={main} roughness={1} flatShading /></mesh>
+          <mesh position={[0, 2.5, 0]}><cylinderGeometry args={[1.2, 3.8, 5, 20, 1, true]} /><meshStandardMaterial color={main} roughness={1} /></mesh>
           <mesh position={[0, 4.95, 0]} rotation={[-Math.PI / 2, 0, 0]}><circleGeometry args={[1.2, 10]} /><meshBasicMaterial color={accent} /></mesh>
         </>
       );

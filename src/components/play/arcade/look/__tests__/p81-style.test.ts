@@ -40,7 +40,7 @@ describe('profil „dnes“ = konstanty před P81', () => {
     expect(TODAY_STYLE.sky).toEqual({ painted: true, paintHaze: 0.3, hazeBand: 0.18, gradient: 0 });
     expect(TODAY_STYLE.fog).toEqual({ start: 0.6, storm: 0.6, saturation: 0.18 });
     expect(TODAY_STYLE.floor).toEqual({ roughness: 0.9, ice: 0.45, wall: 0.85, seam: 1, laneLine: '#e2e8f0' });
-    expect(TODAY_STYLE.ink).toEqual({ px: 1.5, surface: { hero: 0.7, foe: 0, obstacle: 0.7 } });
+    expect(TODAY_STYLE.ink).toEqual({ px: 1.5, scenery: false, surface: { hero: 0.7, foe: 0, obstacle: 0.7, scenery: 0.7 } });
     expect(TODAY_STYLE.post).toEqual({ bloom: 0.8, tilt: 1 });
   });
 
