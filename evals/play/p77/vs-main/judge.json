@@ -1,0 +1,82 @@
+{
+ "seed": 7309,
+ "judgedAt": "2026-11-09T13:38:14.769Z",
+ "ids": [
+  "s1",
+  "s2",
+  "s3",
+  "s4",
+  "s5",
+  "s6",
+  "s7",
+  "s8",
+  "s9",
+  "s10",
+  "s11",
+  "s12"
+ ],
+ "key": {
+  "s1": "right",
+  "s2": "right",
+  "s3": "left",
+  "s4": "left",
+  "s5": "right",
+  "s6": "right",
+  "s7": "left",
+  "s8": "left",
+  "s9": "left",
+  "s10": "left",
+  "s11": "right",
+  "s12": "right"
+ },
+ "answers": {
+  "s1": {
+   "winner": "right",
+   "reason": "The right scene has more substantial rock formations, stronger foreground depth, and a more convincing volcanic landscape. Its clearer spatial layering makes the escape route feel grounded in a dangerous environment."
+  },
+  "s2": {
+   "winner": "right",
+   "reason": "The right scene has denser, more varied reef scenery that gives the track stronger depth and a more convincing underwater setting. Its layered coral and rock formations make the turtle-and-shark race feel more visually developed."
+  },
+  "s3": {
+   "winner": "right",
+   "reason": "The right scene has clearer separation between the cat, tiled play area, and distant skyline, with a more distinct background landmark reinforcing depth. Its polished lighting and dimensional scenery give it the stronger modern-game look, though the setting still reads more like a plaza than rooftops."
+  },
+  "s4": {
+   "winner": "right",
+   "reason": "The right version’s dark stone and turquoise fountain accents give the courtyard stronger contrast and clearer depth, with a more cohesive, modern material palette. The warm pancakes stand out more clearly against the environment."
+  },
+  "s5": {
+   "winner": "right",
+   "reason": "The right version has slightly clearer depth on the phone, with better separation between the knight, floating platforms, hanging hazard, and distant palms. The island route feels more readable and coherent for a knight’s rescue quest."
+  },
+  "s6": {
+   "winner": "right",
+   "reason": "The right scene has more coherent warm lighting and clearer shading on the distant structures, giving the environment stronger depth and solidity. Both look more like a planetary scrapyard than deep space, but the right feels more visually integrated."
+  },
+  "s7": {
+   "winner": "left",
+   "reason": "The left version’s warmer windmill and softer background tones fit the candy-land setting more naturally. Its raised course borders, shaded trees, and foreground ball give the scene clear depth."
+  },
+  "s8": {
+   "winner": "right",
+   "reason": "The right scene has stronger contact shadows and clearer separation between the knight, paving, and background props, giving the courtyard more depth. The weathered stonework and castle backdrop make a convincing setting for finding a lost crown."
+  },
+  "s9": {
+   "winner": "right",
+   "reason": "The right scene has a more coherent city layout, with layered buildings and clearer depth through the storm. The left’s oversized gold structures feel cluttered and less like a believable city for the bird to fly through."
+  },
+  "s10": {
+   "winner": "right",
+   "reason": "The right version has more defined shadows across the platform, giving the farmer and scene stronger grounding and depth. The layered orchard rows create a clear, sensible setting for catching falling apples."
+  },
+  "s11": {
+   "winner": "right",
+   "reason": "The right scene has stronger depth and a more coherent fantasy setting, with large sculpted windmills framing the track and smaller landmarks receding into the distance. These give the landscape more character and scale than the left’s mostly tree-lined course."
+  },
+  "s12": {
+   "winner": "right",
+   "reason": "The right scene’s large blue ice formations create stronger foreground-to-background depth and a more convincing icy mountain setting. Their varied scale and placement make the environment feel richer and more polished."
+  }
+ }
+}
