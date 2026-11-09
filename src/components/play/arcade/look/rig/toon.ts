@@ -92,7 +92,7 @@ const RIM_LINE = '\n\ttotalEmissiveRadiance += diffuseColor.rgb * toonRim * pow(
  * Vloží modelínu do programu, jednou; `palette` přimíchání palety a teplý okraj kulis zapne nebo (v kopii
  * postavy či záře) vypne. Kopie volají úpravu zdroje a pak tuto, proto opakované volání jen přepne paletu.
  */
-export function toonPatch(shader: WebGLProgramParametersWithUniforms, palette: boolean): void {
+export function toonPatch(shader: WebGLProgramParametersWithUniforms, palette: boolean, rim = palette): void {
   if (!shader.fragmentShader.includes('uniform float toonMix;')) {
     shader.uniforms.toonPalette = toon.palette;
     shader.uniforms.toonMix = toon.mix;
@@ -102,9 +102,13 @@ export function toonPatch(shader: WebGLProgramParametersWithUniforms, palette: b
       .replace(LIGHTS, ShaderChunk.lights_physical_pars_fragment.replace(DIFFUSE, WRAPPED))
       .replace(PHYSICAL, SOFT_GLOSS.trimStart());
   }
+  // Kulisa přebarvená do palety místa už při načtení (P77 T2) chce teplý okraj bez přimíchání palety ve shaderu.
   const mixed = shader.fragmentShader.includes(PALETTE_LINE);
-  if (palette && !mixed) shader.fragmentShader = shader.fragmentShader.replace(COLOR, `${COLOR}${PALETTE_LINE}`).replace(EMISSIVE, `${EMISSIVE}${RIM_LINE}`);
-  if (!palette && mixed) shader.fragmentShader = shader.fragmentShader.replace(PALETTE_LINE, '').replace(RIM_LINE, '');
+  if (palette && !mixed) shader.fragmentShader = shader.fragmentShader.replace(COLOR, `${COLOR}${PALETTE_LINE}`);
+  if (!palette && mixed) shader.fragmentShader = shader.fragmentShader.replace(PALETTE_LINE, '');
+  const rimmed = shader.fragmentShader.includes(RIM_LINE);
+  if (rim && !rimmed) shader.fragmentShader = shader.fragmentShader.replace(EMISSIVE, `${EMISSIVE}${RIM_LINE}`);
+  if (!rim && rimmed) shader.fragmentShader = shader.fragmentShader.replace(RIM_LINE, '');
 }
 
 /** Paleta sady pro shader: šest barev, chybějící `block` nahradí `track`. */
@@ -123,7 +127,7 @@ export function oklab([r, g, b]: Rgb): Rgb {
 }
 
 /** Oklab → lineární sRGB, záporné složky oříznuté – `toonRgb` v shaderu. */
-function rgbOf([L, a, b]: Rgb): Rgb {
+export function rgbOf([L, a, b]: Rgb): Rgb {
   const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
   const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
   const s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
@@ -142,6 +146,41 @@ export function setScenePalette(look: Pick<Look, 'ground' | 'tint' | 'block' | '
   });
   toon.mix.value = PALETTE_MIX;
   toon.rim.value.copy(CLAY_RIM_TINT).multiplyScalar(CLAY_RIM * (1 - darkness(look)));
+}
+
+/** Paleta místa (`Look.palette`, `#rrggbb`) v Oklab pro `snapToPalette`. */
+export function paletteLab(hexes: readonly string[]): Rgb[] {
+  const color = new Color();
+  return hexes.map((hex) => oklab(color.set(hex).toArray() as unknown as Rgb));
+}
+
+/** Váha rozdílu světlosti při hledání tónu: o tónu rozhoduje odstín, světlost barva stejně nechá svou. */
+const SNAP_LIGHTNESS = 0.25;
+/**
+ * Kolik vlastní barvy (Oklab a, b) kulisa podrží (P77 T6). Čistý tón palety (0) soudce proti produkci
+ * dvakrát odmítl: „production has stronger contrast, dark stone and turquoise accents“ – akcenty zmizely.
+ */
+export const SNAP_KEEP = 0.35;
+
+/**
+ * Barva kulisy v paletě místa (P77 T2, lineární RGB): nejbližší tón palety (`paletteLab`) dá většinu odstínu
+ * a sytosti, `SNAP_KEEP` zůstane z vlastní barvy, světlost celá – stín a světlo modelu drží. Barva tmavší než
+ * tón dostane jeho sytost úměrně menší, jinak by tmavé plochy zářily (a mimo rozsah sRGB se odstín láme).
+ */
+export function snapToPalette(color: Rgb, palette: readonly Rgb[]): Rgb {
+  const lab = oklab(color);
+  let best = palette[0]!;
+  let bestGap = Infinity;
+  for (const tone of palette) {
+    const gap = SNAP_LIGHTNESS * (tone[0] - lab[0]) ** 2 + (tone[1] - lab[1]) ** 2 + (tone[2] - lab[2]) ** 2;
+    if (gap < bestGap) {
+      bestGap = gap;
+      best = tone;
+    }
+  }
+  const keep = Math.min(1, lab[0] / Math.max(best[0], 1e-3));
+  const mix = (tone: number, own: number) => (1 - SNAP_KEEP) * tone * keep + SNAP_KEEP * own;
+  return rgbOf([lab[0], mix(best[1], lab[1]), mix(best[2], lab[2])]);
 }
 
 /**

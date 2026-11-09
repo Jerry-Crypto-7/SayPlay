@@ -1,0 +1,146 @@
+{
+ "profile": "Pixel 7 UA/DPR, 390x844, CPU 4x, ANGLE d3d11, OpenXR off",
+ "a": "http://127.0.0.1:3207",
+ "b": "http://127.0.0.1:3208",
+ "repeats": 4,
+ "windowMs": 10000,
+ "gate": {
+  "fpsMin": 40,
+  "p95MaxMs": 33.3
+ },
+ "measuredAt": "2026-11-09T13:03:37.307Z",
+ "complete": true,
+ "pass": false,
+ "rows": [
+  {
+   "id": "s5",
+   "text": "A knight jumps across floating islands to rescue a dragon egg",
+   "A": {
+    "fpsMedian": 44.5,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 47.3,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 83
+     },
+     {
+      "fps": 41.7,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 83
+     },
+     {
+      "fps": 49.1,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 44
+     },
+     {
+      "fps": 39.7,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 44
+     }
+    ]
+   },
+   "B": {
+    "fpsMedian": 45.7,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 48.2,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 85
+     },
+     {
+      "fps": 56.7,
+      "p95Ms": 16.8,
+      "quality": "low",
+      "calls": 47
+     },
+     {
+      "fps": 43.3,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 85
+     },
+     {
+      "fps": 39.9,
+      "p95Ms": 49.9,
+      "quality": "low",
+      "calls": 46
+     }
+    ]
+   },
+   "passB": false
+  },
+  {
+   "id": "s8",
+   "text": "Find the lost crown in an old castle",
+   "A": {
+    "fpsMedian": 43.7,
+    "p95MedianMs": 49.9,
+    "runs": [
+     {
+      "fps": 42,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 48
+     },
+     {
+      "fps": 45.7,
+      "p95Ms": 49.9,
+      "quality": "low",
+      "calls": 48
+     },
+     {
+      "fps": 45.5,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 48
+     },
+     {
+      "fps": 41.4,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 48
+     }
+    ]
+   },
+   "B": {
+    "fpsMedian": 42.7,
+    "p95MedianMs": 50,
+    "runs": [
+     {
+      "fps": 43,
+      "p95Ms": 49.9,
+      "quality": "low",
+      "calls": 50
+     },
+     {
+      "fps": 39.6,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 50
+     },
+     {
+      "fps": 42.4,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 50
+     },
+     {
+      "fps": 46.5,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 50
+     }
+    ]
+   },
+   "passB": false
+  }
+ ]
+}

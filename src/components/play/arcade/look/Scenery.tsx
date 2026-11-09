@@ -12,7 +12,7 @@
  */
 
 import { lazy, Suspense, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Box3, type Group, Mesh, type Object3D, Vector3 } from 'three';
+import { Box3, type Group, type InstancedMesh, Matrix4, Mesh, type Object3D, Quaternion, Vector3 } from 'three';
 
 import type { ArcadeWorld } from '@/play/arcade/contract';
 import { type Flora, floraIds, isSceneryModel, landmarks, type Look, modelHeight, type PropKind, type SceneryKind, type SceneryModel, sparseLandmarks } from '@/play/arcade/look';
@@ -20,7 +20,9 @@ import { type Flora, floraIds, isSceneryModel, landmarks, type Look, modelHeight
 import type { FieldPiece } from './field-dressing';
 import { fieldPiecesNow, fieldPiecesOf } from './field-dressing-client';
 import { UNDER_PANORAMA } from './under-panorama';
+import { CONTACT_GEOMETRY, CONTACT_LIFT, CONTACT_SPREAD, contactMaterial } from './contact-shadow';
 import { loadFlatModel, type PlantModel, paintedPlant, plantDepthMaterial, plantMaterial } from './load';
+import { loadPlaceModel } from './place-paint';
 import { PlayEnv } from './play-env';
 import { capSnow } from './rig/snowcap';
 import { useWarmed } from './warm-gate';
@@ -220,18 +222,19 @@ function Prop({ kind, tint: [main, accent] }: { readonly kind: PropKind; readonl
 /**
  * Model katalogu postavený na zem ve výšce kulisy (`modelHeight`); dokud se nenačte, nic. `cap` = sněhová čepička.
  * `cast = false`: stín jen přijímá – orientační bod a rámující kusy (P54B T8) nestojí stínový průchod navíc.
+ * `palette` = tóny místa (`Look.palette`): model se přebarví do nich (`loadPlaceModel`, P77 T2), bez ní je, jak je.
  */
-export function SceneryModelProp({ id, cap, cast = true }: { readonly id: SceneryModel; readonly cap?: string; readonly cast?: boolean }) {
+export function SceneryModelProp({ id, cap, cast = true, palette }: { readonly id: SceneryModel; readonly cap?: string; readonly cast?: boolean; readonly palette?: readonly string[] }) {
   const [model, setModel] = useState<Object3D | null>(null);
   useEffect(() => {
     let live = true;
-    void loadFlatModel(id).then((loaded) => {
+    void (palette === undefined ? loadFlatModel(id) : loadPlaceModel(id, palette)).then((loaded) => {
       if (live) setModel(loaded);
     });
     return () => {
       live = false;
     };
-  }, [id]);
+  }, [id, palette]);
   const fitted = useMemo(() => {
     if (model === null) return null;
     const copy = model.clone(true);
@@ -367,21 +370,42 @@ export function Scenery({ look, layout, inner, from, to, y = 0, size = 1, ground
     freeze(root.current);
     root.current.updateWorldMatrix(true, true);
   }, [places, size, heights, cap]);
+  // Kontaktní stíny řady (P77 T3): jedno instancované kreslení mimo kořen řady – `SceneryWindow` bere děti kořene jako kulisy.
+  const contacts = useRef<InstancedMesh>(null);
+  useLayoutEffect(() => {
+    const blobs = contacts.current;
+    if (blobs === null) return;
+    places.forEach((place, index) => {
+      const r = FOOT * CONTACT_SPREAD * place.scale * size;
+      contactAt.set(place.x + (bend?.(place.z).x ?? 0), heights[index]! + (bend?.(place.z).y ?? 0) + CONTACT_LIFT, place.z);
+      blobs.setMatrixAt(index, contactMatrix.compose(contactAt, contactTurn, contactScale.set(r, 1, r)));
+    });
+    blobs.instanceMatrix.needsUpdate = true;
+    blobs.computeBoundingSphere();
+  }, [places, heights, bend, size]);
   return (
-    <group ref={root} userData={{ scenery: true }}>
-      {places.map((place, index) => (
-        <group key={index} position={[place.x + (bend?.(place.z).x ?? 0), heights[index]! + (bend?.(place.z).y ?? 0), place.z]} rotation={[0, place.turn, 0]} scale={place.scale * size}>
-          <SceneryPiece kind={place.kind} look={look} plants={plants} cap={cap} />
-        </group>
-      ))}
-    </group>
+    <>
+      <group ref={root} userData={{ scenery: true }}>
+        {places.map((place, index) => (
+          <group key={index} position={[place.x + (bend?.(place.z).x ?? 0), heights[index]! + (bend?.(place.z).y ?? 0), place.z]} rotation={[0, place.turn, 0]} scale={place.scale * size}>
+            <SceneryPiece kind={place.kind} look={look} plants={plants} cap={cap} />
+          </group>
+        ))}
+      </group>
+      {places.length > 0 && <instancedMesh key={places.length} ref={contacts} args={[CONTACT_GEOMETRY, contactMaterial(look.palette), places.length]} />}
+    </>
   );
 }
+
+const contactAt = new Vector3();
+const contactScale = new Vector3();
+const contactTurn = new Quaternion();
+const contactMatrix = new Matrix4();
 
 /** Kulisa sady: primitiva, rostlina vegetace v barvách sady, nebo model katalogu. */
 function SceneryPiece({ kind, look, plants, cap }: { readonly kind: SceneryKind; readonly look: Look; readonly plants: ReadonlySet<string>; readonly cap?: string }) {
   if (!isSceneryModel(kind)) return <Prop kind={kind} tint={look.tint} />;
-  return plants.has(kind) ? <PlantProp id={kind} flora={look.flora!} height={modelHeight(kind)} cap={cap} /> : <SceneryModelProp id={kind} cap={cap} />;
+  return plants.has(kind) ? <PlantProp id={kind} flora={look.flora!} height={modelHeight(kind)} cap={cap} /> : <SceneryModelProp id={kind} cap={cap} palette={look.palette} />;
 }
 
 // ---------------------------------------------------------------------------
@@ -452,7 +476,7 @@ export function FieldDressing({ look, world }: { readonly look: Look; readonly w
             <PlantProp id={piece.kind} flora={look.flora!} height={piece.height} cap={cap} />
           ) : (
             <group scale={piece.height / modelHeight(piece.kind)}>
-              <SceneryModelProp id={piece.kind} cap={cap} />
+              <SceneryModelProp id={piece.kind} cap={cap} palette={look.palette} />
             </group>
           )}
         </group>

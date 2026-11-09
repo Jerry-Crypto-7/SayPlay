@@ -376,7 +376,8 @@ function actorIn(segment: string): string | null {
   // P70B T3: „ninja cat wall-jumps“ – slovo spojené se slovesem pomlčkou patří slovesu, hrdina je kočka, ne „wall-“.
   const trimmed = segment.trim().replace(ACTOR_FRAME, '').replace(/\s*\b[a-z]+-$/, '');
   if (/^with\s/.test(trimmed) && /\b[a-z]{2,}ing\b/.test(trimmed)) return null;
-  const bare = trimmed.replace(/^with\s+/, '').replace(/^(?:(?:a|an|the|my|your|our|this|that|some|one)(?:\s+|$))+/, '');
+  // P78 T1: „those cats chasing mice“ dal hrdinu „those“ a hlášku „The those isn't here yet“.
+  const bare = trimmed.replace(/^with\s+/, '').replace(/^(?:(?:a|an|the|my|your|our|this|that|these|those|some|one)(?:\s+|$))+/, '');
   const first = bare.split(' ')[0];
   if (PLAYER_WORDS.has(first)) return HERO;
   // „play chess with…“: rozkaz na začátku věty podmět nemá.

@@ -1,0 +1,297 @@
+{
+  "about": "Interleaved A/B time to first playable on /play: the same sentences and shared games on two servers, runs paired back to back. Method: evals/play/first-playable/README.md.",
+  "measuredAt": "2026-11-09T13:28:04.268Z",
+  "a": {
+    "url": "http://127.0.0.1:3207",
+    "label": "main cecccbe1 (odbočení P77, před T2)"
+  },
+  "b": {
+    "url": "http://127.0.0.1:3208",
+    "label": "P77 po T5 (bb449a96)"
+  },
+  "probe": "scripts/measure/time-to-playable.mjs via scripts/measure/first-playable-ab.mjs",
+  "profiles": {
+    "pixel7-cpu4": {
+      "device": "Pixel 7",
+      "cpuThrottle": 4
+    }
+  },
+  "runs": 3,
+  "pauseMs": 5000,
+  "sentences": [
+    "An underwater race between a turtle and a shark"
+  ],
+  "sharedSentences": [],
+  "summary": {
+    "byTarget": [
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s1-an-underwater-race-between-a-turtle-and-",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 8553,
+          "min": 8017,
+          "max": 10268
+        },
+        "B": {
+          "failed": 1,
+          "n": 2,
+          "median": 9717,
+          "min": 8389,
+          "max": 11045
+        },
+        "diffMedian": 1164,
+        "pairedDiffMedian": 306.5
+      }
+    ],
+    "byKind": [
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 8553,
+          "min": 8017,
+          "max": 10268
+        },
+        "B": {
+          "failed": 1,
+          "n": 2,
+          "median": 9717,
+          "min": 8389,
+          "max": 11045
+        },
+        "diffMedian": 1164,
+        "pairedDiffMedian": 306.5
+      }
+    ],
+    "byProfile": [
+      {
+        "profile": "pixel7-cpu4",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 8553,
+          "min": 8017,
+          "max": 10268
+        },
+        "B": {
+          "failed": 1,
+          "n": 2,
+          "median": 9717,
+          "min": 8389,
+          "max": 11045
+        },
+        "diffMedian": 1164,
+        "pairedDiffMedian": 306.5
+      }
+    ],
+    "gate": {
+      "failedTotal": 1,
+      "failed": {
+        "A": 0,
+        "B": 1
+      },
+      "checks": [
+        {
+          "name": "failedTotal",
+          "profile": null,
+          "value": 1,
+          "limit": 0,
+          "pass": false
+        },
+        {
+          "name": "medianB",
+          "profile": "desktop",
+          "value": null,
+          "limit": 3000,
+          "pass": false
+        },
+        {
+          "name": "pairedDiffMedian",
+          "profile": "desktop",
+          "value": null,
+          "limit": 200,
+          "pass": false
+        },
+        {
+          "name": "pairedDiffMedian",
+          "profile": "pixel7-cpu4",
+          "value": 306.5,
+          "limit": 200,
+          "pass": false
+        }
+      ],
+      "pass": false
+    }
+  },
+  "summaryFirstFrame": {
+    "byTarget": [
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s1-an-underwater-race-between-a-turtle-and-",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 5144,
+          "min": 4747,
+          "max": 5263
+        },
+        "B": {
+          "failed": 1,
+          "n": 2,
+          "median": 5419,
+          "min": 4903,
+          "max": 5935
+        },
+        "diffMedian": 275,
+        "pairedDiffMedian": 215.5
+      }
+    ],
+    "byKind": [
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 5144,
+          "min": 4747,
+          "max": 5263
+        },
+        "B": {
+          "failed": 1,
+          "n": 2,
+          "median": 5419,
+          "min": 4903,
+          "max": 5935
+        },
+        "diffMedian": 275,
+        "pairedDiffMedian": 215.5
+      }
+    ],
+    "byProfile": [
+      {
+        "profile": "pixel7-cpu4",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 5144,
+          "min": 4747,
+          "max": 5263
+        },
+        "B": {
+          "failed": 1,
+          "n": 2,
+          "median": 5419,
+          "min": 4903,
+          "max": 5935
+        },
+        "diffMedian": 275,
+        "pairedDiffMedian": 215.5
+      }
+    ]
+  },
+  "results": [
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-an-underwater-race-between-a-turtle-and-",
+      "side": "A",
+      "run": 1,
+      "pair": 0,
+      "playable": true,
+      "ms": 8553,
+      "firstFrameMs": 5144,
+      "note": "surface also changes without input (99.52 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794230654072,
+      "tPlayable": 1794230662625,
+      "url": "http://127.0.0.1:3207/play/9815614f5b80031cada278ac999d0807"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-an-underwater-race-between-a-turtle-and-",
+      "side": "B",
+      "run": 1,
+      "pair": 0,
+      "playable": true,
+      "ms": 11045,
+      "firstFrameMs": 5935,
+      "note": "surface also changes without input (5.07 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1794230675127,
+      "tPlayable": 1794230686172,
+      "url": "http://127.0.0.1:3208/play/9815614f5b80031cada278ac999d0807"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-an-underwater-race-between-a-turtle-and-",
+      "side": "B",
+      "run": 2,
+      "pair": 1,
+      "playable": false,
+      "ms": null,
+      "firstFrameMs": null,
+      "note": "timeout after 120000 ms: surface changed but the game never accepted the input (data-inputs and data-tick did not both grow)",
+      "attempts": 61,
+      "t0": 1794230699062,
+      "tPlayable": null,
+      "url": "http://127.0.0.1:3208/play/9815614f5b80031cada278ac999d0807"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-an-underwater-race-between-a-turtle-and-",
+      "side": "A",
+      "run": 2,
+      "pair": 1,
+      "playable": true,
+      "ms": 8017,
+      "firstFrameMs": 4747,
+      "note": "surface also changes without input (99.95 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794230829946,
+      "tPlayable": 1794230837963,
+      "url": "http://127.0.0.1:3207/play/9815614f5b80031cada278ac999d0807"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-an-underwater-race-between-a-turtle-and-",
+      "side": "A",
+      "run": 3,
+      "pair": 2,
+      "playable": true,
+      "ms": 10268,
+      "firstFrameMs": 5263,
+      "note": "surface also changes without input (10.7 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1794230850532,
+      "tPlayable": 1794230860800,
+      "url": "http://127.0.0.1:3207/play/9815614f5b80031cada278ac999d0807"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-an-underwater-race-between-a-turtle-and-",
+      "side": "B",
+      "run": 3,
+      "pair": 2,
+      "playable": true,
+      "ms": 8389,
+      "firstFrameMs": 4903,
+      "note": "surface also changes without input (100 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794230872289,
+      "tPlayable": 1794230880678,
+      "url": "http://127.0.0.1:3208/play/9815614f5b80031cada278ac999d0807"
+    }
+  ]
+}

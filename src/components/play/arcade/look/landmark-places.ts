@@ -24,6 +24,7 @@ import { type PerspectiveCamera, Vector3 } from 'three';
 import { isSceneryModel, landmarks, type Look, modelHeight, type SceneryModel } from '@/play/arcade/look';
 
 import type { Box } from './ground';
+import { knownReachOf } from './vegetation-places';
 
 /** Pásmo vzdálenosti orientačního bodu od kamery (m, po zemi). */
 export const LANDMARK_NEAR_M = 25;
@@ -398,4 +399,76 @@ export function placeFraming({ camera, look, seed, area, hero, play = [], ground
     if (best !== null) placed.push(best);
   }
   return placed;
+}
+
+/**
+ * Rámující kusy u kamery po trati (P77 T4): hledání pevné kamery (`placeFraming`) chce kus blíž kameře než hrdina,
+ * a tam běžci trať zabere skoro celou šířku obrazu – vešel se jen malý model (5 z 18 míst). Kopie řady (`framingRow`)
+ * rohem obrazu projedou samy, takže stačí stát těsně vedle hrací plochy: vlevo vedle hrdiny, vpravo o půl rozteče
+ * dál (řada nepůsobí jako brána). Plocha (`area`) jsou pásy trati s nekonečným z; hrdina stojí uvnitř.
+ * Kusy jsou dva nejvyšší modely z řad kulis místa (`look.props` – stromy, skály), zvětšené k `FRAMING_TREE_M`:
+ * nízký kus (lavička z `framingPool`) by u kraje obrazu stál jako další kulisa, ne jako rám (první pokus T4).
+ */
+export function placeTrackFraming({ camera, look, area, hero, ground = flat }: PlaceInput): Placed[] {
+  const tall = [...new Set(look.props)].filter((kind): kind is SceneryModel => isSceneryModel(kind) && modelHeight(kind) <= FRAMING_TRACK_TALLEST_M && (knownReachOf(kind) ?? 0) <= FRAMING_TRACK_REACH).sort((a, b) => modelHeight(b) - modelHeight(a));
+  if (tall.length === 0) return [];
+  // Druhý kus jiný, jen když není o víc než čtvrtinu nižší – jinak by vpravo rámoval keřík.
+  const framing = [tall[0]!, tall.find((id, i) => i > 0 && modelHeight(id) >= 0.75 * modelHeight(tall[0]!)) ?? tall[0]!];
+  const forward = camera.getWorldDirection(new Vector3());
+  // Jen kamera zezadu podél trati (běžec, závod, klouzání). Z boku (plošinovka na šířku) kus stojí mezi kamerou
+  // a hrdinou a zakryje ho; ze tří čtvrtin (plošinovka a poletování na výšku, odklon 25–35°) stojí uprostřed záběru
+  // za hrdinou a nerámuje (T4, s5 maják). Práh cos 20°.
+  if (Math.abs(forward.z) < 0.94 * Math.hypot(forward.x, forward.z)) return [];
+  const dir = forward.z < 0 ? -1 : 1;
+  const z0 = hero?.z ?? camera.position.z + dir * 6;
+  const lanes = area.filter((box) => box.z0 <= z0 && z0 <= box.z1);
+  const left = Math.min(...lanes.map((box) => box.x0));
+  const right = Math.max(...lanes.map((box) => box.x1));
+  return ([[0, -1], [1, 1]] as const).map(([index, side]) => {
+    const id = framing[index]!;
+    const scale = Math.min(FRAMING_GROW_MAX, Math.max(1, FRAMING_TREE_M / modelHeight(id)));
+    const r = FOOT * modelHeight(id) * scale;
+    const x = side < 0 ? left - AREA_GAP_M - r : right + AREA_GAP_M + r;
+    const z = z0 + (side > 0 ? dir * FRAMING_PERIOD_M / 2 : 0);
+    return { id, x, y: footY(ground, x, z, r), z, scale, turn: toward(camera, x, z) + side * 0.6 };
+  });
+}
+
+/** Cílová výška rámujícího kusu u trati (m) a nejvyšší zvětšení modelu, ať strom nepřeroste v obra. */
+const FRAMING_TREE_M = 4;
+/** Nejvyšší model rámující řady u trati (m): mrakodrapy u klouzání ve městě soudce vzal jako „oversized, cluttered“ (T6 s9). */
+export const FRAMING_TRACK_TALLEST_M = 6;
+/**
+ * Nejširší model rámující řady u trati (poloměr půdorysu na metr výšky, `knownReachOf`). Široký kus zvětšený na výšku
+ * rámu stojí u trati jako zeď: iglú a ledový oblouk zakryly sjezd (s12), skleněná zastávka v dešti vypadala vybledle
+ * (s9) – nezávislý pohled 9. 11. Rám je svislý kus: strom, sloup, řasa.
+ */
+export const FRAMING_TRACK_REACH = 0.7;
+const FRAMING_GROW_MAX = 1.6;
+
+/** Rozteč kopií rámujícího kusu po trati (m): kopie zmizí za kamerou dřív, než další dojede do rohu obrazu. */
+export const FRAMING_PERIOD_M = 14;
+/**
+ * Kopií jednoho rámujícího kusu najednou: počítač, telefon. Telefon žádnou (P77 T5): se dvěma kopiemi spadl závod
+ * pod vodou na Pixelu 7 (CPU 4×) z 43 na 35 FPS, pod mez 40; hry bez řady zůstaly v šumu.
+ */
+export const FRAMING_COPIES = { desktop: 4, phone: 0 } as const;
+
+/**
+ * Rámující kus u kamery, která jede po trati (P77 T4, koncept: velké stromy v rozích popředí ubíhají s tratí).
+ * Jeden kus by s kamerou buď ujel z obrazu, nebo klouzal po zemi; proto řada kopií s roztečí `FRAMING_PERIOD_M`
+ * ve stejném odstupu od středu trati jako nalezené místo (`placeFraming` u kamery v klidu; `ground` tatáž jako tam). Každá kopie stojí
+ * na zemi, dokud ji kamera nemine; nová přibude `count` roztečí vpředu – daleko a malá. `advance` = kolik metrů
+ * kamera ujela ve směru `dir` (±z) od místa, kde se kus hledal. Odstup od trati drží i v zatáčce (`bend`).
+ */
+export function framingRow(placed: Placed, advance: number, dir: 1 | -1, count: number, bend?: (z: number) => { readonly x: number }, ground?: (x: number, z: number) => number): Placed[] {
+  const first = Math.floor(advance / FRAMING_PERIOD_M);
+  const row: Placed[] = [];
+  for (let m = first; m < first + count; m++) {
+    const z = placed.z + dir * FRAMING_PERIOD_M * m;
+    const x = bend === undefined ? placed.x : placed.x + bend(z).x - bend(placed.z).x;
+    // Pata jako u nalezeného místa (`placeFraming`): nejnižší bod pod kusem.
+    row.push({ ...placed, x, y: ground === undefined ? placed.y : footY(ground, x, z, footOf(placed)), z });
+  }
+  return row;
 }

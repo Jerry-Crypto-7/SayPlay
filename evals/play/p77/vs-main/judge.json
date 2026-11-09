@@ -1,0 +1,82 @@
+{
+ "seed": 7309,
+ "judgedAt": "2026-11-09T13:57:36.726Z",
+ "ids": [
+  "s1",
+  "s2",
+  "s3",
+  "s4",
+  "s5",
+  "s6",
+  "s7",
+  "s8",
+  "s9",
+  "s10",
+  "s11",
+  "s12"
+ ],
+ "key": {
+  "s1": "right",
+  "s2": "right",
+  "s3": "left",
+  "s4": "left",
+  "s5": "right",
+  "s6": "right",
+  "s7": "left",
+  "s8": "left",
+  "s9": "left",
+  "s10": "left",
+  "s11": "right",
+  "s12": "right"
+ },
+ "answers": {
+  "s1": {
+   "winner": "right",
+   "reason": "The right scene has stronger depth from layered volcanic rocks, clearer shadows, and more substantial terrain alongside the path. Its lava-lined escape route feels more grounded in a volcanic landscape."
+  },
+  "s2": {
+   "winner": "left",
+   "reason": "The left scene has cleaner coral silhouettes and more balanced scenery, giving the underwater track clearer depth. The right scene’s dark, tangled clusters feel less polished and distract from the turtle-and-shark race."
+  },
+  "s3": {
+   "winner": "right",
+   "reason": "The right version has a more coherent skyline and a clearly visible rooftop robot, giving the scene stronger depth and spatial landmarks. Its smaller phone overlay also reveals more of the environment, though both versions look more like a plaza than a rooftop pizza-delivery setting."
+  },
+  "s4": {
+   "winner": "left",
+   "reason": "The left scene has more cohesive warm lighting and weathered materials, giving the courtyard convincing depth and making the pancakes feel at home. The right’s stark black and cyan fountain looks disconnected from the surrounding environment."
+  },
+  "s5": {
+   "winner": "right",
+   "reason": "The right version has slightly clearer separation between the knight, floating platforms, and distant palms, giving the scene stronger depth. Its island gaps and suspended hazards make the rescue route feel more readable and coherent."
+  },
+  "s6": {
+   "winner": "right",
+   "reason": "The right scene has more cohesive lighting and atmospheric depth, making the distant structures feel farther behind the ship. Its warm terrain against the nebula sky reads as a more convincing alien setting."
+  },
+  "s7": {
+   "winner": "right",
+   "reason": "The right scene has slightly stronger shading and contrast, giving the trees, candy props, and raised course edges clearer depth. Its bright green course and oversized candy vegetation make a coherent candy-land mini-golf setting."
+  },
+  "s8": {
+   "winner": "right",
+   "reason": "The right scene has clearer depth, with an open paved foreground and more distinct layers of trees, props, and castle architecture. Its detailed courtyard feels more coherent and convincing as a place to search for a lost crown."
+  },
+  "s9": {
+   "winner": "right",
+   "reason": "The right scene has clearer depth, with cool cyan foreground structures standing apart from the muted city skyline. Its more cohesive stormy palette makes the city feel more convincing and visually polished."
+  },
+  "s10": {
+   "winner": "right",
+   "reason": "The right scene has a slightly clearer sense of depth, with the farmer and catching platform standing out against receding rows of orchard trees. The orchard feels like a coherent setting for catching falling apples, though the two versions look very similar."
+  },
+  "s11": {
+   "winner": "right",
+   "reason": "The right version has stronger contact shadows and clearer shading on the racers, obstacles, and roadside scenery, giving the track more convincing depth. Its richer foliage and bright flower accents also make the stylized setting feel more polished and playful."
+  },
+  "s12": {
+   "winner": "right",
+   "reason": "The right scene has larger blue ice formations that create stronger foreground, middle-distance, and background depth. They make the slope feel like a distinct icy mountain environment, while the left looks more sparse and generic."
+  }
+ }
+}

@@ -1,0 +1,542 @@
+{
+ "s1": {
+  "text": "Escape a volcano before the lava reaches you",
+  "tones": [
+   {
+    "hex": "#642f1a",
+    "share": 0.207,
+    "chroma": 0.082
+   },
+   {
+    "hex": "#92653c",
+    "share": 0.164,
+    "chroma": 0.081
+   },
+   {
+    "hex": "#e85930",
+    "share": 0.115,
+    "chroma": 0.186
+   },
+   {
+    "hex": "#471c11",
+    "share": 0.111,
+    "chroma": 0.069
+   },
+   {
+    "hex": "#a73215",
+    "share": 0.111,
+    "chroma": 0.159
+   },
+   {
+    "hex": "#704b2c",
+    "share": 0.105,
+    "chroma": 0.068
+   },
+   {
+    "hex": "#e19959",
+    "share": 0.1,
+    "chroma": 0.118
+   },
+   {
+    "hex": "#f7e29a",
+    "share": 0.088,
+    "chroma": 0.094
+   }
+  ]
+ },
+ "s2": {
+  "text": "An underwater race between a turtle and a shark",
+  "tones": [
+   {
+    "hex": "#eddfae",
+    "share": 0.2,
+    "chroma": 0.065
+   },
+   {
+    "hex": "#ddbd84",
+    "share": 0.159,
+    "chroma": 0.082
+   },
+   {
+    "hex": "#8e5235",
+    "share": 0.121,
+    "chroma": 0.09
+   },
+   {
+    "hex": "#698c90",
+    "share": 0.119,
+    "chroma": 0.04
+   },
+   {
+    "hex": "#ba8a55",
+    "share": 0.114,
+    "chroma": 0.092
+   },
+   {
+    "hex": "#46372b",
+    "share": 0.114,
+    "chroma": 0.029
+   },
+   {
+    "hex": "#436661",
+    "share": 0.104,
+    "chroma": 0.041
+   },
+   {
+    "hex": "#9fafa3",
+    "share": 0.067,
+    "chroma": 0.025
+   }
+  ]
+ },
+ "s3": {
+  "text": "A cat delivering pizzas across rooftops while avoiding seagulls",
+  "tones": [
+   {
+    "hex": "#daad81",
+    "share": 0.176,
+    "chroma": 0.079
+   },
+   {
+    "hex": "#6d5659",
+    "share": 0.171,
+    "chroma": 0.031
+   },
+   {
+    "hex": "#4a3834",
+    "share": 0.162,
+    "chroma": 0.028
+   },
+   {
+    "hex": "#eddaaf",
+    "share": 0.139,
+    "chroma": 0.06
+   },
+   {
+    "hex": "#996d59",
+    "share": 0.125,
+    "chroma": 0.064
+   },
+   {
+    "hex": "#b48855",
+    "share": 0.111,
+    "chroma": 0.087
+   },
+   {
+    "hex": "#a9968e",
+    "share": 0.098,
+    "chroma": 0.025
+   },
+   {
+    "hex": "#5c6627",
+    "share": 0.018,
+    "chroma": 0.088
+   }
+  ]
+ },
+ "s4": {
+  "text": "Balance a tower of pancakes on a windy day",
+  "tones": [
+   {
+    "hex": "#f1dfc4",
+    "share": 0.185,
+    "chroma": 0.041
+   },
+   {
+    "hex": "#b8a459",
+    "share": 0.154,
+    "chroma": 0.098
+   },
+   {
+    "hex": "#a18441",
+    "share": 0.136,
+    "chroma": 0.092
+   },
+   {
+    "hex": "#2f4b23",
+    "share": 0.136,
+    "chroma": 0.072
+   },
+   {
+    "hex": "#ddc870",
+    "share": 0.116,
+    "chroma": 0.111
+   },
+   {
+    "hex": "#835d2b",
+    "share": 0.108,
+    "chroma": 0.083
+   },
+   {
+    "hex": "#4c341f",
+    "share": 0.091,
+    "chroma": 0.048
+   },
+   {
+    "hex": "#c4bfbe",
+    "share": 0.075,
+    "chroma": 0.006
+   }
+  ]
+ },
+ "s5": {
+  "text": "A knight jumps across floating islands to rescue a dragon egg",
+  "tones": [
+   {
+    "hex": "#f3e5b2",
+    "share": 0.174,
+    "chroma": 0.067
+   },
+   {
+    "hex": "#358ca6",
+    "share": 0.16,
+    "chroma": 0.091
+   },
+   {
+    "hex": "#765f2c",
+    "share": 0.14,
+    "chroma": 0.076
+   },
+   {
+    "hex": "#dcc05d",
+    "share": 0.12,
+    "chroma": 0.123
+   },
+   {
+    "hex": "#43451b",
+    "share": 0.113,
+    "chroma": 0.061
+   },
+   {
+    "hex": "#ad8649",
+    "share": 0.099,
+    "chroma": 0.092
+   },
+   {
+    "hex": "#9bcac2",
+    "share": 0.098,
+    "chroma": 0.051
+   },
+   {
+    "hex": "#7db12a",
+    "share": 0.096,
+    "chroma": 0.168
+   }
+  ]
+ },
+ "s6": {
+  "text": "A spaceship shoots asteroids in deep space",
+  "tones": [
+   {
+    "hex": "#322a31",
+    "share": 0.166,
+    "chroma": 0.017
+   },
+   {
+    "hex": "#dfbd86",
+    "share": 0.163,
+    "chroma": 0.082
+   },
+   {
+    "hex": "#f2da9b",
+    "share": 0.137,
+    "chroma": 0.084
+   },
+   {
+    "hex": "#d09b61",
+    "share": 0.131,
+    "chroma": 0.098
+   },
+   {
+    "hex": "#af7d56",
+    "share": 0.119,
+    "chroma": 0.083
+   },
+   {
+    "hex": "#875c42",
+    "share": 0.111,
+    "chroma": 0.069
+   },
+   {
+    "hex": "#633d30",
+    "share": 0.107,
+    "chroma": 0.058
+   },
+   {
+    "hex": "#3e5169",
+    "share": 0.066,
+    "chroma": 0.047
+   }
+  ]
+ },
+ "s7": {
+  "text": "Play mini golf in a candy land",
+  "tones": [
+   {
+    "hex": "#99b153",
+    "share": 0.192,
+    "chroma": 0.124
+   },
+   {
+    "hex": "#ecd48d",
+    "share": 0.167,
+    "chroma": 0.093
+   },
+   {
+    "hex": "#e2a36d",
+    "share": 0.136,
+    "chroma": 0.102
+   },
+   {
+    "hex": "#5a4638",
+    "share": 0.132,
+    "chroma": 0.035
+   },
+   {
+    "hex": "#965840",
+    "share": 0.127,
+    "chroma": 0.09
+   },
+   {
+    "hex": "#ba7d4e",
+    "share": 0.105,
+    "chroma": 0.098
+   },
+   {
+    "hex": "#5f7d39",
+    "share": 0.089,
+    "chroma": 0.102
+   },
+   {
+    "hex": "#b2a892",
+    "share": 0.052,
+    "chroma": 0.032
+   }
+  ]
+ },
+ "s8": {
+  "text": "Find the lost crown in an old castle",
+  "tones": [
+   {
+    "hex": "#6a503e",
+    "share": 0.19,
+    "chroma": 0.045
+   },
+   {
+    "hex": "#f6dfb3",
+    "share": 0.138,
+    "chroma": 0.062
+   },
+   {
+    "hex": "#484233",
+    "share": 0.131,
+    "chroma": 0.026
+   },
+   {
+    "hex": "#d2bd6e",
+    "share": 0.118,
+    "chroma": 0.102
+   },
+   {
+    "hex": "#c0925f",
+    "share": 0.109,
+    "chroma": 0.087
+   },
+   {
+    "hex": "#342d21",
+    "share": 0.109,
+    "chroma": 0.023
+   },
+   {
+    "hex": "#8e743f",
+    "share": 0.105,
+    "chroma": 0.078
+   },
+   {
+    "hex": "#a3a532",
+    "share": 0.1,
+    "chroma": 0.133
+   }
+  ]
+ },
+ "s9": {
+  "text": "A bird flies through a stormy city",
+  "tones": [
+   {
+    "hex": "#4f3929",
+    "share": 0.167,
+    "chroma": 0.04
+   },
+   {
+    "hex": "#312824",
+    "share": 0.132,
+    "chroma": 0.016
+   },
+   {
+    "hex": "#a7855f",
+    "share": 0.132,
+    "chroma": 0.068
+   },
+   {
+    "hex": "#efd396",
+    "share": 0.123,
+    "chroma": 0.085
+   },
+   {
+    "hex": "#d0a96d",
+    "share": 0.116,
+    "chroma": 0.09
+   },
+   {
+    "hex": "#797378",
+    "share": 0.113,
+    "chroma": 0.011
+   },
+   {
+    "hex": "#515361",
+    "share": 0.112,
+    "chroma": 0.023
+   },
+   {
+    "hex": "#7e562e",
+    "share": 0.104,
+    "chroma": 0.077
+   }
+  ]
+ },
+ "s10": {
+  "text": "A farmer catches falling apples in the orchard",
+  "tones": [
+   {
+    "hex": "#7c9441",
+    "share": 0.19,
+    "chroma": 0.113
+   },
+   {
+    "hex": "#87583d",
+    "share": 0.16,
+    "chroma": 0.074
+   },
+   {
+    "hex": "#a7ae4a",
+    "share": 0.146,
+    "chroma": 0.124
+   },
+   {
+    "hex": "#dab76b",
+    "share": 0.137,
+    "chroma": 0.103
+   },
+   {
+    "hex": "#c67945",
+    "share": 0.137,
+    "chroma": 0.117
+   },
+   {
+    "hex": "#4d6815",
+    "share": 0.109,
+    "chroma": 0.112
+   },
+   {
+    "hex": "#612c11",
+    "share": 0.069,
+    "chroma": 0.086
+   },
+   {
+    "hex": "#eddd9a",
+    "share": 0.053,
+    "chroma": 0.087
+   }
+  ]
+ },
+ "s11": {
+  "text": "A dog races a cat through a candy land",
+  "tones": [
+   {
+    "hex": "#b9714d",
+    "share": 0.186,
+    "chroma": 0.104
+   },
+   {
+    "hex": "#d19770",
+    "share": 0.177,
+    "chroma": 0.088
+   },
+   {
+    "hex": "#8d533e",
+    "share": 0.145,
+    "chroma": 0.084
+   },
+   {
+    "hex": "#e8d5aa",
+    "share": 0.123,
+    "chroma": 0.061
+   },
+   {
+    "hex": "#6b8436",
+    "share": 0.117,
+    "chroma": 0.109
+   },
+   {
+    "hex": "#aea93e",
+    "share": 0.1,
+    "chroma": 0.127
+   },
+   {
+    "hex": "#3b6120",
+    "share": 0.097,
+    "chroma": 0.103
+   },
+   {
+    "hex": "#48391f",
+    "share": 0.055,
+    "chroma": 0.046
+   }
+  ]
+ },
+ "s12": {
+  "text": "A penguin slides down an icy mountain",
+  "tones": [
+   {
+    "hex": "#f3e1bb",
+    "share": 0.187,
+    "chroma": 0.053
+   },
+   {
+    "hex": "#8a98ad",
+    "share": 0.171,
+    "chroma": 0.035
+   },
+   {
+    "hex": "#abb0bb",
+    "share": 0.167,
+    "chroma": 0.016
+   },
+   {
+    "hex": "#d3c6b3",
+    "share": 0.124,
+    "chroma": 0.03
+   },
+   {
+    "hex": "#1c3e23",
+    "share": 0.1,
+    "chroma": 0.062
+   },
+   {
+    "hex": "#31673a",
+    "share": 0.096,
+    "chroma": 0.093
+   },
+   {
+    "hex": "#707783",
+    "share": 0.094,
+    "chroma": 0.021
+   },
+   {
+    "hex": "#949261",
+    "share": 0.061,
+    "chroma": 0.067
+   }
+  ]
+ }
+}

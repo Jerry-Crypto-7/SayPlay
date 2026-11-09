@@ -11,9 +11,9 @@
  *   bod jede s kamerou po z a drží odstup od středu trati jako cíl na obzoru;
  * - `camera` – kamera jde za hrdinou po ploše (aréna, souboj, úkol, agar, bludiště):
  *   bod jede s kamerou do všech stran, ale z hrací plochy se vždy vysune za její kraj.
- * Rámující kusy jsou jen u pevné kamery (míč, střelnice, hod, věž, rytmus, ring):
- * v popředí by s jedoucí kamerou ujely z obrazu, nebo jako vezené klouzaly po zemi;
- * kraje obrazu u trati rámují řady kulis, které kolem ní ubíhají.
+ * Rámující kusy stojí u pevné kamery (míč, střelnice, hod, věž, rytmus, ring) a u kamery po trati
+ * (P77 T4): tam jako řada kopií po trati (`framingRow`), která rohy popředí ubíhá – jeden kus by
+ * ujel z obrazu, vezený by klouzal po zemi. Kamera za hrdinou po ploše (`camera`) je nemá.
  *
  * Bod ani kus se v obraze nepotká s ničím, co se hraje (P54B T15a): s kvádrem každého uzlu
  * sondy záběru (`userData.frame` = `hero` / `target` – hrdina, soupeř, nepřátelé, noty, věž)
@@ -32,7 +32,7 @@ import type { Look } from '@/play/arcade/look';
 
 import type { Box } from './ground';
 import { restCamera } from './intro';
-import { footOf, frameShare, type HeroBox, IN_VIEW_SHARE, keepOff, type Placed, placeFraming, placeLandmark, type ScreenRect, screenRect, type Volume } from './landmark-places';
+import { footOf, FRAMING_COPIES, FRAMING_PERIOD_M, frameShare, framingRow, type HeroBox, IN_VIEW_SHARE, keepOff, type Placed, placeFraming, placeLandmark, placeTrackFraming, type ScreenRect, screenRect, type Volume } from './landmark-places';
 import { isInk } from './rig/InkOutline';
 import { SceneryModelProp } from './Scenery';
 
@@ -57,6 +57,8 @@ interface Placement {
   readonly framing: readonly Placed[];
   /** Herní kamera (x, z), podle které se místo spočítalo – bod jede o tolik, o kolik se pohnula. */
   readonly eye: readonly [number, number];
+  /** Kam kamera po trati jede (±z) – směr, ve kterém přibývají kopie rámujících kusů. */
+  readonly dir: 1 | -1;
 }
 
 /** Hrdina bez načteného modelu: pata, poloměr a výška náhradního kvádru (m). */
@@ -195,11 +197,11 @@ function heroCover(scene: Object3D, camera: PerspectiveCamera, own: readonly Obj
 }
 
 /** Kus ve scéně: pata, natočení a měřítko kolem modelu katalogu. */
-function Piece({ placed, register, mark }: { readonly placed: Placed; readonly register: (group: Group | null) => void; readonly mark: Record<string, string> }) {
+function Piece({ placed, register, mark, palette }: { readonly placed: Placed; readonly register: (group: Group | null) => void; readonly mark: Record<string, string>; readonly palette: readonly string[] }) {
   return (
     <group ref={register} position={[placed.x, placed.y, placed.z]} userData={mark}>
       <group rotation={[0, placed.turn, 0]} scale={placed.scale}>
-        <SceneryModelProp id={placed.id} cast={false} />
+        <SceneryModelProp id={placed.id} cast={false} palette={palette} />
       </group>
     </group>
   );
@@ -216,6 +218,10 @@ export function Landmark({ look, seed, area, follow, bend, ground, play }: Landm
   const waited = useRef(0);
   const landmark = useRef<Group | null>(null);
   const framing = useRef<(Group | null)[]>([]);
+  // Kolik roztečí `FRAMING_PERIOD_M` kamera po trati ujela: posune řadu rámujících kopií.
+  const [step, setStep] = useState(0);
+  // Telefon (hrubý ukazatel, jako `Vegetation`): žádná řada po trati (`FRAMING_COPIES`). Pevně při startu.
+  const copies = useMemo(() => (window.matchMedia('(pointer: coarse)').matches ? FRAMING_COPIES.phone : FRAMING_COPIES.desktop), []);
 
   // Nová sada, semínko, plocha nebo velikost obrazu = nové místo. Plochu scény často staví každý snímek znovu: klíčem je její obsah.
   const areaKey = JSON.stringify(area);
@@ -223,6 +229,7 @@ export function Landmark({ look, seed, area, follow, bend, ground, play }: Landm
   useEffect(() => {
     waited.current = 0;
     setPlacement(null);
+    setStep(0);
   }, [look, seed, areaKey, playKey, follow, bend, ground, width, height]);
 
   useFrame(() => {
@@ -235,13 +242,19 @@ export function Landmark({ look, seed, area, follow, bend, ground, play }: Landm
       restCamera(camera, rest);
       const hero = heroBoxOf(heroNodeOf(scene));
       const input = { camera: rest, look, seed, area, hero, play: [...(play ?? []), ...targetsOf(scene)], ground };
-      setPlacement({ landmark: placeLandmark(input), framing: follow === undefined ? placeFraming(input) : [], eye: [rest.position.x, rest.position.z] });
+      const dir = rest.getWorldDirection(new Vector3()).z < 0 ? -1 : 1;
+      setPlacement({ landmark: placeLandmark(input), framing: follow === 'camera' || (follow === 'track' && copies === 0) ? [] : follow === 'track' ? placeTrackFraming(input) : placeFraming(input), eye: [rest.position.x, rest.position.z], dir });
       return;
+    }
+    if (follow === undefined) return;
+    restCamera(camera, rest);
+    if (follow === 'track' && placement.framing.length > 0) {
+      const next = Math.floor((placement.dir * (rest.position.z - placement.eye[1])) / FRAMING_PERIOD_M);
+      if (next !== step) setStep(next);
     }
     const lead = placement.landmark;
     const group = landmark.current;
-    if (follow === undefined || lead === null || group === null) return;
-    restCamera(camera, rest);
+    if (lead === null || group === null) return;
     let z = lead.z + rest.position.z - placement.eye[1];
     let x: number;
     if (follow === 'track') {
@@ -264,10 +277,17 @@ export function Landmark({ look, seed, area, follow, bend, ground, play }: Landm
   if (placement === null) return null;
   return (
     <>
-      {placement.landmark !== null && <Piece placed={placement.landmark} register={(group) => { landmark.current = group; }} mark={{ landmark: placement.landmark.id }} />}
-      {placement.framing.map((placed, index) => (
-        <Piece key={index} placed={placed} register={(group) => { framing.current[index] = group; }} mark={{ framing: placed.id }} />
-      ))}
+      {placement.landmark !== null && <Piece placed={placement.landmark} register={(group) => { landmark.current = group; }} mark={{ landmark: placement.landmark.id }} palette={look.palette} />}
+      {placement.framing.map((placed, index) =>
+        follow === 'track' ? (
+          // Klíč = pořadí kopie po trati: kopie, které zůstanou, se při posunu řady nepřestaví.
+          framingRow(placed, step * FRAMING_PERIOD_M, placement.dir, copies, bend, ground).map((copy, j) => (
+            <Piece key={`${index}:${step + j}`} placed={copy} register={j === 0 ? (group) => { framing.current[index] = group; } : () => {}} mark={{ framing: placed.id }} palette={look.palette} />
+          ))
+        ) : (
+          <Piece key={index} placed={placed} register={(group) => { framing.current[index] = group; }} mark={{ framing: placed.id }} palette={look.palette} />
+        ),
+      )}
     </>
   );
 }

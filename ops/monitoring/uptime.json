@@ -11,11 +11,13 @@
     "destination": "https://github.com/Jerry-Crypto-7/Hackathon/issues"
   },
   "external": {
-    "service": "UptimeRobot",
-    "intervalMin": 5,
+    "service": "GitHub Actions scheduled workflow .github/workflows/health-probe.yml",
+    "intervalMin": 10,
     "targets": [
       "https://worldstream-sigma.vercel.app",
-      "https://worldstream-sigma.vercel.app/api/health"
+      "https://worldstream-sigma.vercel.app/api/health",
+      "https://worldstream-sigma.vercel.app/play",
+      "https://worldstream-sigma.vercel.app/api/build-id"
     ]
   },
   "heartbeatPath": "ops/monitoring/heartbeat.jsonl"

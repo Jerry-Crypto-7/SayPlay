@@ -1,0 +1,6 @@
+# Reviewed gitleaks findings – test fixtures, not credentials (evals/play/p78/prepublish.md).
+# A key the test creates itself and passes to the app under test (create_app(KEY, FakeGenerator)).
+77c0a132e167555aeda65cd52fbe47fd9db27458:ops/env/tests/test_server.py:generic-api-key:18
+# A fake key shape and a fake example-domain URL for the secret-detector test; gone from HEAD.
+f1c7e62e5b25bcc3a4f1b9a1f79edb07aa5950d3:evals/worldstream/__tests__/measure-create.test.ts:generic-api-key:917
+c8a79b3909207c3e66f90625ddc663c8da6cf8bf:evals/worldstream/__tests__/measure-create.test.ts:generic-api-key:678

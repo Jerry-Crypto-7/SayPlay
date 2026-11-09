@@ -260,11 +260,18 @@ const TITLE_SKIP = new Set([
   'that', 'who', 'please',
 ]);
 
+/**
+ * Slova věty pro titul a téma hlášky: písmena všech abeced. S `[^a-z]` (do P78) se česká věta rozpadla na kusy
+ * („kočka skáče“ → „Ko Ka Sk E“) a japonská zmizela celá (nepřátelské věty P78 T1, `evals/play/p78/hostile.md`).
+ */
+const NOT_WORD = /[^\p{L}\p{M}\p{N} ]/gu;
+
 /** Do čtyř nosných slov věty; bez nich titul fixtury. */
 function titleFrom(sentence: string, fallback: string): string {
   const words = sentence
+    .normalize('NFC')
     .toLowerCase()
-    .replace(/[^a-z0-9 ]/g, ' ')
+    .replace(NOT_WORD, ' ')
     .split(/\s+/)
     .filter((word) => word !== '' && !TITLE_SKIP.has(word))
     .slice(0, 4);
@@ -987,6 +994,16 @@ const RESKIN = /\bbut with\s+(.+)/;
 const SUBJECT = /^(?:(?:a|an|the) ([a-z]+(?: [a-z]+)?)|([a-z]+ [a-z]*[a-rt-z]s|[a-z]*[a-rt-z]s)) [a-z]+ing\b/;
 
 /**
+ * Člen, ukazovací nebo přivlastňovací slovo hrdinou není: „those cats chasing mice“ dal hrdinu „those“, „this fucking
+ * duck“ hrdinu „thi“ a hláška psala „The those isn't here yet“ (nepřátelské věty P78 T1).
+ */
+const DETERMINER = /^(?:the|a|an|this|that|these|those|his|her|its|their|our|your|my|some|any|every|all)$/;
+function withoutDeterminers(phrase: string): string | null {
+  const words = phrase.split(' ').filter((word) => !DETERMINER.test(word));
+  return words.length === 0 ? null : words.join(' ');
+}
+
+/**
  * Podstatná jména věty pro role arkády (P28D T2), když je `readRoles` nenašel:
  * co hráč sbírá („grabbing sausages“), čemu se vyhýbá („jumping over
  * sprinklers“, „running from a monkey“), převlek žánru („angry birds but with
@@ -997,7 +1014,7 @@ function sentenceNouns(sentence: string): { hero: string | null; pickup: string 
   const reskin = RESKIN.exec(text)?.[1];
   const second = reskin === undefined ? null : nounAfter(/\band\s+(.+)/.exec(reskin)?.[1]);
   const subject = SUBJECT.exec(text);
-  const said = subject === null ? null : (subject[1] ?? subject[2])!;
+  const said = subject === null ? null : withoutDeterminers((subject[1] ?? subject[2])!);
   const hero = nounAfter(reskin) ?? (said === null || /ing\b/.test(said) || TITLE_SKIP.has(said.split(' ')[0]!) ? null : singular(said));
   return { hero, pickup: nounAfter(PICKUP.exec(text)?.[1]), avoid: nounAfter(AVOID.exec(text)?.[1]), second };
 }
@@ -1109,7 +1126,7 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick, topic:
 
 /** Nejdelší podstatné jméno věty (P28D T4); při shodě délky slovo, které scéna umí nakreslit. První slovo je sloveso nebo podmět. */
 function topicNoun(text: string): string | null {
-  const words = text.replace(/[^a-z ]/g, ' ').split(/\s+/).filter((word) => word !== '').slice(1);
+  const words = text.normalize('NFC').replace(NOT_WORD, ' ').replace(/\p{N}/gu, ' ').split(/\s+/).filter((word) => word !== '').slice(1);
   const nouns = words.filter((word) => word.length >= 3 && !TITLE_SKIP.has(word) && !TITLE_TAIL.has(word) && !/(?:ing|ed|ly|ful|ous|ive|tic)$/.test(word));
   const drawn = (word: string): number => (modelOf(word, true) === undefined ? 0 : 1);
   return [...nouns].sort((a, b) => b.length - a.length || drawn(b) - drawn(a))[0] ?? null;
@@ -1246,7 +1263,7 @@ function draftGenre(
   // Absurdní přenos (P37A T5): věta bez herního slovesa má hrdinu ze seznamů přenosu, nebo podmět se slovesem na -ing
   // („purple elephants doing taxes“) – „long queue“ ani „hour“ hrdina není.
   const noVerb = twist !== null && choice.score === 0;
-  const wordsHero = noVerb
+  const heroWord = noVerb
     ? (twist.hero ?? nouns.hero)
     : (cleanLabel(fill.hero) ??
       pair ??
@@ -1257,6 +1274,8 @@ function draftGenre(
       topicHero ??
       // Ve sporu je blízký soupeř („argue with my wife“), ne hrdina.
       (fight ? null : (twist?.hero ?? null)));
+  // Nesmyslná věta („the the the“) dala přenosu hrdinu „the“ – člen hrdinou není, hraje hrdina světa.
+  const wordsHero = heroWord === null || DETERMINER.test(heroWord) ? null : heroWord;
   // P56A T6: hrdina slov, kterého čtení má za protivníka, věc nebo místo, ustoupí podmětu čtení; bez něj hrdina světa.
   const heroSaid = reading === null || wordsHero === null || heroFitsReading(wordsHero, reading, sentence) ? wordsHero : readingHero(reading);
   const catcher = CATCH_BEFORE.exec(text)?.[1];

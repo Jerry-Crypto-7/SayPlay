@@ -1,0 +1,13 @@
+{
+  "a": "http://127.0.0.1:3207",
+  "b": "http://127.0.0.1:3208",
+  "labelA": "main cecccbe1 (odbočení P77, před T2)",
+  "labelB": "P77 po T5 (bb449a96)",
+  "sentences": ["An underwater race between a turtle and a shark"],
+  "profiles": ["pixel7-cpu4"],
+  "runs": 3,
+  "pauseMs": 5000,
+  "timeoutMs": 120000,
+  "rawDir": "D:/tmp/p77-t5-raw-race",
+  "out": "evals/play/p77/perf-first-playable-race.json"
+}

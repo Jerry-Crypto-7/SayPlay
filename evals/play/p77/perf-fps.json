@@ -1,0 +1,536 @@
+{
+ "profile": "Pixel 7 UA/DPR, 390x844, CPU 4x, ANGLE d3d11, OpenXR off",
+ "a": "http://127.0.0.1:3207",
+ "b": "http://127.0.0.1:3208",
+ "repeats": 4,
+ "windowMs": 10000,
+ "gate": {
+  "fpsMin": 40,
+  "p95MaxMs": 33.3
+ },
+ "measuredAt": "2026-11-09T12:46:04.568Z",
+ "complete": true,
+ "pass": false,
+ "rows": [
+  {
+   "id": "s3",
+   "text": "A cat delivering pizzas across rooftops while avoiding seagulls",
+   "A": {
+    "fpsMedian": 46,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 46.9,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 94
+     },
+     {
+      "fps": 44.3,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 95
+     },
+     {
+      "fps": 51,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 55
+     },
+     {
+      "fps": 45.1,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 91
+     }
+    ]
+   },
+   "B": {
+    "fpsMedian": 49.1,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 53.3,
+      "p95Ms": 33.3,
+      "quality": "medium",
+      "calls": 93
+     },
+     {
+      "fps": 50.1,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 59
+     },
+     {
+      "fps": 48.1,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 93
+     },
+     {
+      "fps": 44.3,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 59
+     }
+    ]
+   },
+   "passB": false
+  },
+  {
+   "id": "s8",
+   "text": "Find the lost crown in an old castle",
+   "A": {
+    "fpsMedian": 40.9,
+    "p95MedianMs": 50,
+    "runs": [
+     {
+      "fps": 42.2,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 51
+     },
+     {
+      "fps": 42.8,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 48
+     },
+     {
+      "fps": 39.6,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 48
+     },
+     {
+      "fps": 37.7,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 48
+     }
+    ]
+   },
+   "B": {
+    "fpsMedian": 39.8,
+    "p95MedianMs": 50,
+    "runs": [
+     {
+      "fps": 38.2,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 50
+     },
+     {
+      "fps": 41.1,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 50
+     },
+     {
+      "fps": 42.5,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 50
+     },
+     {
+      "fps": 38.5,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 50
+     }
+    ]
+   },
+   "passB": false
+  },
+  {
+   "id": "s2",
+   "text": "An underwater race between a turtle and a shark",
+   "A": {
+    "fpsMedian": 43.4,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 39.9,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 65
+     },
+     {
+      "fps": 46.2,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 66
+     },
+     {
+      "fps": 47.5,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 108
+     },
+     {
+      "fps": 40.6,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 65
+     }
+    ]
+   },
+   "B": {
+    "fpsMedian": 34.5,
+    "p95MedianMs": 50,
+    "runs": [
+     {
+      "fps": 35.6,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 73
+     },
+     {
+      "fps": 36.9,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 73
+     },
+     {
+      "fps": 28.9,
+      "p95Ms": 50.1,
+      "quality": "low",
+      "calls": 75
+     },
+     {
+      "fps": 33.3,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 75
+     }
+    ]
+   },
+   "passB": false
+  },
+  {
+   "id": "s4",
+   "text": "Balance a tower of pancakes on a windy day",
+   "A": {
+    "fpsMedian": 55,
+    "p95MedianMs": 33.3,
+    "runs": [
+     {
+      "fps": 53.8,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 67
+     },
+     {
+      "fps": 51.2,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 67
+     },
+     {
+      "fps": 56.2,
+      "p95Ms": 33.3,
+      "quality": "medium",
+      "calls": 67
+     },
+     {
+      "fps": 58,
+      "p95Ms": 16.8,
+      "quality": "medium",
+      "calls": 67
+     }
+    ]
+   },
+   "B": {
+    "fpsMedian": 52.8,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 54.4,
+      "p95Ms": 33.3,
+      "quality": "medium",
+      "calls": 65
+     },
+     {
+      "fps": 51.4,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 65
+     },
+     {
+      "fps": 51.6,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 65
+     },
+     {
+      "fps": 54,
+      "p95Ms": 33.3,
+      "quality": "medium",
+      "calls": 65
+     }
+    ]
+   },
+   "passB": false
+  },
+  {
+   "id": "s7",
+   "text": "Play mini golf in a candy land",
+   "A": {
+    "fpsMedian": 50.9,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 55.7,
+      "p95Ms": 33.2,
+      "quality": "medium",
+      "calls": 66
+     },
+     {
+      "fps": 48.6,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 66
+     },
+     {
+      "fps": 52.6,
+      "p95Ms": 33.3,
+      "quality": "medium",
+      "calls": 66
+     },
+     {
+      "fps": 49.3,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 66
+     }
+    ]
+   },
+   "B": {
+    "fpsMedian": 48.7,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 46.7,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 35
+     },
+     {
+      "fps": 52.9,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 67
+     },
+     {
+      "fps": 38.8,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 35
+     },
+     {
+      "fps": 50.7,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 67
+     }
+    ]
+   },
+   "passB": false
+  },
+  {
+   "id": "s10",
+   "text": "A farmer catches falling apples in the orchard",
+   "A": {
+    "fpsMedian": 51.8,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 49.8,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 49
+     },
+     {
+      "fps": 51.5,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 49
+     },
+     {
+      "fps": 52,
+      "p95Ms": 33.3,
+      "quality": "medium",
+      "calls": 49
+     },
+     {
+      "fps": 56.9,
+      "p95Ms": 33.3,
+      "quality": "medium",
+      "calls": 49
+     }
+    ]
+   },
+   "B": {
+    "fpsMedian": 54.6,
+    "p95MedianMs": 33.3,
+    "runs": [
+     {
+      "fps": 54.4,
+      "p95Ms": 33.3,
+      "quality": "medium",
+      "calls": 49
+     },
+     {
+      "fps": 54.8,
+      "p95Ms": 33.3,
+      "quality": "medium",
+      "calls": 49
+     },
+     {
+      "fps": 55,
+      "p95Ms": 33.3,
+      "quality": "medium",
+      "calls": 49
+     },
+     {
+      "fps": 48.8,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 49
+     }
+    ]
+   },
+   "passB": true
+  },
+  {
+   "id": "s1",
+   "text": "Escape a volcano before the lava reaches you",
+   "A": {
+    "fpsMedian": 37.8,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 39.9,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 58
+     },
+     {
+      "fps": 37.6,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 58
+     },
+     {
+      "fps": 38.1,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 61
+     },
+     {
+      "fps": 21.4,
+      "p95Ms": 100,
+      "quality": "low",
+      "calls": 58
+     }
+    ]
+   },
+   "B": {
+    "fpsMedian": 35.2,
+    "p95MedianMs": 50,
+    "runs": [
+     {
+      "fps": 35.7,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 65
+     },
+     {
+      "fps": 36.1,
+      "p95Ms": 33.5,
+      "quality": "low",
+      "calls": 62
+     },
+     {
+      "fps": 34.8,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 65
+     },
+     {
+      "fps": 32,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 62
+     }
+    ]
+   },
+   "passB": false
+  },
+  {
+   "id": "s5",
+   "text": "A knight jumps across floating islands to rescue a dragon egg",
+   "A": {
+    "fpsMedian": 17.9,
+    "p95MedianMs": 141.6,
+    "runs": [
+     {
+      "fps": 22.1,
+      "p95Ms": 116.6,
+      "quality": "low",
+      "calls": 45
+     },
+     {
+      "fps": 18.5,
+      "p95Ms": 133.3,
+      "quality": "low",
+      "calls": 45
+     },
+     {
+      "fps": 0.2,
+      "p95Ms": 866.6,
+      "quality": "low",
+      "calls": 33
+     },
+     {
+      "fps": 17.3,
+      "p95Ms": 150,
+      "quality": "low",
+      "calls": 43
+     }
+    ]
+   },
+   "B": {
+    "fpsMedian": 19,
+    "p95MedianMs": 150.1,
+    "runs": [
+     {
+      "fps": 23.1,
+      "p95Ms": 100.1,
+      "quality": "low",
+      "calls": 47
+     },
+     {
+      "fps": 14.8,
+      "p95Ms": 200,
+      "quality": "low",
+      "calls": 46
+     },
+     {
+      "fps": 23.3,
+      "p95Ms": 100.1,
+      "quality": "low",
+      "calls": 46
+     },
+     {
+      "fps": 5.2,
+      "p95Ms": 216.8,
+      "quality": "low",
+      "calls": 41
+     }
+    ]
+   },
+   "passB": false
+  }
+ ]
+}
