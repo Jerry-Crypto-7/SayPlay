@@ -79,8 +79,8 @@ export function groundPalette(look: Look, base: string = look.ground): GroundPal
     base,
     light: mix(base, look.sunColor, 0.12),
     patch: PATCH[look.cover](base, look),
-    // Štěrk u silnice a dlažby, jinde zem vyšlapaná do barvy cesty.
-    verge: look.surface === 'asphalt' || look.surface === 'paving' ? mix('#a39a8c', base, 0.25) : mix(base, road.color, 0.4),
+    // Zem vyšlapaná do barvy cesty a tmavší – kraj cesty a arény jako obrys (P81 T4), ne krémový štěrk.
+    verge: mix(mix(base, road.color, 0.35), '#1c1917', 0.3),
     far: mix(mix(base, look.light[1], 0.5), '#000000', 0.3),
   };
 }

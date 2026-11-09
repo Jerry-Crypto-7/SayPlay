@@ -6,8 +6,12 @@
  * postaví `Scenery` po stranách od `sceneryInner` (jako dnes `ArenaScene`).
  *
  * Celá podlaha leží v y = 0, na zemi jádra (`playableGround`): hráč ani věci
- * nevisí, ani se neboří. Vzor nese barva trojúhelníků, ne výška. Stěny stojí až
+ * nevisí, ani se neboří. Vzor nese barva vrcholů, ne výška. Stěny stojí až
  * za hranou a jádro o nich neví – hranou arény je hrana jádra, ne tahle síť.
+ *
+ * P81 T4 (blíž předloze `evals/play/p75/target/`): venku žádná dlažba ani mozaika – hradní nádvoří (pod nebem,
+ * zem místa), tráva, skála, písek i led mají barvu ve vrcholech s velkými měkkými skvrnami, k okraji tmavší;
+ * tráva, písek a sníh mají za hranou místo kvádrů oblý val. Dlaždice zůstaly jen halám.
  *
  * Bez indexů, flat shading, barvy ve vrcholech z palety sady. Čistá funkce
  * vstupu: žádná náhoda, tatáž aréna vypadá pokaždé stejně.
@@ -22,7 +26,7 @@ import { type BufferGeometry, Color } from 'three';
 import { type Cover, type InteriorFloor, type Look, SURFACES } from '@/play/arcade/look';
 import { LOOK_STYLE } from '@/play/arcade/look/style';
 
-import { buildPodium, groundPainter, groundPalette } from '../../ground';
+import { buildPodium, groundPainter, groundPalette, smooth } from '../../ground';
 import { Faces, type Vertex, capOf } from './islands';
 import { hash, mix, noise } from './valley';
 
@@ -116,9 +120,10 @@ function rect(faces: Faces, x0: number, z0: number, x1: number, z1: number, colo
 
 /**
  * Rovná mřížka v y = 0 s posunutými vnitřními vrcholy (okraj zůstává rovný,
- * sousední plochy na sebe navazují). `paint` dostane střed trojúhelníku a jeho pořadí.
+ * sousední plochy na sebe navazují). `paint` barví každý vrchol podle jeho polohy (P81 T4):
+ * barva plyne přes plochy, žádná mozaika trojúhelníků.
  */
-function grid(faces: Faces, x0: number, z0: number, x1: number, z1: number, cell: number, seed: number, paint: (x: number, z: number, index: number) => Color): void {
+function grid(faces: Faces, x0: number, z0: number, x1: number, z1: number, cell: number, seed: number, paint: (x: number, z: number) => Color): void {
   const columns = Math.max(1, Math.round((x1 - x0) / cell));
   const rows = Math.max(1, Math.round((z1 - z0) / cell));
   const [cx, cz] = [(x1 - x0) / columns, (z1 - z0) / rows];
@@ -130,11 +135,7 @@ function grid(faces: Faces, x0: number, z0: number, x1: number, z1: number, cell
       z0 + row * cz + (inner ? (hash(column, seed + row) - 0.5) * 0.6 * cz : 0),
     ];
   };
-  let index = 0;
-  const tri = (a: Vertex, b: Vertex, c: Vertex): void => {
-    faces.tri(a, b, c, paint((a[0] + b[0] + c[0]) / 3, (a[2] + b[2] + c[2]) / 3, index));
-    index += 1;
-  };
+  const tri = (a: Vertex, b: Vertex, c: Vertex): void => faces.triPainted(a, b, c, ([x, , z]) => paint(x, z));
   for (let row = 0; row < rows; row += 1) {
     for (let column = 0; column < columns; column += 1) {
       const [a, b, c, d] = [at(column, row), at(column + 1, row), at(column + 1, row + 1), at(column, row + 1)];
@@ -170,6 +171,55 @@ function paving(faces: Faces, half: number, stone: Color, seam: Color, face: Col
       if (tone < 0.08) face.lerp(seam, 0.35);
       rect(faces, Math.max(-half, x0), z0, Math.min(half, edge), top, face);
       if (x1 < half) rect(faces, x1 - gap, z0, x1, top, seam);
+    }
+  }
+}
+
+/** Val za hranou místo prstence kvádrů (P81 T4): šířka napříč a nejvyšší výška (m), kroky napříč a délka kroku podél. */
+const MOUND_WIDTH = 2.2;
+const MOUND_HEIGHT = 1.1;
+const MOUND_STEPS = 8;
+const MOUND_STEP_M = 1;
+/** Kryty s valem: tráva, písek (duna) a sníh (závěj). Hrad si nechá hradby, skála balvany. */
+const MOUNDED: ReadonlySet<Cover> = new Set(['grass', 'sand', 'snow']);
+
+/** Výška valu nad bodem napříč `u` (0 = od arény, 1 = ke kulisám) a podél `t` (m): oblý hřbet, kraje v y = 0. */
+function moundHeight(u: number, t: number, salt: number): number {
+  const swell = 0.6 + 0.8 * noise(t * 0.3 + salt, salt * 0.7 + 1.3);
+  return MOUND_HEIGHT * swell * Math.sin(Math.PI * Math.min(1, Math.max(0, u)));
+}
+
+/**
+ * Čtyři valy kolem arény od `inner` (kraj mezery s výzdobou) o `MOUND_WIDTH` ven. Podél sahají přes roh,
+ * ať se v rozích potkají. Kraje valu leží v y = 0, do mezery ani na kulisy nesahá.
+ */
+function mounds(faces: Faces, inner: number, paint: (vertex: Vertex, rise: number) => Color): void {
+  const reach = inner + MOUND_WIDTH;
+  const length = Math.ceil((2 * reach) / MOUND_STEP_M);
+  let salt = 0;
+  for (const [sign, along] of [[1, true], [-1, true], [1, false], [-1, false]] as const) {
+    salt += 7;
+    const at = (i: number, j: number): Vertex => {
+      const t = -reach + (2 * reach * i) / length;
+      const u = j / MOUND_STEPS;
+      const across = sign * (inner + u * MOUND_WIDTH);
+      const y = j === 0 || j === MOUND_STEPS ? 0 : moundHeight(u, t, salt);
+      return along ? [t, y, across] : [across, y, t];
+    };
+    // Pořadí vrcholů s normálou nahoru: podél x a ven +z (nebo podél z a ven −x) je opačné než ostatní dvě strany.
+    const flip = along === sign > 0;
+    for (let i = 0; i < length; i += 1) {
+      for (let j = 0; j < MOUND_STEPS; j += 1) {
+        const [a, b, c, d] = [at(i, j), at(i + 1, j), at(i + 1, j + 1), at(i, j + 1)];
+        const color = (vertex: Vertex) => paint(vertex, vertex[1] / MOUND_HEIGHT);
+        if (flip) {
+          faces.triPainted(a, d, b, color);
+          faces.triPainted(b, d, c, color);
+        } else {
+          faces.triPainted(a, b, d, color);
+          faces.triPainted(b, c, d, color);
+        }
+      }
     }
   }
 }
@@ -227,38 +277,41 @@ export function buildArenaFloor({ look, half }: ArenaFloorOptions): ArenaFloor {
   const shade = (color: Color, scale: number): Color => face.copy(color).multiplyScalar(scale);
   // Souš s odstíny a skvrnami (P46G T3); za hranou krajnice u stěn a do dálky tmavne.
   const earth = groundPainter(groundPalette(look, palette.land));
+  // Velké měkké světlé a tmavé skvrny přes celou plochu a k okraji arény tmavší – zvlnění bez geometrie (P81 T4).
+  const soft = (x: number, z: number, color: Color): Color => {
+    const wash = 0.9 + 0.2 * noise(x * 0.07 + 13, z * 0.07 - 7);
+    const rim = Math.max(Math.abs(x), Math.abs(z)) / half;
+    return color.multiplyScalar(wash * (1 - 0.14 * smooth((rim - 0.55) / 0.45)));
+  };
 
   // --- Podlaha ---
   const ground = new Faces();
   // Podlaha interiéru sahá pod stěnu z kulis; zem sady začíná až za ní.
   const inside = look.interior === undefined ? half : half + INTERIOR_UNDER;
-  if (look.interior !== undefined) paving(ground, inside, floor, seam, face, INTERIOR_LAYOUTS[look.interior.floor]);
-  else if (look.cover === 'paving') paving(ground, half, floor, seam, face, CASTLE_PAVING);
+  // Hradní nádvoří (`stone`, P81 T4) je pod otevřeným nebem: zem místa jako venku (předloha s4 – měkká tráva),
+  // žádná mřížka dlaždic a spár. Dlaždice zůstávají halám.
+  if (look.interior !== undefined && look.interior.floor !== 'stone') paving(ground, inside, floor, seam, face, INTERIOR_LAYOUTS[look.interior.floor]);
   else {
     const cell = look.cover === 'snow' ? 2.4 : 1.6;
-    grid(ground, -half, -half, half, half, cell, 11, (x, z, index) => {
-      const tone = 0.93 + 0.1 * hash(index, 3);
+    grid(ground, -inside, -inside, inside, inside, cell, 11, (x, z) => {
       if (look.cover === 'snow') {
-        // Ledové kry dvou odstínů, bílé praskliny a u hrany závěj sněhu.
-        shade(floor, tone);
-        if (noise(x * 0.12 + 3, z * 0.12) > 0.62) face.lerp(seam, 0.4);
-        if (hash(index, 7) < 0.03) face.copy(seam);
+        // Ledové kry dvou odstínů a u hrany závěj sněhu.
+        face.copy(floor).lerp(seam, 0.4 * smooth((noise(x * 0.12 + 3, z * 0.12) - 0.55) / 0.15));
         const edge = half - Math.max(Math.abs(x), Math.abs(z));
-        return edge < 1.6 ? face.lerp(land, 1 - edge / 1.6) : face;
+        return soft(x, z, edge < 1.6 ? face.lerp(land, 1 - edge / 1.6) : face);
       }
       if (look.cover === 'sand') {
-        // Čeřiny: pruhy napříč, zvlněné šumem. Kresbu země písek nedostane – čeřiny by v ní zanikly.
+        // Čeřiny: měkké pruhy napříč, zvlněné šumem. Kresbu země písek nedostane – čeřiny by v ní zanikly.
         const ripple = Math.sin(x * 1.1 + z * 0.4 + noise(x * 0.08, z * 0.08) * 7);
-        return ripple > 0.75 ? shade(seam, tone) : shade(floor, ripple < -0.75 ? tone * 0.93 : tone);
+        return soft(x, z, face.copy(floor).lerp(seam, smooth((ripple - 0.4) / 0.5)).multiplyScalar(1 - 0.07 * smooth((-ripple - 0.4) / 0.5)));
       }
-      // Tráva a skála: odstíny a skvrny země sady (P46G T3), u skály i praskliny.
-      if (look.cover === 'rock' && hash(index, 7) < 0.05) return shade(seam, 1);
-      return earth(x, z, null, face).multiplyScalar(tone);
+      // Tráva, skála i dlažba venku: odstíny a skvrny země sady (P46G T3).
+      return soft(x, z, earth(x, z, null, face));
     });
   }
   // Zem za hranou: čtyři pásy kolem hrací plochy, hrubší mřížka; krajnice se měří od hrany arény (interiér od kraje podlahy).
   const outer = half + BEYOND;
-  const paintLand = (x: number, z: number, index: number): Color => earth(x, z, Math.max(Math.abs(x), Math.abs(z)) - inside, face).multiplyScalar(0.96 + 0.06 * hash(index, 13));
+  const paintLand = (x: number, z: number): Color => earth(x, z, Math.max(Math.abs(x), Math.abs(z)) - inside, face);
   grid(ground, -outer, inside, outer, outer, 3, 21, paintLand);
   grid(ground, -outer, -outer, outer, -inside, 3, 22, paintLand);
   grid(ground, -outer, -inside, -inside, inside, 3, 23, paintLand);
@@ -267,7 +320,10 @@ export function buildArenaFloor({ look, half }: ArenaFloorOptions): ArenaFloor {
   // --- Stěny ---
   const walls = new Faces();
   const inner = half + ARENA_WALL_GAP;
-  if (look.interior === undefined) {
+  if (look.interior === undefined && MOUNDED.has(look.cover)) {
+    // Oblý val ze země za hranou, nahoře do světla (P81 T4): místo kvádrů jako kopečky předlohy.
+    mounds(walls, inner, ([x, , z], rise) => earth(x, z, Math.max(Math.abs(x), Math.abs(z)) - half, face).multiplyScalar(0.94 + 0.14 * rise));
+  } else if (look.interior === undefined) {
     const middle = inner + WALL_DEPTH / 2;
     const castle = look.cover === 'paving';
     const rough = castle ? 0.015 : 0.14;

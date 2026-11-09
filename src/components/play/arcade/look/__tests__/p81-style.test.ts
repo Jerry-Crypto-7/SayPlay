@@ -17,6 +17,7 @@ import { isPurple } from '../../../../../../scripts/assets/cc0/palette.mjs';
 import { INK_PX, INK_SURFACE } from '../rig/InkOutline';
 import { airOf, BACK_LIGHT, BACK_SKY, FOG_SATURATION, FOG_START, FOG_STORM_START, GOLDEN_SUN, GOLDEN_UP, GOLDEN_WARMTH, HEMI_LIFT, SHADOW_INTENSITY, SHADOW_RADIUS, SUN_LIFT } from '../rig/fog-light';
 import { GRADES, LOW_CONTRAST } from '../rig/grade';
+import { arenaPalette, buildArenaFloor } from '../rig/terrain/arenaFloor';
 
 describe('profil „dnes“ = konstanty před P81', () => {
   it('světlo, stín a protisvětlo', () => {
@@ -191,4 +192,43 @@ describe('P81 T3: směr mix', () => {
       }
     },
   );
+});
+
+/**
+ * T4 – podlaha arény blíž předloze, hratelnost beze změny: hrdina nesmí levitovat ani se bořit, takže hrací plocha
+ * leží celá v y = 0 a val ani stěna nad ni nesahá; podlaha je velká jako na `main` (±(půl + 50 m)).
+ */
+describe('P81 T4: podlaha arény a terén', () => {
+  const HALF = 20;
+  const outdoor = LOOK_IDS.filter((id) => LOOKS[id].interior === undefined);
+
+  it.each(outdoor)('%s: hrací plocha v y = 0, val ani stěna do ní nesahá, rozměr jako dřív', (id) => {
+    const arena = buildArenaFloor({ look: sceneLook({ setting: SETTING[id], mood: '', look: id }), half: HALF });
+    const floor = arena.floor.getAttribute('position');
+    let [low, high] = [Infinity, -Infinity];
+    for (let i = 0; i < floor.count; i += 1) {
+      expect(floor.getY(i), id).toBe(0);
+      [low, high] = [Math.min(low, floor.getX(i), floor.getZ(i)), Math.max(high, floor.getX(i), floor.getZ(i))];
+    }
+    expect([low, high], id).toEqual([-(HALF + 50), HALF + 50]);
+    const walls = arena.walls.getAttribute('position');
+    for (let i = 0; i < walls.count; i += 1) {
+      if (walls.getY(i) > 1e-6) expect(Math.max(Math.abs(walls.getX(i)), Math.abs(walls.getZ(i))), id).toBeGreaterThan(HALF);
+    }
+    expect(arena.heightAt(3, -7)).toBe(0);
+  });
+
+  it('hradní nádvoří venku nemá spáry dlažby; tráva má místo kvádrů nízký val', () => {
+    const castle = sceneLook({ setting: SETTING.castle, mood: '', look: 'castle' });
+    const seam = new Color(arenaPalette(castle).seam);
+    const colors = buildArenaFloor({ look: castle, half: HALF }).floor.getAttribute('color');
+    let seams = 0;
+    for (let i = 0; i < colors.count; i += 1) if (Math.abs(colors.getX(i) - seam.r) + Math.abs(colors.getY(i) - seam.g) + Math.abs(colors.getZ(i) - seam.b) < 1e-3) seams += 1;
+    expect(seams).toBe(0);
+    const ring = buildArenaFloor({ look: sceneLook({ setting: SETTING.meadow, mood: '', look: 'meadow' }), half: HALF }).walls.getAttribute('position');
+    let top = 0;
+    for (let i = 0; i < ring.count; i += 1) top = Math.max(top, ring.getY(i));
+    expect(top).toBeGreaterThan(0.5);
+    expect(top).toBeLessThanOrEqual(1.6);
+  });
 });

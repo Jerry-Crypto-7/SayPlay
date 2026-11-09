@@ -189,18 +189,19 @@ function hashGeometry(geometry: BufferGeometry): string {
 /**
  * Otisky z 6beb49d3 (týž kód testu nad nezměněnou větví). Údolí sopky přepsané v P73D T5: nižší, teplý kaňon s lávou.
  * P75 T5 přepsal zem sopky (teplá hnědá, svítící láva), města (teplejší šedá) a podmoří (písek obrazu místo tmavé modré).
+ * P81 T4 přepsal `valley` všech míst: krajnice cesty tmavší (obrys), ne krémový štěrk.
  */
 const BEFORE: Readonly<Record<string, { readonly valley: string; readonly strips: string; readonly field: string }>> = {
-  meadow: { valley: '3a6c1d8f', strips: '#94754f:af763ea5,#75593b:94024b41', field: 'b17bb52a' },
-  city: { valley: '1cb9867e', strips: '#5a5f66:de4aeb64,#e8e6df:1d32ad60', field: '9f4c80b9' },
-  forest: { valley: 'f1f6bb44', strips: '#94754f:254c89a8,#75593b:50a548c', field: 'a3cdc975' },
-  jungle: { valley: '990f8d9c', strips: '#94754f:672a97ac,#75593b:d61ff000', field: '116a04dd' },
-  desert: { valley: 'e56a253e', strips: '#dcc193:787e8d89,#c3a476:55271732', field: '45427436' },
-  beach: { valley: 'e25e7519', strips: '#dcc193:787e8d89,#c3a476:55271732', field: '88b9d0f9' },
-  ocean: { valley: '1d2c8879', strips: '#a07a4e:6bc0ae61,#6e5034:9dc66635,#6e5034:56433411', field: 'ca3f2ca0' },
-  underwater: { valley: 'e2ab9fad', strips: '#dcc193:c524109c,#c3a476:c0a737f3', field: '963f201c' },
-  snow: { valley: 'e89b21fb', strips: '#e6edf4:de4aeb64,#bccbd9:d62e4120', field: '9d5077f9' },
-  volcano: { valley: 'c4fecacd', strips: '#94754f:672a97ac,#75593b:d61ff000', field: '10198d3e' },
-  space: { valley: '8f7d383a', strips: '#94754f:dd0ac91,#75593b:9a853b2a', field: '5a198448' },
-  graveyard: { valley: '8f99e8cc', strips: '#94754f:ca2725f8,#75593b:5dda668f', field: '4b9642d9' },
+  meadow: { valley: '19653831', strips: '#94754f:af763ea5,#75593b:94024b41', field: 'b17bb52a' },
+  city: { valley: '239d4ab1', strips: '#5a5f66:de4aeb64,#e8e6df:1d32ad60', field: '9f4c80b9' },
+  forest: { valley: 'e0fe5a1f', strips: '#94754f:254c89a8,#75593b:50a548c', field: 'a3cdc975' },
+  jungle: { valley: 'c43d445c', strips: '#94754f:672a97ac,#75593b:d61ff000', field: '116a04dd' },
+  desert: { valley: 'ead90b5', strips: '#dcc193:787e8d89,#c3a476:55271732', field: '45427436' },
+  beach: { valley: 'd6f9d223', strips: '#dcc193:787e8d89,#c3a476:55271732', field: '88b9d0f9' },
+  ocean: { valley: 'd7d30bb1', strips: '#a07a4e:6bc0ae61,#6e5034:9dc66635,#6e5034:56433411', field: 'ca3f2ca0' },
+  underwater: { valley: '85c15ee7', strips: '#dcc193:c524109c,#c3a476:c0a737f3', field: '963f201c' },
+  snow: { valley: '96c5022d', strips: '#e6edf4:de4aeb64,#bccbd9:d62e4120', field: '9d5077f9' },
+  volcano: { valley: '2162de92', strips: '#94754f:672a97ac,#75593b:d61ff000', field: '10198d3e' },
+  space: { valley: 'c0409fef', strips: '#94754f:dd0ac91,#75593b:9a853b2a', field: '5a198448' },
+  graveyard: { valley: '4784999f', strips: '#94754f:ca2725f8,#75593b:5dda668f', field: '4b9642d9' },
 };
