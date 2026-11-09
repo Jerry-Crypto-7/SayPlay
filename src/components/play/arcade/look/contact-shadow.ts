@@ -14,8 +14,8 @@ const COOL = oklab([0.13, 0.17, 0.25]);
 export const SHADE_L = 0.38;
 /** Nejvyšší sytost tónu (Oklab chroma): pastelový stín, ne barevná skvrna. */
 const SHADE_CHROMA = 0.05;
-/** Krytí elipsy uprostřed. */
-export const CONTACT_OPACITY = 0.5;
+/** Krytí elipsy uprostřed (T3 0,5; T6 tmavší – soudce chtěl pevnější ukotvení předmětů). */
+export const CONTACT_OPACITY = 0.65;
 /** Výška nad zemí proti z-fightingu (m). */
 export const CONTACT_LIFT = 0.03;
 /** Elipsa je o tolik širší než půdorys předmětu. */

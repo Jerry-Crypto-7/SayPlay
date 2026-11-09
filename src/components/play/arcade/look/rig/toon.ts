@@ -156,11 +156,16 @@ export function paletteLab(hexes: readonly string[]): Rgb[] {
 
 /** Váha rozdílu světlosti při hledání tónu: o tónu rozhoduje odstín, světlost barva stejně nechá svou. */
 const SNAP_LIGHTNESS = 0.25;
+/**
+ * Kolik vlastní barvy (Oklab a, b) kulisa podrží (P77 T6). Čistý tón palety (0) soudce proti produkci
+ * dvakrát odmítl: „production has stronger contrast, dark stone and turquoise accents“ – akcenty zmizely.
+ */
+export const SNAP_KEEP = 0.35;
 
 /**
- * Barva kulisy v paletě místa (P77 T2, lineární RGB): nejbližší tón palety (`paletteLab`) dá odstín a sytost,
- * světlost zůstane barvě – stín a světlo modelu drží, barvy jsou jen z palety. Barva tmavší než tón dostane
- * sytost úměrně menší, jinak by tmavé plochy zářily (a mimo rozsah sRGB se odstín láme).
+ * Barva kulisy v paletě místa (P77 T2, lineární RGB): nejbližší tón palety (`paletteLab`) dá většinu odstínu
+ * a sytosti, `SNAP_KEEP` zůstane z vlastní barvy, světlost celá – stín a světlo modelu drží. Barva tmavší než
+ * tón dostane jeho sytost úměrně menší, jinak by tmavé plochy zářily (a mimo rozsah sRGB se odstín láme).
  */
 export function snapToPalette(color: Rgb, palette: readonly Rgb[]): Rgb {
   const lab = oklab(color);
@@ -174,7 +179,8 @@ export function snapToPalette(color: Rgb, palette: readonly Rgb[]): Rgb {
     }
   }
   const keep = Math.min(1, lab[0] / Math.max(best[0], 1e-3));
-  return rgbOf([lab[0], best[1] * keep, best[2] * keep]);
+  const mix = (tone: number, own: number) => (1 - SNAP_KEEP) * tone * keep + SNAP_KEEP * own;
+  return rgbOf([lab[0], mix(best[1], lab[1]), mix(best[2], lab[2])]);
 }
 
 /**

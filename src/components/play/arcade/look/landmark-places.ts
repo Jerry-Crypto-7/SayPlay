@@ -409,7 +409,7 @@ export function placeFraming({ camera, look, seed, area, hero, play = [], ground
  * nízký kus (lavička z `framingPool`) by u kraje obrazu stál jako další kulisa, ne jako rám (první pokus T4).
  */
 export function placeTrackFraming({ camera, look, area, hero, ground = flat }: PlaceInput): Placed[] {
-  const tall = [...new Set(look.props)].filter((kind): kind is SceneryModel => isSceneryModel(kind)).sort((a, b) => modelHeight(b) - modelHeight(a));
+  const tall = [...new Set(look.props)].filter((kind): kind is SceneryModel => isSceneryModel(kind) && modelHeight(kind) <= FRAMING_TRACK_TALLEST_M).sort((a, b) => modelHeight(b) - modelHeight(a));
   if (tall.length === 0) return [];
   // Druhý kus jiný, jen když není o víc než čtvrtinu nižší – jinak by vpravo rámoval keřík.
   const framing = [tall[0]!, tall.find((id, i) => i > 0 && modelHeight(id) >= 0.75 * modelHeight(tall[0]!)) ?? tall[0]!];
@@ -435,6 +435,8 @@ export function placeTrackFraming({ camera, look, area, hero, ground = flat }: P
 
 /** Cílová výška rámujícího kusu u trati (m) a nejvyšší zvětšení modelu, ať strom nepřeroste v obra. */
 const FRAMING_TREE_M = 4;
+/** Nejvyšší model rámující řady u trati (m): mrakodrapy u klouzání ve městě soudce vzal jako „oversized, cluttered“ (T6 s9). */
+export const FRAMING_TRACK_TALLEST_M = 6;
 const FRAMING_GROW_MAX = 1.6;
 
 /** Rozteč kopií rámujícího kusu po trati (m): kopie zmizí za kamerou dřív, než další dojede do rohu obrazu. */

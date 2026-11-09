@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 import { LOOK_IDS, LOOKS } from '@/play/arcade/look';
 
 import { bakePlace } from '../place-paint';
-import { oklab, paletteLab, type Rgb, snapToPalette } from '../rig/toon';
+import { oklab, paletteLab, type Rgb, SNAP_KEEP, snapToPalette } from '../rig/toon';
 
 const hueOf = ([, a, b]: Rgb): number => (Math.atan2(b, a) * 180) / Math.PI;
 const hueGap = (x: number, y: number): number => Math.abs(((x - y + 540) % 360) - 180);
@@ -33,11 +33,29 @@ const samples: Rgb[] = Array.from({ length: 60 }, (_, i) => [((i * 37) % 60) / 6
 describe('place palette (P77 T2)', () => {
   const palette = paletteLab(LOOKS.city.palette);
 
-  it('snaps every colour onto a palette tone and keeps its lightness', () => {
+  it('moves every colour most of the way onto a palette tone, keeps SNAP_KEEP of its own hue and its lightness', () => {
     for (const color of samples) {
-      const snapped = snapToPalette(color, palette);
-      expect(onPalette(snapped, palette), `${color}`).toBe(true);
-      expect(oklab(snapped)[0]).toBeCloseTo(oklab(color)[0], 1);
+      const own = oklab(color);
+      const snapped = oklab(snapToPalette(color, palette));
+      // Barva leží na úsečce mezi vlastní barvou a některým tónem palety (sytost tónu ztlumená u tmavších barev), SNAP_KEEP od tónu.
+      const onLine = palette.some((tone) => {
+        const keep = Math.min(1, own[0] / Math.max(tone[0], 1e-3));
+        return [1, 2].every((i) => Math.abs(snapped[i]! - ((1 - SNAP_KEEP) * tone[i]! * keep + SNAP_KEEP * own[i]!)) < 0.02);
+      });
+      expect(onLine, `${color}`).toBe(true);
+      expect(snapped[0]).toBeCloseTo(own[0], 1);
+    }
+    expect(SNAP_KEEP).toBeGreaterThan(0);
+    expect(SNAP_KEEP).toBeLessThan(0.5);
+  });
+
+  it('a colour already on a palette tone stays on it', () => {
+    for (const hex of LOOKS.city.palette) {
+      const color = new Color(hex);
+      const tone = oklab([color.r, color.g, color.b]);
+      const snapped = oklab(snapToPalette([color.r, color.g, color.b], palette));
+      expect(onPalette(snapToPalette([color.r, color.g, color.b], palette), palette), hex).toBe(true);
+      expect(Math.hypot(snapped[1] - tone[1], snapped[2] - tone[2]), hex).toBeLessThan(0.01);
     }
   });
 
@@ -63,7 +81,16 @@ describe('place palette (P77 T2)', () => {
     const opaque = meshes.find((mesh) => mesh.material !== glass.material)!;
     const colors = opaque.geometry.getAttribute('color');
     expect(colors.count).toBe(count * 9);
-    for (let i = 0; i < colors.count; i += 1) expect(onPalette([colors.getX(i), colors.getY(i), colors.getZ(i)], palette), `vertex ${i}`).toBe(true);
+    // Každý vrchol nese tón palety pro některou zdrojovou barvu (`snapToPalette`), žádnou surovou.
+    const tint = tinted.getAttribute('color');
+    const sources: Rgb[] = [...samples.slice(0, 8), ...Array.from({ length: count }, (_, i): Rgb => [tint.getX(i), tint.getY(i), tint.getZ(i)])];
+    const tones = sources.map((color) => snapToPalette(color, palette));
+    const near = (a: readonly number[], b: readonly number[]) => a.every((value, k) => Math.abs(value - b[k]!) < 2e-3);
+    for (let i = 0; i < colors.count; i += 1) {
+      const vertex = [colors.getX(i), colors.getY(i), colors.getZ(i)];
+      expect(tones.some((tone) => near(tone, vertex)), `vertex ${i}`).toBe(true);
+      expect(sources.some((color) => near(color, vertex)), `vertex ${i} raw`).toBe(false);
+    }
     // Zdroj se nemění.
     expect((model.children[0] as Mesh).material).toBeInstanceOf(MeshStandardMaterial);
     expect((model.children[0] as Mesh).geometry.getAttribute('color')).toBeUndefined();

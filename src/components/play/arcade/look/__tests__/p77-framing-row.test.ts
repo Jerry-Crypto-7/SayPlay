@@ -15,7 +15,10 @@ import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { placeChase } from '../../steer/SteerScene';
 import { placePlatform, placeRunner } from '../../track-camera';
 import type { Box } from '../ground';
-import { FRAMING_COPIES, FRAMING_PERIOD_M, footOf, framingRow, placeTrackFraming } from '../landmark-places';
+import { FRAMING_COPIES, FRAMING_PERIOD_M, FRAMING_TRACK_TALLEST_M, footOf, framingRow, placeTrackFraming } from '../landmark-places';
+
+/** Kulisy místa, které smí rámovat trať: modely do `FRAMING_TRACK_TALLEST_M` (mrakodrap ne, T6 s9). */
+const framers = (lookId: (typeof LOOK_IDS)[number]) => LOOKS[lookId].props.filter(isSceneryModel).filter((id) => modelHeight(id) <= FRAMING_TRACK_TALLEST_M);
 import { PLAYABLE_HALF } from '../rig/terrain/valley';
 
 const ALL_Z = { z0: -Infinity, z1: Infinity } as const;
@@ -33,7 +36,7 @@ function framingOf(track: (typeof TRACKS)[number], lookId: (typeof LOOK_IDS)[num
   track.place(camera);
   camera.updateMatrixWorld();
   const dir: 1 | -1 = camera.getWorldDirection(new Vector3()).z < 0 ? -1 : 1;
-  return { pieces: placeTrackFraming({ camera, look, seed: 11, area: track.area, hero: track.hero }), dir, picks: look.props.some(isSceneryModel) ? 2 : 0 };
+  return { pieces: placeTrackFraming({ camera, look, seed: 11, area: track.area, hero: track.hero }), dir, picks: framers(lookId).length > 0 ? 2 : 0 };
 }
 
 describe('P77 T4: rámující řada po trati', () => {
@@ -77,15 +80,18 @@ describe('P77 T4: rámující řada po trati', () => {
     expect(LOOK_IDS.filter((lookId) => framingOf(TRACKS[0], lookId, ASPECTS.desktop).picks > 0).length).toBeGreaterThan(LOOK_IDS.length / 2);
   });
 
-  it('kus je vysoký jako rám (≥ 2,5 m, nejvyšší kulisa místa), ne lavička u kraje', () => {
+  it('kus je vysoký jako rám (≥ 2,5 m, nejvyšší kulisa místa), ne lavička u kraje ani mrakodrap', () => {
     for (const lookId of LOOK_IDS) {
-      const tallest = Math.max(0, ...LOOKS[lookId].props.filter(isSceneryModel).map((id) => modelHeight(id)));
+      const tallest = Math.max(0, ...framers(lookId).map((id) => modelHeight(id)));
       for (const piece of framingOf(TRACKS[0], lookId, ASPECTS.desktop).pieces) {
         const h = modelHeight(piece.id) * piece.scale;
         expect(h).toBeGreaterThanOrEqual(Math.min(2.5, tallest));
         expect(h).toBeLessThanOrEqual(Math.max(4, tallest) + 0.01);
+        expect(h, `${lookId} ${piece.id}`).toBeLessThanOrEqual(FRAMING_TRACK_TALLEST_M + 0.01);
       }
     }
+    // Aspoň jedno místo má kulisu přes mez (město) – jinak by mez nic nehlídala.
+    expect(LOOK_IDS.some((lookId) => LOOKS[lookId].props.filter(isSceneryModel).some((id) => modelHeight(id) > FRAMING_TRACK_TALLEST_M))).toBe(true);
   });
 
   it('závod zezadu kusy dostane (práh směru kamery nevypne kameru podél trati)', () => {
