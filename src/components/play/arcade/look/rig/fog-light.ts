@@ -24,8 +24,13 @@ export const FOG_SATURATION = 0.18;
 /** Násobek síly polokoule (výplň stínů) a slunce (klíčové světlo). */
 export const HEMI_LIFT = 1.2;
 export const SUN_LIFT = 1.1;
-/** Poloměr PCF stínu slunce (dřív 4): tvrdší hrana stínu pod hrdinou a překážkami. */
-export const SHADOW_RADIUS = 1.5;
+/**
+ * Poloměr PCF stínu slunce (P76 1,5, P77 T3 4): měkká hrana, ale ne rozmazaná – při 4 soudce proti produkci
+ * dvakrát „stronger contact shadows / more defined shadows“ u produkce (P77 T6).
+ */
+export const SHADOW_RADIUS = 2;
+/** Síla stínu slunce (P77 T3 0,82 → T6): stín ukotví předmět, kousek slunce v něm zůstane, nesklouzne do černé. */
+export const SHADOW_INTENSITY = 0.95;
 
 export interface Air {
   /** Barva mlhy, pozadí a oblohy u obzoru (`#rrggbb`). */

@@ -655,6 +655,8 @@ export interface Look {
   readonly wind?: number;
   /** Bouřka z věty nebo počasí (P76 T2): zatažená obloha nálady místo malované oblohy místa (`paintedSkyOf`). */
   readonly storm?: true;
+  /** Tóny místa (P77 T2, `PLACE_PALETTES`): kulisy se při načtení přebarví na nejbližší z nich (`place-paint.ts`). */
+  readonly palette: readonly string[];
 }
 
 /**
@@ -673,7 +675,43 @@ const BEHIND_LEFT = [0.51, 0.81, -0.31] as const;
 /** Světlo shora, mírně ze strany kamery: stropní lampy, hladina nad vodou, světlo v jeskyni. */
 const OVERHEAD = [0.2, 1, -0.15] as const;
 
-export const LOOKS: Readonly<Record<LookId, Look>> = {
+/**
+ * Paleta místa (P77 T2), 8–10 tónů: odstín a sytost kulis, světlost si model nechá. Kde je koncept A
+ * (`evals/play/p75/target/`), tóny jsou z jeho k-means (`scripts/play/p77-palette.mjs`, `evals/play/p77/palette.md`)
+ * plus 1–3 akcenty sady (červená, modrá, žlutá), aby auto, hydrant nebo prapor nezhnědly. Sada bez konceptu má
+ * tóny ze svých barev (zem, odstín rekvizit, dráha) ve stejném teplém hračkovém klíči. Šedé tóny jsou teplé nebo
+ * šedomodré, nikdy do fialova (`palette.test.ts`).
+ */
+const PLACE_PALETTES: Readonly<Record<LookId, readonly string[]>> = {
+  // s7, s10, s11 (minigolf v cukrovinkách, sad, závod v cukrovinkách) + jablečná červeň a modrá.
+  meadow: ['#eddd9a', '#dab76b', '#e2a36d', '#c67945', '#87583d', '#a7ae4a', '#7c9441', '#4d6815', '#c8402f', '#6aa0c8'],
+  // s3, s9 (střechy, bouřlivé město) + žlutá taxíku a červená.
+  city: ['#eddaaf', '#daad81', '#b48855', '#996d59', '#6d5659', '#a9968e', '#515361', '#5c6627', '#e0b040', '#c4533c'],
+  mall: ['#f1dfc4', '#d9b88a', '#b88a5a', '#8a6a4e', '#e8823a', '#4a9ac8', '#7a9a4a', '#a8a29a', '#d65a48'],
+  supermarket: ['#f1e6d0', '#d8c49a', '#b88a5a', '#c8473a', '#5a9a48', '#e8b73a', '#5a8ab8', '#a8a8a0', '#e88a3a'],
+  living_room: ['#f1dfc4', '#d9a868', '#b4743a', '#7a4e2e', '#2f8a80', '#e8a83a', '#c4533c', '#7a9a4a', '#a89a8a'],
+  factory: ['#d8c8a8', '#a89a84', '#7a7068', '#57534e', '#e06a2a', '#d8a83a', '#4a6a88', '#8a5a3a', '#6a7a4a'],
+  forest: ['#eddd9a', '#dab76b', '#c67945', '#87583d', '#5e3a22', '#a7ae4a', '#7c9441', '#31673a', '#4d6815', '#a89a7a'],
+  jungle: ['#dab76b', '#c67945', '#87583d', '#a7ae4a', '#6b8436', '#4d8a3a', '#3b6120', '#5aa0a0', '#a8a080'],
+  desert: ['#f0d9a0', '#e6c38c', '#d09b61', '#c47f33', '#8f5530', '#6b8436', '#b8432e', '#5a90b8', '#a89a84'],
+  // s5 (plovoucí ostrovy) + korálová a teplá šedá.
+  beach: ['#f3e5b2', '#dcc05d', '#ad8649', '#765f2c', '#358ca6', '#9bcac2', '#7db12a', '#43451b', '#e06a4a', '#a8a29a'],
+  ocean: ['#ece4d0', '#e9d29a', '#c8a068', '#87583d', '#3f86b8', '#2a5a80', '#d84a3a', '#e8b040', '#8a96a0'],
+  // s2 (závod pod vodou) + korálová sady a zelená řas.
+  underwater: ['#eddfae', '#ddbd84', '#ba8a55', '#8e5235', '#9fafa3', '#698c90', '#436661', '#f07a64', '#4f9a5a'],
+  // s12 (tučňák na ledové hoře) + červená saní a ledová modrá.
+  snow: ['#f3e1bb', '#d3c6b3', '#abb0bb', '#8a98ad', '#707783', '#949261', '#31673a', '#1c3e23', '#c4463a', '#7fb8d8'],
+  cave: ['#a8906a', '#8a7a6a', '#5a5048', '#3c3630', '#2fb8a8', '#e8a040', '#6a8a4a', '#c47f33'],
+  // s1 (útěk před lávou) + teplá šedá.
+  volcano: ['#f7e29a', '#e19959', '#e85930', '#a73215', '#92653c', '#704b2c', '#642f1a', '#8a7f74'],
+  // s6 (vesmírná loď) + azurová sady a neutrální šedá.
+  space: ['#f2da9b', '#dfbd86', '#d09b61', '#af7d56', '#875c42', '#633d30', '#3e5169', '#3fb8c8', '#8a8f96'],
+  // s8, s4 (hrad, věž z palačinek) + červená praporu a modrá.
+  castle: ['#f6dfb3', '#d2bd6e', '#c0925f', '#8e743f', '#6a503e', '#a3a532', '#2f4b23', '#c4bfbe', '#b8412e', '#4f74a8'],
+  graveyard: ['#a89a84', '#7a6a58', '#4a5a52', '#64748b', '#3a4a5e', '#2f4a3a', '#5a6a4a', '#e88a2a', '#c8b070'],
+};
+
+const BASE_LOOKS: Readonly<Record<LookId, Omit<Look, 'palette'>>> = {
   meadow: { sky: '#bae6fd', fog: [30, 90], light: ['#e0f2fe', '#166534', 0.9], sun: 1.6, ground: '#15803d', track: '#334155', water: '#0284c7', props: ['tree', 'gen3d-picnic-table', 'gen3d-wooden-stile', 'gen3d-wooden-gate', 'gen3d-windmill', 'gen3d-sunflower'], tint: ['#16a34a', '#78716c'], skyTop: '#3a86d8', horizon: '#dfe3d2', sunColor: '#fff0d4', sunDir: BEHIND_LEFT, exposure: 1, glow: 1, cover: 'grass', surface: 'dirt', flora: MEADOW_FLORA, skyline: { layers: ['peaks', 'hills', 'crowns'], tone: '#6a9a5c', marks: 'mills' }, landmark: ['gen3d-windmill', 'gen3d-standing-stone'], ambient: ['birds', 'butterflies'] },
   city: { sky: '#cbd5e1', fog: [25, 80], light: ['#f1f5f9', '#475569', 0.9], sun: 1.4, ground: '#9c8670', track: '#1f2937', water: '#0369a1', props: ['townhouse', 'cc0-car-taxi', 'gen3d-telephone-pole', 'cc0-fire-hydrant', 'building', 'gen3d-traffic-light', 'gen3d-bus-stop', 'gen3d-flower-stall'], tint: ['#94a3b8', '#fbbf24'], skyTop: '#5b8fc7', horizon: '#dcd4c8', sunColor: '#fff1dc', sunDir: [0.45, 0.75, -0.5], exposure: 1, glow: 0.8, terrain: { lane: '#2b3036', shade: '#56606e', rock: '#8b9098' }, cover: 'paving', surface: 'asphalt', flora: CITY_FILL, skyline: { layers: ['blocks', 'blocks'], tone: '#6c7686', marks: 'tanks' }, landmark: ['gen3d-crane', 'gen3d-fountain'], ambient: ['birds', 'dust'] },
   mall: { sky: '#fef3c7', fog: [20, 70], light: ['#fffbeb', '#d6d3d1', 1.1], sun: 1.1, ground: '#e7e5e4', track: '#d6d3d1', water: '#38bdf8', props: ['potted-plant', 'cc0-bench', 'shopping-cart', 'shelf', 'gen3d-gumball-machine', 'gen3d-fountain', 'gen3d-vending-machine'], tint: ['#f97316', '#0ea5e9'], skyTop: '#f3e2b8', horizon: '#fef3c7', sunColor: '#fff7e6', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'paving', surface: 'paving', flora: MALL_FILL, skyline: { layers: ['walls', 'walls'], tone: '#b09c80' }, ceiling: { color: '#cdbfa6', lamp: '#fffaf0' }, landmark: ['gen3d-fountain', 'gen3d-gumball-machine'], ambient: ['dust'], interior: { floor: 'tiles', walls: ['gen3d-mall-kiosk', 'gen3d-clothing-rack', 'gen3d-mannequin', 'gen3d-food-kiosk', 'gen3d-gumball-machine', 'cc0-bench'] } },
@@ -696,6 +734,8 @@ export const LOOKS: Readonly<Record<LookId, Look>> = {
   // Noc: slunce je měsíc – studené, slabé, záře nízko.
   graveyard: { sky: '#0f172a', fog: [10, 50], light: ['#94a3b8', '#1e293b', 0.7], sun: 0.6, ground: '#1e293b', track: '#334155', water: '#0c4a6e', props: ['gen3d-iron-fence', 'pine', 'cc0-pumpkin', 'gen3d-grave-lantern', 'gen3d-gravestone'], tint: ['#64748b', '#14532d'], skyTop: '#060b16', horizon: '#1e2a3d', sunColor: '#c9d8ee', sunDir: [0.45, 0.7, -0.45], exposure: 1, glow: 0.6, cover: 'grass', surface: 'dirt', flora: GRAVEYARD_FILL, skyline: { layers: ['hills', 'pines'], tone: '#4a5a52' }, landmark: ['gen3d-ruin', 'gen3d-castle-tower'], ambient: ['bats', 'dust'] },
 };
+
+export const LOOKS = Object.fromEntries(Object.entries(BASE_LOOKS).map(([id, look]) => [id, { ...look, palette: PLACE_PALETTES[id as LookId] }])) as Readonly<Record<LookId, Look>>;
 
 /**
  * Klíčová slova → sada. Pořadí rozhoduje: konkrétnější místo před obecnějším

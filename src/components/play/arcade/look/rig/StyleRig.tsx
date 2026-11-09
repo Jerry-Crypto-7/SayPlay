@@ -43,7 +43,8 @@ import { setCharacterRim } from '../load';
 import { loadsIdle } from '../pending-loads';
 import { darkness, setScenePalette } from './toon';
 import { Wind } from '../Vegetation';
-import { airOf, BACK_LIGHT, BACK_SKY, goldenHour, liftLight, SHADOW_RADIUS } from './fog-light';
+import { shadeSky } from '../contact-shadow';
+import { airOf, BACK_LIGHT, BACK_SKY, goldenHour, liftLight, SHADOW_INTENSITY, SHADOW_RADIUS } from './fog-light';
 import { LOOK_FAMILY } from './grade';
 import { type PaintedSky, paintedSkyOf, paintFade, type PaintStep, stagePlace } from './painted-sky';
 import { Post, useQualityTier } from './Post';
@@ -369,7 +370,7 @@ function Sun({ look, sun: intensity, control, mapSize, half }: { readonly look: 
     sun.position.copy(at).add(toSun);
   });
 
-  return <directionalLight ref={light} color={look.sunColor} intensity={intensity} castShadow shadow-mapSize={[mapSize, mapSize]} shadow-bias={-0.0005} shadow-normalBias={0.02} shadow-radius={SHADOW_RADIUS} />;
+  return <directionalLight ref={light} color={look.sunColor} intensity={intensity} castShadow shadow-mapSize={[mapSize, mapSize]} shadow-bias={-0.0005} shadow-normalBias={0.02} shadow-radius={SHADOW_RADIUS} shadow-intensity={SHADOW_INTENSITY} />;
 }
 
 /**
@@ -483,7 +484,7 @@ export function StyleRig({ look, lookId, control, surface }: { readonly look: Lo
       <FarAtFog far={air.far} />
       <Exposure exposure={exposureOf(lit)} />
       <Sky look={golden} control={control} painted={painted} />
-      <hemisphereLight args={[...shine.light]} />
+      <hemisphereLight args={[shadeSky(shine.light[0], look.palette), shine.light[1], shine.light[2]]} />
       <Sun look={golden} sun={shine.sun} control={control} mapSize={TIER_SETTINGS[tier].shadowMapSize} half={TIER_SETTINGS[tier].shadowHalf} />
       {backLit ? <directionalLight position={back.dir} color={back.color} intensity={shine.sun * BACK_LIGHT} /> : <></>}
       <ShadowFlags />

@@ -22,7 +22,7 @@ import { renderHeld } from './effects/render-feel';
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Box3, BoxGeometry, type BufferGeometry, type Group, type Object3D, type PerspectiveCamera, PlaneGeometry, Vector3 } from 'three';
+import { Box3, BoxGeometry, type BufferGeometry, type Group, type InstancedMesh, Matrix4, type Object3D, type PerspectiveCamera, PlaneGeometry, Quaternion, Vector3 } from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
@@ -42,6 +42,7 @@ import { type BodyView, PACING_KINDS, PACING_SHOT_KINDS, SPARK_KIND, bodiesOf, b
 import { headingOf, turnToward } from './characterMotion';
 import { blinkHidden } from './effects/feel';
 import { type ArcadeGhost, GhostSlot } from './GhostSlot';
+import { CONTACT_FADE_M, CONTACT_GEOMETRY, CONTACT_LIFT, CONTACT_SPREAD, contactMaterial } from './look/contact-shadow';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
 import { RestShot } from './look/rest-shot';
 import { loadBodyModel, loadedBody, rimLit, toonLit, toyPartsOf } from './look/load';
@@ -103,6 +104,51 @@ export interface Cast {
 
 /** Překážky běžce, které smí nést model z popisku; skluzová laťka tvarem říká „podlez“, tu ne. */
 const SWAPPABLE_OBSTACLES: ReadonlySet<string> = new Set(['hurdle', 'cone', 'crate']);
+
+/** Nejvýš tak vysoko nad dráhou (m) začíná tělo, které stojí na zemi a dostane kontaktní stín. */
+const CONTACT_GROUND_M = 0.05;
+/** Širší tělo (m) je plocha nebo pás (cíl přes trať, koridor), ne věc: jeho elipsa by zašedila celou dráhu. */
+const CONTACT_MAX_M = 3;
+
+/**
+ * Tělo s kontaktním stínem (P77 T3): kreslené modelem a na startu stojící na zemi (`lift` = spodek nad dráhou, m).
+ * Stavby, primitiva (plošiny, bodáky, střely), sloupy a dělicí řady mají vlastní tvar; věc ve vzduchu (mince) stín nedostane.
+ */
+export function hasContact(view: BodyView, cast: Cast, lift: number): boolean {
+  return lift <= CONTACT_GROUND_M && Math.max(view.w, view.d) <= CONTACT_MAX_M && !RUNNER_STRUCTURES.has(view.kind) && !PRIMITIVE.has(modelIdOf(view, cast)) && view.kind !== 'pipe' && view.kind !== 'divider';
+}
+
+const contactAt = new Vector3();
+const contactScale = new Vector3();
+const contactTurn = new Quaternion();
+const contactMatrix = new Matrix4();
+
+/**
+ * Kontaktní stíny těl (P77 T3) jedním instancovaným kreslením. Elipsa zůstává na zemi pod tělem: o kolik tělo
+ * vyskočilo nad svou výšku na startu (simulace), o tolik je níž než skupina, a s výškou se zmenšuje.
+ */
+function BodyContacts({ session, targets, groups, look }: { readonly session: ArcadeSession; readonly targets: readonly BodyView[]; readonly groups: { readonly current: readonly (Group | null)[] }; readonly look: Look }) {
+  const mesh = useRef<InstancedMesh>(null);
+  useFrame(() => {
+    const blobs = mesh.current;
+    if (blobs === null) return;
+    const state = session.state();
+    targets.forEach((view, slot) => {
+      const group = groups.current[view.index];
+      let r = 0;
+      if (group !== null && group !== undefined && group.visible) {
+        const y = bodyBase(view.index) + BODY.y;
+        const rise = Math.max(0, ((state[y] as number) - (session.world.initial[y] as number)) / UNIT);
+        r = Math.max(0, 1 - rise / CONTACT_FADE_M) * CONTACT_SPREAD * (Math.max(view.w, view.d) / 2);
+        contactAt.set(group.position.x, group.position.y - rise + CONTACT_LIFT, group.position.z);
+      }
+      blobs.setMatrixAt(slot, contactMatrix.compose(contactAt, contactTurn, contactScale.set(r, 1, r)));
+    });
+    blobs.instanceMatrix.needsUpdate = true;
+  });
+  if (targets.length === 0) return null;
+  return <instancedMesh key={targets.length} ref={mesh} args={[CONTACT_GEOMETRY, contactMaterial(look.palette), targets.length]} frustumCulled={false} />;
+}
 
 /** Id těla → id modelu v katalogu. Hráč, nepřítel, mince, překážka a terč berou model z popisku role, když ho katalog má. */
 export function modelIdOf(view: BodyView, cast: Cast): string {
@@ -566,6 +612,11 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
   const foeOnRange = (view: BodyView): boolean => rangeFoe && view.role === ROLE.target;
   // Střely a hody přidává jádro za běhu (`spawn`) – seznam se staví znovu, když se změní.
   const [views, setViews] = useState(() => bodiesOf(session));
+  // Branka poletování je neviditelná: jen počítá průlet mezerou; počítadlo komba scéna nekreslí taky.
+  const unseen = (view: BodyView): boolean =>
+    (drawsNothing(view) && cast.objectives[view.index] === undefined) || (control === 'glide' && GLIDE_SCENE_KINDS.has(view.kind)) || (control === 'walker' && WALKER_SCENE_KINDS.has(view.kind)) || (control === 'ball' && BALL_SCENE_KINDS.has(view.kind)) || (control === 'steer' && STEER_SCENE_KINDS.has(view.kind));
+  // `unseen` čte jen `cast` a `control`.
+  const contacts = useMemo(() => views.filter((view) => !unseen(view) && hasContact(view, cast, (session.world.initial[bodyBase(view.index) + BODY.y] as number) / UNIT)), [views, cast, control, session]);
   const groups = useRef<(Group | null)[]>([]);
   const posed = useRef<(Group | null)[]>([]);
   const poses = useRef<(Pose | null)[]>([]);
@@ -757,9 +808,9 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
         ))}
       {control === 'shooter' && <ShooterRig session={session} surface={surface} enabled={enabled} heroAction={heroAction} ghost={ghost} look={scene} />}
       {control === 'throw' && <ThrowRig session={session} surface={surface} enabled={enabled} heroAction={heroAction} ghost={ghost} />}
+      <BodyContacts session={session} targets={contacts} groups={groups} look={scene} />
       {views.map((view) =>
-        // Branka poletování je neviditelná: jen počítá průlet mezerou; počítadlo komba scéna nekreslí taky.
-        (drawsNothing(view) && cast.objectives[view.index] === undefined) || (control === 'glide' && GLIDE_SCENE_KINDS.has(view.kind)) || (control === 'walker' && WALKER_SCENE_KINDS.has(view.kind)) || (control === 'ball' && BALL_SCENE_KINDS.has(view.kind)) || (control === 'steer' && STEER_SCENE_KINDS.has(view.kind)) ? null : (
+        unseen(view) ? null : (
           <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view), item: itemTagOf(view), foe: foeOf(view, rangeFoe) }}>
             {/* Činnost hrdiny (P37B T2): ostatní těla a `none` dostanou model beze změny stromu. */}
             <HeroActionBody action={view.role === ROLE.player ? heroAction : 'none'} session={session} h={view.h}>

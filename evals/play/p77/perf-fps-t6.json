@@ -1,0 +1,146 @@
+{
+ "profile": "Pixel 7 UA/DPR, 390x844, CPU 4x, ANGLE d3d11, OpenXR off",
+ "a": "http://127.0.0.1:3207",
+ "b": "http://127.0.0.1:3208",
+ "repeats": 4,
+ "windowMs": 10000,
+ "gate": {
+  "fpsMin": 40,
+  "p95MaxMs": 33.3
+ },
+ "measuredAt": "2026-11-09T14:12:01.105Z",
+ "complete": true,
+ "pass": false,
+ "rows": [
+  {
+   "id": "s1",
+   "text": "Escape a volcano before the lava reaches you",
+   "A": {
+    "fpsMedian": 43.6,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 44.3,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 58
+     },
+     {
+      "fps": 46.2,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 58
+     },
+     {
+      "fps": 42.9,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 58
+     },
+     {
+      "fps": 42,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 58
+     }
+    ]
+   },
+   "B": {
+    "fpsMedian": 42.8,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 42.3,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 60
+     },
+     {
+      "fps": 43.3,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 63
+     },
+     {
+      "fps": 39.1,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 60
+     },
+     {
+      "fps": 43.8,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 60
+     }
+    ]
+   },
+   "passB": false
+  },
+  {
+   "id": "s2",
+   "text": "An underwater race between a turtle and a shark",
+   "A": {
+    "fpsMedian": 44.2,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 42.6,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 65
+     },
+     {
+      "fps": 45.8,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 65
+     },
+     {
+      "fps": 46.5,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 108
+     },
+     {
+      "fps": 42.7,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 66
+     }
+    ]
+   },
+   "B": {
+    "fpsMedian": 40,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 42.8,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 72
+     },
+     {
+      "fps": 39.4,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 69
+     },
+     {
+      "fps": 40.6,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 115
+     },
+     {
+      "fps": 35.7,
+      "p95Ms": 50,
+      "quality": "low",
+      "calls": 73
+     }
+    ]
+   },
+   "passB": false
+  }
+ ]
+}
