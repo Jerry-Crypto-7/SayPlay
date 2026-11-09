@@ -12,6 +12,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { LOOKS, lookOf, sceneLook } from '../arcade/look';
+import { TODAY_STYLE } from '../arcade/look/style';
 import type { GameSpecV1 } from '../spec';
 
 const LIVE = JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p30b/live.json'), 'utf8')) as {
@@ -29,18 +30,19 @@ describe('sceneLook', () => {
     // „icy moon“ zůstává sněhem sady, Měsíc ho nepřebije.
     ['h06', 'icy moon', LOOKS.snow.ground],
   ])('%s %s: ground %s', (id, _name, ground) => {
-    expect(sceneLook(theme(id)).ground).toBe(ground);
+    // Zem, kterou místo z věty vybere – před profilem vzhledu P81 (ten paletu přebarví všem místům stejně).
+    expect(sceneLook(theme(id), TODAY_STYLE).ground).toBe(ground);
   });
 
   it('keeps the set untouched when the sentence names no place of its own', () => {
     // „Along the beach“ (j04) má od P46G kit pláže, beze změny zůstává „On a volcano“.
-    expect(sceneLook(theme('h07'))).toBe(LOOKS[lookOf(theme('h07'))]);
+    expect(sceneLook(theme('h07'), TODAY_STYLE)).toBe(LOOKS[lookOf(theme('h07'))]);
   });
 
   it('s022 tower: castle scenery and stone platforms', () => {
     const look = sceneLook(theme('s022'));
     expect(look.props).toEqual(LOOKS.castle.props);
-    expect(look.block).toEqual(LOOKS.castle.block);
+    expect(sceneLook(theme('s022'), TODAY_STYLE).block).toEqual(LOOKS.castle.block);
     expect(look.block).toBeDefined();
   });
 
@@ -50,7 +52,7 @@ describe('sceneLook', () => {
   });
 
   it('s050 snow fort: the blocks the kids stand on are snow', () => {
-    const block = sceneLook(theme('s050')).block;
+    const block = sceneLook(theme('s050'), TODAY_STYLE).block;
     expect(block).toEqual(LOOKS.snow.block);
     expect(block?.[1]).toBe(LOOKS.snow.ground);
   });

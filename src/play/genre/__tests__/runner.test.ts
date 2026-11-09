@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 
 import { compileArcade } from '@/play/arcade/compile';
 import { LOOKS, sceneLook } from '@/play/arcade/look';
+import { TODAY_STYLE } from '@/play/arcade/look/style';
 import { heroFor } from '@/play/assets/manifest';
 import { readGameSpec } from '@/play/spec';
 
@@ -110,9 +111,11 @@ describe('runner genre (P32A T7)', () => {
     if (!before.ok || !after.ok) throw new Error('penguin did not compile');
     expect(after.value.worldHash).toBe(before.value.worldHash);
     expect(after.value.winsAtTick).toBe(before.value.winsAtTick);
-    // Scéna: jízda z `theme.motion`, stará hra dostane sadu beze změny (tentýž objekt).
+    // Scéna: jízda z `theme.motion`, stará hra dostane sadu beze změny (tentýž objekt). Bez profilu P81 – ten
+    // přebarví paletu každé hře stejně, s jízdou i bez ní.
     expect(sceneLook(riding.theme).ride).toBe(true);
-    expect(sceneLook(old.theme)).toBe(LOOKS.snow);
+    expect(sceneLook(old.theme, TODAY_STYLE)).toBe(LOOKS.snow);
+    expect(sceneLook(old.theme).ride).toBeUndefined();
   });
 
   it('cues cover the ways a sentence says "run down a track"', () => {
