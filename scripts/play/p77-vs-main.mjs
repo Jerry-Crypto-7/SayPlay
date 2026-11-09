@@ -25,6 +25,11 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const OUT = join(ROOT, 'evals', 'play', 'p77');
 const MAIN = join(OUT, 'base');
 const AFTER = join(OUT, 'after');
+/**
+ * `--flip`: stejné losování stran, ale prohozené – do `vs-main-flip/` a `vs-main-flip.md`. T6 kolo 1: soudce volil
+ * pravou stranu 11× z 12, takže jedno pořadí měří hlavně stranu; obě pořadí dohromady ji vyruší.
+ */
+let NAME = 'vs-main';
 const require = createRequire(import.meta.url);
 
 const isVerdict = (value) => (value?.winner === 'left' || value?.winner === 'right') && typeof value.reason === 'string';
@@ -69,7 +74,7 @@ async function ownerSheets(ids, dir) {
 }
 
 async function judgeSheets(ids, key) {
-  const judged = join(OUT, 'vs-main');
+  const judged = join(OUT, NAME);
   mkdirSync(judged, { recursive: true });
   const temp = mkdtempSync(join(os.tmpdir(), 'p77v-'));
   const sheets = {};
@@ -92,7 +97,7 @@ function writeReport(result) {
     const verdict = result.answers[id];
     const after = result.key[id];
     const won = verdict ? (verdict.winner === after ? '**po**' : 'main') : '–';
-    return `| ${id} | ${text} | ${after === 'left' ? 'vlevo' : 'vpravo'} | ${won} | ${verdict ? verdict.reason.replace(/\|/g, '/') : 'bez odpovědi'} | [list](vs-main/${id}.jpg) · [koncept/před/po](sheets/${id}.jpg) |`;
+    return `| ${id} | ${text} | ${after === 'left' ? 'vlevo' : 'vpravo'} | ${won} | ${verdict ? verdict.reason.replace(/\|/g, '/') : 'bez odpovědi'} | [list](${NAME}/${id}.jpg) · [koncept/před/po](sheets/${id}.jpg) |`;
   });
   const judged = result.ids.filter((id) => result.answers[id]);
   const wins = judged.filter((id) => result.answers[id].winner === result.key[id]).length;
@@ -110,7 +115,7 @@ function writeReport(result) {
     '|---|---|---|---|---|---|',
     ...rows,
   ];
-  writeFileSync(join(OUT, 'vs-main.md'), `${lines.join('\n')}\n`);
+  writeFileSync(join(OUT, `${NAME}.md`), `${lines.join('\n')}\n`);
   return { wins, judged: judged.length };
 }
 
@@ -126,9 +131,11 @@ async function main() {
     return;
   }
   // Listy pro oko (koncept | před | po) dělá `p77-sheets.mjs --concept` do `evals/play/p77/sheets/`.
-  const keyFile = join(OUT, 'vs-main', 'judge.json');
+  if (options.flip === true) NAME = 'vs-main-flip';
+  const keyFile = join(OUT, NAME, 'judge.json');
   const previous = existsSync(keyFile) && options.fresh !== true ? JSON.parse(readFileSync(keyFile, 'utf8')) : null;
-  const key = sides(seed, allIds);
+  const drawn = sides(seed, allIds);
+  const key = options.flip === true ? Object.fromEntries(allIds.map((id) => [id, drawn[id] === 'left' ? 'right' : 'left'])) : drawn;
   const answers = previous?.seed === seed ? previous.answers : {};
   for (const id of ids) if (options.fresh === true) delete answers[id];
   const sheets = await judgeSheets(ids, key);
