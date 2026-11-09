@@ -2,7 +2,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createGame } from '../create-game';
+import { createGame, openGame, stayOnFeed, writeFeedAddress } from '../create-game';
 import { CreateGame } from '../CreateGame';
 import { BUILD_FAILED, BUILD_STEPS, IDEA_CARDS, IDEAS, NOT_SENT } from '../starters';
 import { BuildSteps } from '../ui';
@@ -98,5 +98,38 @@ describe('createGame', () => {
     expect(await createGame('x')).toEqual({ error: NOT_SENT, offline: false });
     vi.stubGlobal('navigator', { onLine: false });
     expect(await createGame('x')).toEqual({ error: NOT_SENT, offline: true });
+  });
+});
+
+/**
+ * P78 T1: feed dosedl během přechodu na novou hru a jeho `replaceState('?g=…')` přechod zahodil – hráč visel na
+ * „Building the world“ (sonda produkce, 1 ze 4 rychlých odeslání). Od `openGame` do návratu feedu adresa feedu mlčí.
+ */
+describe('feed address while opening a new game', () => {
+  const history = () => (window as unknown as { history: { pushState: ReturnType<typeof vi.fn>; replaceState: ReturnType<typeof vi.fn> } }).history;
+  const fresh = () => vi.stubGlobal('window', { history: { pushState: vi.fn(), replaceState: vi.fn() } });
+
+  it('writes ?g= while the feed is on screen', () => {
+    fresh();
+    stayOnFeed();
+    writeFeedAddress('replace', 'aa11');
+    writeFeedAddress('push', 'bb22');
+    expect(history().replaceState).toHaveBeenCalledWith(null, '', '?g=aa11');
+    expect(history().pushState).toHaveBeenCalledWith(null, '', '?g=bb22');
+  });
+
+  it('writes nothing from the moment the new game is opened until the feed is back', () => {
+    fresh();
+    stayOnFeed();
+    const push = vi.fn(() => writeFeedAddress('replace', 'cc33'));
+    openGame({ push }, '/play/dd44');
+    writeFeedAddress('replace', 'ee55');
+    writeFeedAddress('push', 'ff66');
+    expect(push).toHaveBeenCalledWith('/play/dd44');
+    expect(history().replaceState).not.toHaveBeenCalled();
+    expect(history().pushState).not.toHaveBeenCalled();
+    stayOnFeed();
+    writeFeedAddress('replace', 'aa11');
+    expect(history().replaceState).toHaveBeenCalledWith(null, '', '?g=aa11');
   });
 });

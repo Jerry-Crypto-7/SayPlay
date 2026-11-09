@@ -18,7 +18,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react';
 
-import { createGame } from './create-game';
+import { createGame, openGame } from './create-game';
 import { moodTone } from './Feed';
 import { FirstVisitHint, isFirstVisit, markVisited } from './FirstVisitHint';
 import { appendSpoken, MicButton } from './MicButton';
@@ -75,7 +75,7 @@ export function CreateGame() {
     }
     setPhase({ kind: 'busy', step: 1 });
     markVisited();
-    router.push(created.url);
+    openGame(router, created.url);
   }
 
   // Bez sítě (kit, Offline): věta zůstane v poli a odejde sama, jakmile se síť vrátí.

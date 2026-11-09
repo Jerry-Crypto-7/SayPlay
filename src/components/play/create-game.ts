@@ -24,6 +24,30 @@ function doorMessage(status: number, code: unknown, message: unknown): string {
   return message[0]!.toUpperCase() + message.slice(1);
 }
 
+/**
+ * Odchod z `/play` na novou hru (P78 T1). Feed na téže stránce píše `?g=` přes `history` a Next takový zápis bere jako
+ * navigaci, která rozběhnutý `router.push` na hru zahodí: hráč pak visí na „Building the world“ navždy (sonda produkce
+ * 8. 11.: 1 ze 4 odeslání hned po načtení, feed dosedl během přechodu). Od `openGame` feed adresu nepřepisuje.
+ */
+let leaving = false;
+
+export function openGame(router: { push(href: string): void }, url: string): void {
+  leaving = true;
+  router.push(url);
+}
+
+/** Feed je (znovu) na obrazovce – po Back z hry smí `?g=` zase psát. */
+export function stayOnFeed(): void {
+  leaving = false;
+}
+
+/** Zápis `?g=` feedu: skok přidá záznam historie, dosednutí jen přepíše. Během odchodu na novou hru nic. */
+export function writeFeedAddress(mode: 'push' | 'replace', versionId: string): void {
+  if (leaving) return;
+  if (mode === 'push') window.history.pushState(null, '', `?g=${versionId}`);
+  else window.history.replaceState(null, '', `?g=${versionId}`);
+}
+
 export async function createGame(sentence: string): Promise<Created> {
   let response: Response;
   try {
