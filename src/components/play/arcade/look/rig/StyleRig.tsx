@@ -381,6 +381,10 @@ function Sun({ look, sun: intensity, control, mapSize, half }: { readonly look: 
  * plochy (země, dráha, čáry) a plochy bez hloubky stín jen přijímají – vrhaly by ho
  * samy na sebe.
  */
+/** Obrysy kulis začnou po tolika snímcích (~2 s) a berou nejvýš tolik sítí na průchod (každý 30. snímek). */
+const SCENERY_INK_DELAY_FRAMES = 120;
+const SCENERY_INK_BATCH = 40;
+
 function ShadowFlags({ ink }: { readonly ink: boolean }) {
   const scene = useThree((three) => three.scene);
   const size = useThree((three) => three.size);
@@ -394,13 +398,18 @@ function ShadowFlags({ ink }: { readonly ink: boolean }) {
   useFrame(() => {
     // Scény bez obrysu hrdiny (`InkOutline`) by obrysům kulis nikdy nenastavily tloušťku.
     if (ink) setInkViewport(size.width, size.height);
-    if (frames.current++ % 30 !== 0) return;
+    const frame = frames.current++;
+    if (frame % 30 !== 0) return;
+    // Obrysy kulis až po rozjezdu hry a po dávkách: svaření vrcholů obalu a nové programy v prvním snímku
+    // stály telefon (P81 T6) půl sekundy do hratelnosti.
+    let budget = frame >= SCENERY_INK_DELAY_FRAMES ? SCENERY_INK_BATCH : 0;
     scene.traverse((node) => {
       const mesh = node as Mesh;
       if (mesh.isMesh !== true) return;
       if (mesh.userData.rigShadow === undefined) flagShadow(mesh);
       // Obrys kulis a rekvizit (P81): rozhodnutí jednou na síť; skrytá síť (zásobník efektů) počká na další průchod.
-      if (ink && mesh.userData.sceneryInk === undefined && mesh.visible) {
+      if (ink && budget > 0 && mesh.userData.sceneryInk === undefined && mesh.visible) {
+        budget -= 1;
         mesh.userData.sceneryInk = outlinable(mesh);
         if (mesh.userData.sceneryInk === true && inkMeshes(mesh, 'scenery') > 0) {
           // Zmrazená kulisa (`freeze`) svět matic dětí sama nepřepočítá: obal dostane polohu rodiče hned.
@@ -508,7 +517,8 @@ export function StyleRig({ look, lookId, control, surface }: { readonly look: Lo
       <hemisphereLight args={[shadeSky(shine.light[0], look.palette), shine.light[1], shine.light[2]]} />
       <Sun look={golden} sun={shine.sun} control={control} mapSize={TIER_SETTINGS[tier].shadowMapSize} half={TIER_SETTINGS[tier].shadowHalf} />
       {backLit ? <directionalLight position={back.dir} color={back.color} intensity={shine.sun * BACK_LIGHT} /> : <></>}
-      <ShadowFlags ink={LOOK_STYLE.ink.scenery && tier !== 'low'} />
+      {/* Obrysy kulis jen na `high` (desktop): telefon startuje na `medium` a stály ho čas do hratelnosti (P81 T6). */}
+      <ShadowFlags ink={LOOK_STYLE.ink.scenery && tier === 'high'} />
       <SceneryWindow />
       {/* Život v pozadí kolem orientačního bodu scény (P54B T10) a vítr ve vegetaci (T13). */}
       <Ambient look={look} tier={tier} />

@@ -1,0 +1,22 @@
+{
+  "a": "http://127.0.0.1:3213",
+  "b": "http://127.0.0.1:3212",
+  "labelA": "main před P81 (origin/main s P77)",
+  "labelB": "P81 T5 (profil mix, podlaha, obrysy kulis)",
+  "sentences": [
+    "A cat delivering pizzas across rooftops while avoiding seagulls",
+    "Find the lost crown in an old castle",
+    "An underwater race between a turtle and a shark",
+    "Balance a tower of pancakes on a windy day",
+    "Play mini golf in a candy land",
+    "A farmer catches falling apples in the orchard",
+    "Escape a volcano before the lava reaches you",
+    "A knight jumps across floating islands to rescue a dragon egg"
+  ],
+  "profiles": ["pixel7-cpu4"],
+  "runs": 3,
+  "pauseMs": 5000,
+  "timeoutMs": 120000,
+  "rawDir": "D:/tmp/p81-fp-raw",
+  "out": "evals/play/p81/perf-first-playable.json"
+}
