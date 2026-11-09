@@ -20,6 +20,8 @@ import { type GradeFamily, LOOK_STYLE } from '@/play/arcade/look/style';
 export const FOG_START = LOOK_STYLE.fog.start;
 /** Za bouřky (`look.storm`): déšť má vlastní hustší mlhu nálady (P76), opar profilu ji neposouvá blíž. */
 export const FOG_STORM_START = LOOK_STYLE.fog.storm;
+/** Na výšku (telefon): kamera vidí dál po trati, opar od čtvrtiny zakryl půl obrazu (R3, s11). */
+export const FOG_PORTRAIT_START = LOOK_STYLE.fog.portrait;
 /** Kolik sytosti (HSL, 0–1) přibude obzoru: z oblohy místa, ne šedá. */
 export const FOG_SATURATION = LOOK_STYLE.fog.saturation;
 /** Násobek síly polokoule (výplň stínů) a slunce (klíčové světlo). */
@@ -29,6 +31,8 @@ export const SUN_LIFT = LOOK_STYLE.light.sunLift;
 export const SHADOW_RADIUS = LOOK_STYLE.light.shadowRadius;
 /** Síla stínu slunce: stín ukotví předmět, kousek slunce v něm zůstane, nesklouzne do černé. */
 export const SHADOW_INTENSITY = LOOK_STYLE.light.shadowIntensity;
+/** Síla stínu na sněhu: světlý šedomodrý stín předlohy s12. */
+export const SNOW_SHADOW = LOOK_STYLE.light.snowShadow;
 
 export interface Air {
   /** Barva mlhy, pozadí a oblohy u obzoru (`#rrggbb`). */
@@ -39,12 +43,12 @@ export interface Air {
 
 const hsl = { h: 0, s: 0, l: 0 };
 
-/** Mlha sady, jak ji rig kreslí. */
-export function airOf(look: Pick<Look, 'fog' | 'horizon' | 'storm'>): Air {
+/** Mlha sady, jak ji rig kreslí; `portrait` = plátno na výšku. */
+export function airOf(look: Pick<Look, 'fog' | 'horizon' | 'storm'>, portrait = false): Air {
   const [near, far] = look.fog;
   // HSL v sRGB, jak barvu vidí oko a jak ji píše paleta.
   const { h, s, l } = new Color(look.horizon).getHSL(hsl, SRGBColorSpace);
-  const start = look.storm === true ? FOG_STORM_START : FOG_START;
+  const start = look.storm === true ? FOG_STORM_START : portrait ? FOG_PORTRAIT_START : FOG_START;
   return { color: `#${new Color().setHSL(h, Math.min(1, s + FOG_SATURATION), l, SRGBColorSpace).getHexString()}`, near: Math.max(near, start * far), far };
 }
 

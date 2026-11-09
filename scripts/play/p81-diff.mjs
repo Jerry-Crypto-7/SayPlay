@@ -54,6 +54,20 @@ function centerHue({ data, width, height }) {
 
 const hueShift = (a, b) => (a === null || b === null ? null : Math.abs(((b - a + 540) % 360) - 180));
 
+/** Podíl fialových pixelů celého snímku (P81 R3): odstín 250–320°, chroma aspoň 24/255 – šeď a šum JPEG nepočítá. */
+function purpleShare({ data, width, height }) {
+  let purple = 0;
+  for (let i = 0; i < data.length; i += 3) {
+    const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
+    const max = Math.max(r, g, b);
+    const chroma = max - Math.min(r, g, b);
+    if (chroma < 24) continue;
+    const hue = (((max === r ? ((g - b) / chroma) % 6 : max === g ? (b - r) / chroma + 2 : (r - g) / chroma + 4) * 60) + 360) % 360;
+    if (hue >= 250 && hue <= 320) purple += 1;
+  }
+  return purple / (width * height);
+}
+
 async function compare(fileA, fileB, threshold) {
   const a = await pixels(fileA);
   const b = await pixels(fileB, { width: a.width, height: a.height });
@@ -64,7 +78,7 @@ async function compare(fileA, fileB, threshold) {
   }
   const hueA = centerHue(a);
   const hueB = centerHue(b);
-  return { changed: changed / (a.width * a.height), hueA, hueB, hueShift: hueShift(hueA, hueB) };
+  return { changed: changed / (a.width * a.height), hueA, hueB, hueShift: hueShift(hueA, hueB), purpleA: purpleShare(a), purpleB: purpleShare(b) };
 }
 
 const median = (values) => {
@@ -99,6 +113,8 @@ async function main() {
     minDesktopPlay: play.length === 0 ? null : Math.min(...play.map((row) => row.changed)),
     medianAll: median(rows.map((row) => row.changed)),
     maxHueShift: play.reduce((max, row) => (row.hueShift === null ? max : Math.max(max ?? 0, row.hueShift)), null),
+    maxPurpleA: Math.max(...rows.map((row) => row.purpleA)),
+    maxPurpleB: Math.max(...rows.map((row) => row.purpleB)),
   };
 
   const lines = [
@@ -110,15 +126,18 @@ async function main() {
     `- **Medián desktop-1play: ${pct(summary.medianDesktopPlay)}**, nejmenší ${pct(summary.minDesktopPlay)}`,
     `- Medián všech snímků: ${pct(summary.medianAll)}`,
     `- Největší posun odstínu středu (desktop-1play): ${deg(summary.maxHueShift)}`,
+    `- Fialová (odstín 250–320°, chroma ≥ 24): nejvíc ${(summary.maxPurpleA * 100).toFixed(2)} % snímku před, ${(summary.maxPurpleB * 100).toFixed(2)} % po`,
     '',
-    '| Hra | desktop start | desktop 3 s | desktop 8 s | telefon start | telefon 3 s | telefon 8 s | odstín středu 3 s (před → po, posun) |',
-    '|---|---|---|---|---|---|---|---|',
+    '| Hra | desktop start | desktop 3 s | desktop 8 s | telefon start | telefon 3 s | telefon 8 s | odstín středu 3 s (před → po, posun) | fialová nejvíc (před → po) |',
+    '|---|---|---|---|---|---|---|---|---|',
   ];
+  const share = (value) => `${(value * 100).toFixed(2)} %`;
   for (const game of games) {
     const cell = (vp, moment) => pct(key(vp, moment)(game)?.changed ?? null);
     const hue = key('desktop', '1play')(game);
+    const own = rows.filter((row) => row.game === game);
     lines.push(
-      `| ${game} | ${cell('desktop', '0start')} | ${cell('desktop', '1play')} | ${cell('desktop', '2play')} | ${cell('phone', '0start')} | ${cell('phone', '1play')} | ${cell('phone', '2play')} | ${hue === undefined ? '–' : `${deg(hue.hueA)} → ${deg(hue.hueB)}, ${deg(hue.hueShift)}`} |`,
+      `| ${game} | ${cell('desktop', '0start')} | ${cell('desktop', '1play')} | ${cell('desktop', '2play')} | ${cell('phone', '0start')} | ${cell('phone', '1play')} | ${cell('phone', '2play')} | ${hue === undefined ? '–' : `${deg(hue.hueA)} → ${deg(hue.hueB)}, ${deg(hue.hueShift)}`} | ${share(Math.max(...own.map((row) => row.purpleA)))} → ${share(Math.max(...own.map((row) => row.purpleB)))} |`,
     );
   }
   const markdown = `${lines.join('\n')}\n`;

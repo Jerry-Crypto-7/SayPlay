@@ -10,7 +10,7 @@ import { LOOK_IDS, LOOKS } from '@/play/arcade/look';
 import { glowingCopy, mergeBody, patchedClone, plantMaterial, rimMaterial, toonLit } from '../load';
 import { colorHex } from '@/brand/tokens';
 
-import { CLAY_RIM, CLAY_ROUGHNESS, COLOR, COMMON, DIFFUSE, darkness, EMISSIVE, LIGHTS, PALETTE_MIX, PHYSICAL, paletteMix, type Rgb, scenePaletteOf, setScenePalette, toon, toonPatch } from '../rig/toon';
+import { CLAY_RIM, CLAY_ROUGHNESS, COLOR, COMMON, DIFFUSE, darkness, EMISSIVE, LIGHTS, PALETTE_MIX, PHYSICAL, paletteMix, type Rgb, scenePaletteOf, setScenePalette, STORM_RIM, toon, toonPatch } from '../rig/toon';
 
 function compiled(material: { onBeforeCompile(shader: never, renderer: never): void }) {
   const shader = { vertexShader: ShaderLib.standard.vertexShader, fragmentShader: ShaderLib.standard.fragmentShader, uniforms: {} as Record<string, unknown> };
@@ -96,9 +96,10 @@ describe('clay shading and the scene palette in one shader patch (P56B T6, P75 T
     expect(toon.rim.value.r).toBeGreaterThanOrEqual(toon.rim.value.b);
     setScenePalette(night);
     expect(toon.rim.value.toArray()).toEqual([0, 0, 0]);
-    // P81 T5: bouřka za dne (s9) okraj nemá – emisivní okraj v tmavém dešti přebil osvětlení kulis.
+    // P81 T5: celý okraj v tmavém dešti přebil osvětlení kulis; R3: v bouřce jen třetina (teplé hrany domů předlohy s9).
     setScenePalette({ ...day, storm: true });
-    expect(toon.rim.value.toArray()).toEqual([0, 0, 0]);
+    expect(toon.rim.value.r).toBeCloseTo(new Color(colorHex['sun-soft']).r * CLAY_RIM * STORM_RIM, 5);
+    expect(STORM_RIM).toBeLessThan(0.5);
   });
 
   it('pulls scenery towards the set palette at the same brightness, never purple, and leaves characters alone', () => {

@@ -15,7 +15,7 @@ import { LOOK_STYLE, MIX_STYLE, restyleLook, TODAY_STYLE } from '@/play/arcade/l
 
 import { isPurple } from '../../../../../../scripts/assets/cc0/palette.mjs';
 import { INK_PX, INK_SURFACE } from '../rig/InkOutline';
-import { airOf, BACK_LIGHT, BACK_SKY, FOG_SATURATION, FOG_START, FOG_STORM_START, GOLDEN_SUN, GOLDEN_UP, GOLDEN_WARMTH, HEMI_LIFT, SHADOW_INTENSITY, SHADOW_RADIUS, SUN_LIFT } from '../rig/fog-light';
+import { airOf, BACK_LIGHT, BACK_SKY, FOG_PORTRAIT_START, FOG_SATURATION, FOG_START, FOG_STORM_START, GOLDEN_SUN, GOLDEN_UP, GOLDEN_WARMTH, HEMI_LIFT, SHADOW_INTENSITY, SHADOW_RADIUS, SNOW_SHADOW, SUN_LIFT } from '../rig/fog-light';
 import { GRADES, LOW_CONTRAST } from '../rig/grade';
 import { arenaPalette, buildArenaFloor } from '../rig/terrain/arenaFloor';
 
@@ -30,6 +30,7 @@ describe('profil „dnes“ = konstanty před P81', () => {
       sunLift: 1.1,
       shadowRadius: 2,
       shadowIntensity: 0.95,
+      snowShadow: 0.95,
       backLight: 0.45,
       backSky: 0.5,
     });
@@ -38,7 +39,7 @@ describe('profil „dnes“ = konstanty před P81', () => {
   it('paleta, obloha, mlha, podlaha, obrysy a následné zpracování', () => {
     expect(TODAY_STYLE.palette).toBeNull();
     expect(TODAY_STYLE.sky).toEqual({ painted: true, paintHaze: 0.3, hazeBand: 0.18, gradient: 0 });
-    expect(TODAY_STYLE.fog).toEqual({ start: 0.6, storm: 0.6, saturation: 0.18 });
+    expect(TODAY_STYLE.fog).toEqual({ start: 0.6, storm: 0.6, portrait: 0.6, saturation: 0.18 });
     expect(TODAY_STYLE.floor).toEqual({ roughness: 0.9, ice: 0.45, wall: 0.85, seam: 1, laneLine: '#e2e8f0' });
     expect(TODAY_STYLE.ink).toEqual({ px: 1.5, scenery: false, surface: { hero: 0.7, foe: 0, obstacle: 0.7, scenery: 0.7 } });
     expect(TODAY_STYLE.post).toEqual({ bloom: 0.8, tilt: 1 });
@@ -67,7 +68,8 @@ describe('profil „dnes“ = konstanty před P81', () => {
 describe('rig čte aktivní profil', () => {
   it('světlo a mlha (`fog-light.ts`)', () => {
     const { light, fog } = LOOK_STYLE;
-    expect([FOG_START, FOG_STORM_START, FOG_SATURATION]).toEqual([fog.start, fog.storm, fog.saturation]);
+    expect([FOG_START, FOG_STORM_START, FOG_PORTRAIT_START, FOG_SATURATION]).toEqual([fog.start, fog.storm, fog.portrait, fog.saturation]);
+    expect(SNOW_SHADOW).toBe(light.snowShadow);
     expect([GOLDEN_UP, GOLDEN_SUN, GOLDEN_WARMTH]).toEqual([light.goldenUp, light.goldenSun, light.goldenWarmth]);
     expect([HEMI_LIFT, SUN_LIFT, SHADOW_INTENSITY, SHADOW_RADIUS, BACK_LIGHT, BACK_SKY]).toEqual([light.hemiLift, light.sunLift, light.shadowIntensity, light.shadowRadius, light.backLight, light.backSky]);
   });

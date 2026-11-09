@@ -65,8 +65,16 @@ describe('runner valley', () => {
     }
   });
 
-  it('draws with flat-shaded faces and palette vertex colours', () => {
+  it('draws snow with shared vertices: smooth slopes, no facets (P81 R3)', () => {
     const { geometry } = valley;
+    expect(geometry.index).not.toBeNull();
+    expect(geometry.getAttribute('color').count).toBe(geometry.getAttribute('position').count);
+    // Vrchol svahu sdílí víc trojúhelníků: jeho normála je průměr, ne normála jedné plochy.
+    expect(geometry.getAttribute('position').count).toBeLessThan(geometry.index!.count / 2);
+  });
+
+  it('draws other places with flat-shaded faces and palette vertex colours', () => {
+    const { geometry } = buildValley({ look: LOOKS.meadow, from: -20, to: LENGTH + 80 });
     expect(geometry.index).toBeNull();
     const normal = geometry.getAttribute('normal');
     // Flat shading: všechny tři vrcholy trojúhelníku mají tutéž normálu.

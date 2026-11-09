@@ -146,8 +146,11 @@ export function setScenePalette(look: Pick<Look, 'ground' | 'tint' | 'block' | '
     toon.palette.value[index]!.fromArray(oklab([color.r, color.g, color.b]));
   });
   toon.mix.value = PALETTE_MIX;
-  toon.rim.value.copy(CLAY_RIM_TINT).multiplyScalar(look.storm === true ? 0 : CLAY_RIM * (1 - darkness(look)));
+  toon.rim.value.copy(CLAY_RIM_TINT).multiplyScalar(CLAY_RIM * (look.storm === true ? STORM_RIM : 1 - darkness(look)));
 }
+
+/** Okraj v bouřce (P81 R3): třetina – teplé hrany domů předlohy s9; celý okraj z kulis dělal vybledlé sklo (T5). */
+export const STORM_RIM = 0.35;
 
 /** Paleta místa (`Look.palette`, `#rrggbb`) v Oklab pro `snapToPalette`. */
 export function paletteLab(hexes: readonly string[]): Rgb[] {

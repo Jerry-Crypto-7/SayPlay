@@ -68,8 +68,9 @@ export interface PaletteStyle {
   readonly lightness: number;
   /** Síla zlatého oparu a teplého nízkého slunce (0–1). */
   readonly heat: number;
-  /** Výška nízkého slunce (sinus elevace) a násobky síly slunce a záře oblohy. */
+  /** Výška nízkého slunce (sinus elevace), nad sněhem `snowUp`, a násobky síly slunce a záře oblohy. */
   readonly sunUp: number;
+  readonly snowUp: number;
   readonly sunGain: number;
   readonly glowGain: number;
   /**
@@ -92,9 +93,10 @@ export interface LookStyle {
     /** Násobek síly polokoule (výplň stínů) a slunce (klíčové světlo). */
     readonly hemiLift: number;
     readonly sunLift: number;
-    /** Poloměr PCF a síla stínu slunce. */
+    /** Poloměr PCF a síla stínu slunce; `snowShadow` = síla na sněhu (`cover: 'snow'`). */
     readonly shadowRadius: number;
     readonly shadowIntensity: number;
+    readonly snowShadow: number;
     /** Protisvětlo (obrys hrdiny): síla k slunci a podíl barvy oblohy u obzoru. */
     readonly backLight: number;
     readonly backSky: number;
@@ -108,10 +110,10 @@ export interface LookStyle {
    */
   readonly sky: { readonly painted: boolean; readonly paintHaze: number; readonly hazeBand: number; readonly gradient: number };
   /**
-   * Mlha: začíná v tomto podílu dohledu (`storm` za bouřky – déšť má vlastní hustší mlhu nálady, P76);
-   * barva = obzor sytější o `saturation` (HSL).
+   * Mlha: začíná v tomto podílu dohledu (`storm` za bouřky – déšť má vlastní hustší mlhu nálady, P76; `portrait`
+   * na výšku – telefon vidí dál po trati a opar mu zakryl půl obrazu); barva = obzor sytější o `saturation` (HSL).
    */
-  readonly fog: { readonly start: number; readonly storm: number; readonly saturation: number };
+  readonly fog: { readonly start: number; readonly storm: number; readonly portrait: number; readonly saturation: number };
   /** Podlaha arény a dráhy: drsnost země, ledu a stěn, násobek kontrastu spár a čára jízdního pruhu. */
   readonly floor: { readonly roughness: number; readonly ice: number; readonly wall: number; readonly seam: number; readonly laneLine: string };
   /**
@@ -143,12 +145,13 @@ export const TODAY_STYLE: LookStyle = {
     // P76 1,5, P77 T3 4: při 4 soudce proti produkci dvakrát „stronger contact shadows“ u produkce (P77 T6).
     shadowRadius: 2,
     shadowIntensity: 0.95,
+    snowShadow: 0.95,
     backLight: 0.45,
     backSky: 0.5,
   },
   palette: null,
   sky: { painted: true, paintHaze: 0.3, hazeBand: 0.18, gradient: 0 },
-  fog: { start: 0.6, storm: 0.6, saturation: 0.18 },
+  fog: { start: 0.6, storm: 0.6, portrait: 0.6, saturation: 0.18 },
   floor: { roughness: 0.9, ice: 0.45, wall: 0.85, seam: 1, laneLine: '#e2e8f0' },
   // Kit kreslí 2,5 px; modelína konceptu (P75 T2) má hranu jen naznačenou.
   ink: { px: 1.5, scenery: false, surface: { hero: 0.7, foe: 0, obstacle: 0.7, scenery: 0.7 } },
@@ -179,13 +182,15 @@ const MIX_DAY: Grade = { lift: [0, 0.006, 0.02], gain: [1.04, 1, 0.95], split: 1
 /** Směr mix s méně oranžovou (majitel 9. 11.). */
 export const MIX_STYLE: LookStyle = {
   ...TODAY_STYLE,
-  // Slunce nese už paleta (`restyleLook`): zlatá hodina rodiny by ho ohřála podruhé.
-  light: { ...TODAY_STYLE.light, goldenWarmth: { green: 0, warm: 0, cold: 0, water: 0, indoor: 0, dark: 0 } },
-  palette: { saturation: 0.14, lightness: 0.03, heat: 0.5, sunUp: 0.33, sunGain: 1.45, glowGain: 1.6, floorNeutral: 0.75 },
+  // Slunce nese už paleta (`restyleLook`): zlatá hodina rodiny by ho ohřála podruhé. Sníh (R3, předloha s12):
+  // stín slunce světlý a šedomodrý (výplň polokoule), ne dlouhý tmavý pruh přes dráhu.
+  light: { ...TODAY_STYLE.light, goldenWarmth: { green: 0, warm: 0, cold: 0, water: 0, indoor: 0, dark: 0 }, snowShadow: 0.5 },
+  palette: { saturation: 0.14, lightness: 0.03, heat: 0.5, sunUp: 0.33, snowUp: 0.45, sunGain: 1.6, glowGain: 1.6, floorNeutral: 0.75 },
   sky: { painted: true, paintHaze: 0.45, hazeBand: 0.3, gradient: 0.3 },
   // Lehký opar od čtvrtiny dohledu, z méně syté barvy obzoru. Bouřka si nechá mlhu P76: od čtvrtiny by déšť
-  // ve městě (s9) zmodral a zesvětlil zem pod hrdinou o 46° a skryl panoráma.
-  fog: { start: 0.25, storm: 0.6, saturation: 0.06 },
+  // ve městě (s9) zmodral a zesvětlil zem pod hrdinou o 46° a skryl panoráma. Na výšku od 0,75 (R3, s11 telefon:
+  // od poloviny obzor dál vybělil horní třetinu obrazu).
+  fog: { start: 0.25, storm: 0.6, portrait: 0.75, saturation: 0.06 },
   // Hala a město (rodina `indoor`) si ladění nechají – chladný zdvih zmodral tmavou mokrou zem s9.
   // Obrys všech modelů 2 px s čtvrtinou tónu povrchu (prototyp `02ef2983`); překážka a nepřítel si barvu nechají
   // (rajčatový obrys nepřítele = signál hrozby).
@@ -265,12 +270,15 @@ function golden(look: Look, style: PaletteStyle): Look {
   const { heat } = style;
   const [left, , forward] = look.sunDir;
   const flat = Math.hypot(left, forward) || 1;
-  // Nízko nad obzorem, z boku za kamerou: dlouhé stíny přes celou plochu.
-  const side = Math.sqrt(1 - style.sunUp ** 2);
-  // Sníh zůstane sněhem: slabší zlatý opar a světlejší slunce, jinak z něj je písek.
+  // Sníh zůstane sněhem: slabší zlatý opar a světlejší slunce, jinak z něj je písek. Slunce nad sněhem výš
+  // (R3): stíny kulis přes celou dráhu s12 byly dlouhé a tmavé; žlutavý obzor předlohy dá opar 0,4.
   const snow = look.cover === 'snow';
-  const warm = (snow ? 0.3 : 0.5) * heat;
-  const sunColor = mixHex('#fff4e6', snow ? '#ffd0a0' : '#ffad5c', heat);
+  const up = snow ? style.snowUp : style.sunUp;
+  // Nízko nad obzorem, z boku za kamerou: dlouhé stíny přes celou plochu.
+  const side = Math.sqrt(1 - up ** 2);
+  const warm = (snow ? 0.4 : 0.5) * heat;
+  // Slunce nad sněhem žlutější (R3): oranžové s modrobílou zemí dalo levandulovou dráhu (odstín 255°).
+  const sunColor = mixHex('#fff4e6', snow ? '#ffe4b0' : '#ffad5c', heat);
   const sun = new Color(sunColor);
   const floor = (value: string) => neutralUnder(value, sun, style.floorNeutral);
   return {
@@ -279,11 +287,14 @@ function golden(look: Look, style: PaletteStyle): Look {
     horizon: warmMix(look.horizon, '#ffbf7a', warm),
     sky: warmMix(look.sky, '#ffbf7a', warm),
     sunColor,
-    sunDir: [(left / flat) * side, style.sunUp, (forward / flat) * side],
+    sunDir: [(left / flat) * side, up, (forward / flat) * side],
     sun: look.sun * style.sunGain,
     glow: Math.max(look.glow, 0.5) * style.glowGain,
-    light: [warmMix(look.light[0], '#ffd2a0', 0.45 * heat), warmMix(look.light[1], look.land ?? look.ground, 0.35 * heat), look.light[2] * 0.8],
-    ground: floor(look.ground),
+    // Výplň polokoule v plné síle (R3): nízké slunce dává rovné zemi o třetinu míň světla a soudce četl s4 jako
+    // „tmavší a matnější“ než jasnou předlohu. Sníh je světlý sám a modrá výplň by ho posunula do modra (s12 o 16°).
+    light: [warmMix(look.light[0], '#ffd2a0', 0.45 * heat), warmMix(look.light[1], look.land ?? look.ground, 0.35 * heat), look.light[2] * (snow ? 0.8 : 1)],
+    // Bílý sníh se ochladit nedá (kanály narazí na 1 a vyjde azurový); žlutavé slunce ho prohřeje jako předlohu s12.
+    ground: snow ? look.ground : floor(look.ground),
     track: floor(look.track),
     ...(look.land === undefined ? {} : { land: floor(look.land) }),
     ...(look.block === undefined ? {} : { block: [look.block[0], floor(look.block[1])] }),

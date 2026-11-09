@@ -36,7 +36,7 @@ import {
   Vector3,
 } from 'three';
 
-import { type Look, type LookId, NIGHT } from '@/play/arcade/look';
+import { type Look, type LookId, LOOKS, NIGHT } from '@/play/arcade/look';
 import { LOOK_STYLE } from '@/play/arcade/look/style';
 
 import { Ambient } from '../Ambient';
@@ -45,7 +45,7 @@ import { loadsIdle } from '../pending-loads';
 import { darkness, setScenePalette } from './toon';
 import { Wind } from '../Vegetation';
 import { shadeSky } from '../contact-shadow';
-import { airOf, BACK_LIGHT, BACK_SKY, goldenHour, liftLight, SHADOW_INTENSITY, SHADOW_RADIUS } from './fog-light';
+import { airOf, BACK_LIGHT, BACK_SKY, goldenHour, liftLight, SHADOW_INTENSITY, SHADOW_RADIUS, SNOW_SHADOW } from './fog-light';
 import { LOOK_FAMILY } from './grade';
 import { type PaintedSky, paintedSkyOf, paintFade, type PaintStep, stagePlace } from './painted-sky';
 import { Post, useQualityTier } from './Post';
@@ -135,6 +135,8 @@ void main() {
     float forward = side > 0.5 ? dir.x : dir.z;
     vec2 uv = vec2(0.5 - atan(left, forward) / 3.14159265, paintHorizon + asin(clamp(dir.y, -1.0, 1.0)) / 1.57079633);
     vec3 art = texture2D(painted, uv).rgb * paintTint;
+    // P81 R3: fialová ani v obraze (hory sněhu s12) – tón, kde červená i modrá převyšují zelenou, zešedne.
+    art = mix(art, vec3(dot(art, vec3(0.2126, 0.7152, 0.0722))), smoothstep(0.0, 0.08, min(art.r, art.b) - art.g));
     // P81: pás oparu u obzoru (výška HAZE_BAND) a přechod obzor → zenit přes obraz nahoru (PAINT_GRADIENT).
     art = mix(art, gl_FragColor.rgb, min(1.0, PAINT_HAZE * (1.0 - smoothstep(0.0, HAZE_BAND, dir.y)) + PAINT_GRADIENT * smoothstep(0.05, 0.9, dir.y)));
     // Pod obzorem jen dnešní obloha v barvě mlhy: zem obrazu (písek, silnice s auty) by za koncem mlhy stála jako stěna.
@@ -373,7 +375,7 @@ function Sun({ look, sun: intensity, control, mapSize, half }: { readonly look: 
     sun.position.copy(at).add(toSun);
   });
 
-  return <directionalLight ref={light} color={look.sunColor} intensity={intensity} castShadow shadow-mapSize={[mapSize, mapSize]} shadow-bias={-0.0005} shadow-normalBias={0.02} shadow-radius={SHADOW_RADIUS} shadow-intensity={SHADOW_INTENSITY} />;
+  return <directionalLight ref={light} color={look.sunColor} intensity={intensity} castShadow shadow-mapSize={[mapSize, mapSize]} shadow-bias={-0.0005} shadow-normalBias={0.02} shadow-radius={SHADOW_RADIUS} shadow-intensity={look.cover === 'snow' ? SNOW_SHADOW : SHADOW_INTENSITY} />;
 }
 
 /**
@@ -496,17 +498,19 @@ export function StyleRig({ look, lookId, control, surface }: { readonly look: Lo
   const [backLit] = useState(() => tier === 'high');
   // Expozice se počítá ze světla sady (noc zvedá dál stejně), zvednutí jen přisvítí scénu (P70D T2).
   const shine = useMemo(() => liftLight(lit), [lit]);
-  const air = useMemo(() => airOf(look), [look]);
+  const portrait = useThree((three) => three.size.height > three.size.width);
+  const air = useMemo(() => airOf(look, portrait), [look, portrait]);
   // Úroveň kvality jen na začátku: výměna obrazu uprostřed hry by stáhla druhý a prolínala znovu.
   const [paintTier] = useState(tier);
   const [place] = useState(() => stagePlace(surface.current));
   const painted = useMemo(() => (LOOK_STYLE.sky.painted ? paintedSkyOf(look, lookId, paintTier, place) : null), [look, lookId, paintTier, place]);
   // Okrajový svit postav barvou oblohy sady (P54B T14): jen uniformy, materiály se nepřekládají.
   // Paleta, přimíchání a okraj toonu sady (P56B T6): také jen uniformy.
+  // Bouřka (R3, předloha s9): kulisy se táhnou k paletě suchého místa – mokrá zem a šedé nebe stáhly domy do šedi.
   useEffect(() => {
     setCharacterRim(look);
-    setScenePalette(look);
-  }, [look]);
+    setScenePalette(look.storm === true ? { ...look, ground: LOOKS[lookId].ground, horizon: LOOKS[lookId].horizon } : look);
+  }, [look, lookId]);
   return (
     <>
       <color attach="background" args={[air.color]} />

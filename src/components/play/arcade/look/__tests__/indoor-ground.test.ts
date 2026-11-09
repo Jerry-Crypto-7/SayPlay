@@ -206,7 +206,8 @@ function hashGeometry(geometry: BufferGeometry): string {
 /**
  * Otisky z 6beb49d3 (týž kód testu nad nezměněnou větví). Údolí sopky přepsané v P73D T5: nižší, teplý kaňon s lávou.
  * P75 T5 přepsal zem sopky (teplá hnědá, svítící láva), města (teplejší šedá) a podmoří (písek obrazu místo tmavé modré).
- * P81 T4 přepsal `valley` všech míst: krajnice cesty tmavší (obrys), ne krémový štěrk.
+ * P81 T4 přepsal `valley` všech míst: krajnice cesty tmavší (obrys), ne krémový štěrk. P81 R3 přepsal `valley` sněhu:
+ * sdílené vrcholy, hladké svahy bez fazet (předloha s12).
  */
 const BEFORE: Readonly<Record<string, { readonly valley: string; readonly strips: string; readonly field: string }>> = {
   meadow: { valley: '10f02af3', strips: '#94754f:af763ea5,#75593b:94024b41', field: 'ab07337c' },
@@ -217,7 +218,7 @@ const BEFORE: Readonly<Record<string, { readonly valley: string; readonly strips
   beach: { valley: 'd6f9d223', strips: '#dcc193:787e8d89,#c3a476:55271732', field: '88b9d0f9' },
   ocean: { valley: 'd7d30bb1', strips: '#a07a4e:6bc0ae61,#6e5034:9dc66635,#6e5034:56433411', field: 'ca3f2ca0' },
   underwater: { valley: '85c15ee7', strips: '#dcc193:c524109c,#c3a476:c0a737f3', field: '963f201c' },
-  snow: { valley: '96c5022d', strips: '#e6edf4:de4aeb64,#bccbd9:d62e4120', field: '9d5077f9' },
+  snow: { valley: 'd9f8d3d8', strips: '#e6edf4:de4aeb64,#bccbd9:d62e4120', field: '9d5077f9' },
   volcano: { valley: '2162de92', strips: '#94754f:672a97ac,#75593b:d61ff000', field: '10198d3e' },
   space: { valley: 'c0409fef', strips: '#94754f:dd0ac91,#75593b:9a853b2a', field: '5a198448' },
   graveyard: { valley: '3bf119ea', strips: '#94754f:ca2725f8,#75593b:5dda668f', field: 'a900ccf9' },

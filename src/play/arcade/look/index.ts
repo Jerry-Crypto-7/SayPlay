@@ -261,6 +261,8 @@ export interface Surface {
 export const SURFACES = {
   asphalt: { color: '#5a5f66', edge: '#e8e6df', marks: { kind: 'dashes', color: '#e8e6df' }, wall: ['#ece8df', '#d9473a'] },
   dirt: { color: '#94754f', edge: '#75593b', wall: ['#8a6a44', '#5e4630'], flecks: '#6f5536' },
+  // Cukrová země (P81 R3, předloha s11): světlá teplá cesta a bonbonový obrubník bílá–červená místo hlíny.
+  candy: { color: '#c8906c', edge: '#b47a58', wall: ['#f6efe6', '#e2553f'], flecks: '#a8724f' },
   sand: { color: '#dcc193', edge: '#c3a476', wall: ['#b88a62', '#e07a5f'], flecks: '#e58f75' },
   // Písek mořského dna (podmoří): pás jako `sand` (jiné hry ho kreslí bez svitu), svit trati závodu. Svit sjednotí
   // červenou všeho na trati, odstín pak nese zelená: světlý pískovec proti korálu, sytější korálové drobky.
@@ -857,6 +859,7 @@ const WATERWAY = /\brivers?\b|canal|\blake\b|rapids|\bsea\b|ocean/;
 const PLACE_SURFACES: readonly (readonly [RegExp, SurfaceKind])[] = [
   [/harbou?r|\bdocks?\b|\bpiers?\b|boardwalk|wharf|marina|jetty/, 'planks'],
   [/\broads?\b|street|highway|motorway|freeway|race ?track|speedway|parking/, 'asphalt'],
+  [/candy|sweets?\b|lollipop|gingerbread|\bsugar/, 'candy'],
 ];
 
 /** Místo z věty, které přebije znak na obzoru (P73D T5): cukrová země nemá vlastní sadu, padá na louku. */
@@ -919,6 +922,9 @@ interface MoodShift {
   readonly fog: readonly [near: number, far: number];
   /** Zem jde o `amount` k `tone` (bouřka: mokrá); bez něj zem sady. */
   readonly ground?: { readonly tone: string; readonly amount: number };
+  /** Zenit oblohy jde o `amount` k `top` místo k `tone`; slunce k `sunTone` místo k `lightTone`. */
+  readonly top?: string;
+  readonly sunTone?: string;
 }
 
 /*
@@ -934,7 +940,10 @@ const MOOD_SHIFTS: Readonly<Record<Exclude<Mood, 'dusk' | 'cozy'>, MoodShift>> =
   spooky: { tone: '#1d3a37', lightTone: '#a3d6c8', amount: 0.7, light: 0.85, sun: 0.3, glow: 0.15, fog: [0.45, 0.65] },
   // Bouřka: tmavé šedé nebe; déšť kreslí `Weather.tsx`. Zem mokrá, tmavě šedomodrá (P76 T2): teplá hnědá zem města
   // z P75 v dešti podle soudce „less convincing as a stormy city“.
-  storm: { tone: '#3a4a4a', lightTone: '#b0bcc4', amount: 0.7, light: 0.9, sun: 0.35, glow: 0.08, fog: [0.6, 0.8], ground: { tone: '#2c3e50', amount: 0.75 } },
+  // P81 R3 (předloha s9): teplé nízké světlo na budovách proti tmavšímu studenému nebi; výplň zůstane studená.
+  // Mokrá zem modrozelená: pod teplým sluncem vyjde zelenošedá jako zem bouřky v `main` pod tmavým světlem
+  // (šedomodrá pod zvednutým světlem posunula odstín pod hrdinou o 50°, šedá s teplým sluncem do olivové).
+  storm: { tone: '#2a3838', lightTone: '#b0bcc4', amount: 0.7, light: 0.9, sun: 0.45, glow: 0.08, fog: [0.6, 0.8], ground: { tone: '#114658', amount: 0.75 }, top: '#1b2727', sunTone: '#dccaa8' },
   // Mlha: světlá a blíž.
   fog: { tone: '#c8d0d0', lightTone: '#e2e8ec', amount: 0.6, light: 1, sun: 0.6, glow: 0.4, fog: [0.3, 0.55] },
   // Jasno: barvy sady, silnější slunce a dohled dál.
@@ -982,14 +991,14 @@ const FIGURES = ['#FF5A36', '#FFC530', '#1F1A17', '#FFFFFF'] as const;
 function withMood(look: Look, shift: MoodShift): Look {
   const tone = (hex: string) => mix(hex, shift.tone, shift.amount);
   const toLight = (hex: string) => mix(hex, shift.lightTone, shift.amount);
-  const moody = { light: [toLight(look.light[0]), tone(look.light[1]), look.light[2] * shift.light] as const, sun: look.sun * shift.sun, sunColor: toLight(look.sunColor) };
+  const moody = { light: [toLight(look.light[0]), tone(look.light[1]), look.light[2] * shift.light] as const, sun: look.sun * shift.sun, sunColor: mix(look.sunColor, shift.sunTone ?? shift.lightTone, shift.amount) };
   const ground = shift.ground === undefined ? look.ground : mix(look.ground, shift.ground.tone, shift.ground.amount);
   const closer = Math.max(1, ...FIGURES.map((figure) => Math.abs(luminance(figure) - luminance(look.ground)) / Math.max(1e-6, Math.abs(luminance(figure) - luminance(ground)))));
   const lift = Math.max(1, (brightness(NIGHT) / brightness(moody)) * closer);
   return {
     ...look,
     sky: tone(look.sky),
-    skyTop: tone(look.skyTop),
+    skyTop: mix(look.skyTop, shift.top ?? shift.tone, shift.amount),
     horizon: tone(look.horizon),
     light: [moody.light[0], moody.light[1], moody.light[2] * lift],
     sun: moody.sun * lift,

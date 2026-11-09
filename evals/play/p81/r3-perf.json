@@ -1,0 +1,146 @@
+{
+ "profile": "Pixel 7 UA/DPR, 390x844, CPU 4x, ANGLE d3d11, OpenXR off",
+ "a": "http://127.0.0.1:3213",
+ "b": "http://127.0.0.1:3212",
+ "repeats": 4,
+ "windowMs": 10000,
+ "gate": {
+  "fpsMin": 40,
+  "p95MaxMs": 33.3
+ },
+ "measuredAt": "2026-11-09T21:31:32.622Z",
+ "complete": true,
+ "pass": false,
+ "rows": [
+  {
+   "id": "s9",
+   "text": "A bird flies through a stormy city",
+   "A": {
+    "fpsMedian": 53.4,
+    "p95MedianMs": 33.3,
+    "runs": [
+     {
+      "fps": 52.1,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 80
+     },
+     {
+      "fps": 54.8,
+      "p95Ms": 33.3,
+      "quality": "medium",
+      "calls": 81
+     },
+     {
+      "fps": 52.1,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 81
+     },
+     {
+      "fps": 54.9,
+      "p95Ms": 33.3,
+      "quality": "medium",
+      "calls": 81
+     }
+    ]
+   },
+   "B": {
+    "fpsMedian": 53.5,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 57.9,
+      "p95Ms": 16.8,
+      "quality": "low",
+      "calls": 49
+     },
+     {
+      "fps": 48,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 80
+     },
+     {
+      "fps": 54.3,
+      "p95Ms": 33.3,
+      "quality": "medium",
+      "calls": 81
+     },
+     {
+      "fps": 52.7,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 80
+     }
+    ]
+   },
+   "passB": false
+  },
+  {
+   "id": "s12",
+   "text": "A penguin slides down an icy mountain",
+   "A": {
+    "fpsMedian": 49.9,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 47.4,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 110
+     },
+     {
+      "fps": 48.2,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 110
+     },
+     {
+      "fps": 51.5,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 110
+     },
+     {
+      "fps": 51.7,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 110
+     }
+    ]
+   },
+   "B": {
+    "fpsMedian": 51,
+    "p95MedianMs": 33.4,
+    "runs": [
+     {
+      "fps": 51.1,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 110
+     },
+     {
+      "fps": 50.8,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 110
+     },
+     {
+      "fps": 51.9,
+      "p95Ms": 33.4,
+      "quality": "medium",
+      "calls": 110
+     },
+     {
+      "fps": 50,
+      "p95Ms": 33.4,
+      "quality": "low",
+      "calls": 79
+     }
+    ]
+   },
+   "passB": false
+  }
+ ]
+}
