@@ -78,6 +78,12 @@ export interface PaletteStyle {
    * slunce, takže osvětlená zůstane ve svém odstínu (majitel: hradní dlažba nesmí zhnědnout do oranžova).
    */
   readonly floorNeutral: number;
+  /**
+   * Travnatá zem za slunce (`cover: 'grass'`; předlohy s7 a s10 mají světlou měkkou žlutozelenou trávu, soudce T7
+   * u sytě tmavé zelené rozdíl neviděl): posun odstínu ke žluté (°), sytost a světlost (HSL) místo `saturation`
+   * a `lightness`. Jas země se tu nedrží – tráva je světlejší, pořád tmavší než rajčatová.
+   */
+  readonly grass: { readonly hue: number; readonly saturation: number; readonly lightness: number };
 }
 
 export interface LookStyle {
@@ -185,7 +191,7 @@ export const MIX_STYLE: LookStyle = {
   // Slunce nese už paleta (`restyleLook`): zlatá hodina rodiny by ho ohřála podruhé. Sníh (R3, předloha s12):
   // stín slunce světlý a šedomodrý (výplň polokoule), ne dlouhý tmavý pruh přes dráhu.
   light: { ...TODAY_STYLE.light, goldenWarmth: { green: 0, warm: 0, cold: 0, water: 0, indoor: 0, dark: 0 }, snowShadow: 0.5 },
-  palette: { saturation: 0.14, lightness: 0.03, heat: 0.5, sunUp: 0.33, snowUp: 0.45, sunGain: 1.6, glowGain: 1.6, floorNeutral: 0.75 },
+  palette: { saturation: 0.14, lightness: 0.03, heat: 0.5, sunUp: 0.33, snowUp: 0.45, sunGain: 1.6, glowGain: 1.6, floorNeutral: 0.75, grass: { hue: -24, saturation: -0.25, lightness: 0.1 } },
   sky: { painted: true, paintHaze: 0.45, hazeBand: 0.3, gradient: 0.3 },
   // Lehký opar od čtvrtiny dohledu, z méně syté barvy obzoru. Bouřka si nechá mlhu P76: od čtvrtiny by déšť
   // ve městě (s9) zmodral a zesvětlil zem pod hrdinou o 46° a skryl panoráma. Na výšku od 0,75 (R3, s11 telefon:
@@ -302,6 +308,20 @@ function golden(look: Look, style: PaletteStyle): Look {
   };
 }
 
+/**
+ * Místa bez slunce profilu: obývák, jeskyně, hřbitov a podmoří (teplé slunce pod vodou posune osvětlené dno
+ * o 93°, brána je 15°). Vesmír slunce dostane, nebe si nechá (`OWN_SKY`) – předloha s6 svítí na zem teplým
+ * sluncem pod černou hvězdnou oblohou a soudce T7 bez něj na listech rozdíl neviděl (změna 2,6 % pixelů).
+ */
+const OWN_TONE: ReadonlySet<LookId> = new Set<LookId>(['living_room', 'cave', 'graveyard', 'underwater']);
+const OWN_SKY: ReadonlySet<LookId> = new Set<LookId>(['space']);
+
+/** Tráva za slunce (`PaletteStyle.grass`): odstín ke žluté (osvětlený nejvýš o 15°, pin), měkčí a světlejší. */
+function grassOf(value: string, grass: PaletteStyle['grass']): string {
+  const { h, s, l } = new Color(value).getHSL(hsl, SRGBColorSpace);
+  return hex(new Color().setHSL((h + grass.hue / 360 + 1) % 1, Math.min(1, Math.max(0, s + grass.saturation)), Math.min(0.97, Math.max(0, l + grass.lightness)), SRGBColorSpace));
+}
+
 /** Jaké světlo nad místem je: noc a zatažená obloha (bouřka, šero, mlha, strašidelno, soumrak) zlatou hodinu nedostanou. */
 export interface SkyKind {
   readonly night: boolean;
@@ -310,19 +330,21 @@ export interface SkyKind {
 
 /**
  * Paleta místa podle profilu (prototyp `variantLook`, směr mix: `golden(saturated(look, 0,14, 0,03), 0,5)`).
- * Noc, hala, místa bez slunce (pod vodou, jeskyně), noční rodina a bouřka (studená mokrá zem P76 – sytost
- * a světlost navíc by ji zesvětlily nad suchou zem za slunce) si tón nechají; pod jinou zataženou oblohou
- * jen sytost, bez teplého slunce.
+ * Noc, hala (strop), místa bez slunce (`OWN_TONE`) a bouřka (studená mokrá zem P76 – sytost a světlost navíc
+ * by ji zesvětlily nad suchou zem za slunce) si tón nechají; pod jinou zataženou oblohou jen sytost, bez teplého
+ * slunce.
  */
 export function restyleLook(look: Look, id: LookId, sky: SkyKind, style: LookStyle = LOOK_STYLE): Look {
   const palette = style.palette;
-  if (palette === null || sky.night || look.storm === true || look.ceiling !== undefined || look.glow === 0 || LOOK_FAMILY[id] === 'dark') return look;
+  if (palette === null || sky.night || look.storm === true || look.ceiling !== undefined || OWN_TONE.has(id)) return look;
   const rich = saturated(look, palette.saturation, palette.lightness);
   // Pod zataženou oblohou zem beze změny: světlo nálady je u noci (`withMood`), a světlejší sytější zem by se
   // přiblížila jasu hrdiny a překážek – nálada by byla hůř čitelná než noc (pin `look.test.ts`).
   if (sky.overcast) return { ...rich, ground: look.ground, track: look.track, ...(look.land === undefined ? {} : { land: look.land }), ...(look.terrain === undefined ? {} : { terrain: look.terrain }) };
-  const warmed = golden(rich, palette);
-  const lit = { ...warmed, ground: sameLuma(warmed.ground, look.ground), track: sameLuma(warmed.track, look.track), ...(look.land === undefined ? {} : { land: sameLuma(warmed.land ?? look.land, look.land) }) };
+  const warmed = { ...golden(rich, palette), ...(OWN_SKY.has(id) ? { horizon: look.horizon, sky: look.sky, skyTop: look.skyTop } : {}) };
+  // Tráva předem ochlazená jako ostatní podlahy: pod teplým sluncem drží svůj (žlutší) odstín, nezhnědne.
+  const grass = look.cover === 'grass' ? neutralUnder(grassOf(look.ground, palette.grass), new Color(warmed.sunColor), palette.floorNeutral) : null;
+  const lit = { ...warmed, ground: grass ?? sameLuma(warmed.ground, look.ground), track: sameLuma(warmed.track, look.track), ...(look.land === undefined ? {} : { land: sameLuma(warmed.land ?? look.land, look.land) }) };
   // Poletující listí v zelených místech za slunce (předloha s4); `leaves` v `AMBIENT_KINDS`, jedno kreslení.
   return LOOK_FAMILY[id] === 'green' && !look.ambient.includes('leaves') ? { ...lit, ambient: [...look.ambient, 'leaves'] } : lit;
 }

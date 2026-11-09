@@ -10,6 +10,7 @@
 import { Color, SRGBColorSpace } from 'three';
 import { describe, expect, it } from 'vitest';
 
+import { color } from '@/brand/tokens';
 import { LOOK_IDS, LOOKS, type Look, sceneLook } from '@/play/arcade/look';
 import { LOOK_STYLE, MIX_STYLE, restyleLook, TODAY_STYLE } from '@/play/arcade/look/style';
 
@@ -152,13 +153,33 @@ describe('P81 T3: směr mix', () => {
     expect(GRADES.indoor).toEqual(TODAY_STYLE.grade.families.indoor);
   });
 
-  it('noc, hala, místa bez slunce a noční rodina si tón nechají', () => {
+  it('noc, hala a místa bez slunce si tón nechají; vesmír dostane teplé slunce pod svým černým nebem (T7)', () => {
     for (const id of LOOK_IDS) {
       const look = LOOKS[id];
       const kept = restyleLook(look, id, { night: true, overcast: false });
       expect(kept, `${id} v noci`).toBe(look);
-      if (look.ceiling !== undefined || look.glow === 0 || ['cave', 'graveyard', 'space'].includes(id)) expect(restyleLook(look, id, { night: false, overcast: false }), id).toBe(look);
+      if (look.ceiling !== undefined || ['living_room', 'cave', 'graveyard', 'underwater'].includes(id)) expect(restyleLook(look, id, { night: false, overcast: false }), id).toBe(look);
     }
+    const space = LOOKS.space;
+    const sunny = restyleLook(space, 'space', { night: false, overcast: false });
+    const warm = new Color(sunny.sunColor);
+    expect(warm.r - warm.b).toBeGreaterThan(0);
+    expect(sunny.sun).toBeGreaterThan(space.sun);
+    expect([sunny.horizon, sunny.sky, sunny.skyTop]).toEqual([space.horizon, space.sky, space.skyTop]);
+  });
+
+  it.each(['meadow', 'forest', 'jungle'] as const)('%s: tráva za slunce světlejší a žlutší, ne tmavší (T7, předlohy s7/s10)', (id) => {
+    const before = LOOKS[id];
+    const after = restyleLook(before, id, { night: false, overcast: false });
+    const [a, b] = [new Color(before.ground).getHSL({ h: 0, s: 0, l: 0 }, SRGBColorSpace), new Color(after.ground).getHSL({ h: 0, s: 0, l: 0 }, SRGBColorSpace)];
+    expect(b.l, `${before.ground} → ${after.ground}`).toBeGreaterThan(a.l);
+    expect(b.h, `${before.ground} → ${after.ground}`).toBeLessThan(a.h);
+    // Rajčatová (hrdina, nebezpečí) se od trávy dál liší i jasem, nejen odstínem (červená–zelená slepota).
+    const luma = (hex: string) => {
+      const c = new Color(hex);
+      return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+    };
+    expect(luma(after.ground), after.ground).toBeLessThan(luma(color.tomato) * 0.85);
   });
 
   it('nízké teplé slunce jen pod jasnou oblohou; pod zataženou jen sytost', () => {
@@ -172,7 +193,7 @@ describe('P81 T3: směr mix', () => {
     expect([storm.sunDir, storm.sunColor, storm.sun]).toEqual([meadow.sunDir, meadow.sunColor, meadow.sun]);
   });
 
-  it.each(LOOK_IDS.filter((id) => LOOKS[id].ceiling === undefined && LOOKS[id].glow > 0 && !['cave', 'graveyard', 'space'].includes(id)))(
+  it.each(LOOK_IDS.filter((id) => LOOKS[id].ceiling === undefined && !['living_room', 'cave', 'graveyard', 'underwater'].includes(id)))(
     '%s: osvětlená podlaha a dráha drží odstín (uber oranžové, nejvýš 15°)',
     (id) => {
       const before = LOOKS[id];
