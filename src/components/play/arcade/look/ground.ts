@@ -68,12 +68,28 @@ const PATCH: Readonly<Record<Cover, (base: string, look: Look) => string>> = {
   rock: (base) => mix(base, '#1c1917', 0.35),
 };
 
+/** Tráva bez neonu (P81 R2): sytost země v trávě krát tolik – předloha má měkkou zelenou, ne svítivou. */
+export const GRASS_SATURATION = 0.75;
+const hsl = { h: 0, s: 0, l: 0 };
+const soften = (hex: string, amount: number): string => {
+  const color = new Color(hex);
+  color.getHSL(hsl);
+  return `#${color.setHSL(hsl.h, hsl.s * amount, hsl.l).getHexString()}`;
+};
+
 /**
- * Paleta země sady. `base` = barva souše (údolí a závod `ground`, ostrůvky a aréna
+ * Zem polí a nádvoří: hradní nádvoří (`stone`, interiér pod nebem) kamennou paletou bez mřížky dlaždic
+ * (P81 R2 – zelená zem místa na s4 vyšla neonová a nečetla jako hrad), jinak zem sady.
+ */
+export const courtyardBase = (look: Look, land: string): string => (look.interior?.floor === 'stone' ? SURFACES.stone.color : land);
+
+/**
+ * Paleta země sady. `land` = barva souše (údolí a závod `ground`, ostrůvky a aréna
  * svou souš). Stín a dálka jdou k barvě polokoule zespodu, světlo ke slunci sady.
  */
-export function groundPalette(look: Look, base: string = look.ground): GroundPalette {
+export function groundPalette(look: Look, land: string = look.ground): GroundPalette {
   const road = SURFACES[look.surface];
+  const base = look.cover === 'grass' ? soften(land, GRASS_SATURATION) : land;
   return {
     dark: mix(mix(base, look.light[1], 0.3), '#000000', 0.1),
     base,
@@ -152,7 +168,7 @@ const WALL_AO_M = 1.5;
 export const pavedFloor = (look: Pick<Look, 'interior'>): boolean => look.interior !== undefined && look.interior.floor !== 'stone';
 
 export function buildFieldGround(look: Look, area: Box, edge: (x: number, z: number) => number | null = () => null): BufferGeometry {
-  const paint = pavedFloor(look) ? null : groundPainter(groundPalette(look));
+  const paint = pavedFloor(look) ? null : groundPainter(groundPalette(look, courtyardBase(look, look.ground)));
   const columns = Math.max(1, Math.ceil((area.x1 - area.x0) / FIELD_CELL_M));
   const rows = Math.max(1, Math.ceil((area.z1 - area.z0) / FIELD_CELL_M));
   const count = (rows + 1) * (columns + 1);

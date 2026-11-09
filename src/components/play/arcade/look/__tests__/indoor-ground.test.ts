@@ -153,8 +153,23 @@ describe('P62 T6: interiér má podlahu i mimo arénu', () => {
     const look = LOOKS[id];
     expectIndoorFloor(`${id} runner`, look, runnerGround(look));
     // P81 T5: hradní nádvoří je pod otevřeným nebem – zem polí je zem místa (jako podlaha arény v T4), ne dlažba.
-    if (id === 'castle') expect(shooterGround(look).map, 'castle courtyard').toBeNull();
-    else expectIndoorFloor(`${id} shooter`, look, shooterGround(look));
+    if (id === 'castle') {
+      const courtyard = shooterGround(look);
+      expect(courtyard.map, 'castle courtyard').toBeNull();
+      // P81 R2: kámen bez spár, ne zelená zem místa (na s4 vyšla neonová a nečetla jako hrad).
+      const colors = courtyard.geometry.getAttribute('color');
+      const mean = new Color();
+      for (let i = 0; i < colors.count; i++) {
+        mean.r += colors.getX(i) / colors.count;
+        mean.g += colors.getY(i) / colors.count;
+        mean.b += colors.getZ(i) / colors.count;
+      }
+      const gap = (hex: string) => {
+        const c = new Color(hex);
+        return Math.hypot(c.r - mean.r, c.g - mean.g, c.b - mean.b);
+      };
+      expect(gap(SURFACES.stone.color), 'castle courtyard is stone').toBeLessThan(gap(look.ground));
+    } else expectIndoorFloor(`${id} shooter`, look, shooterGround(look));
     expect(Math.max(...buildValley({ look, from: -20, to: 200 }).heights), `${id} flat`).toBe(0);
   });
 
@@ -194,10 +209,10 @@ function hashGeometry(geometry: BufferGeometry): string {
  * P81 T4 přepsal `valley` všech míst: krajnice cesty tmavší (obrys), ne krémový štěrk.
  */
 const BEFORE: Readonly<Record<string, { readonly valley: string; readonly strips: string; readonly field: string }>> = {
-  meadow: { valley: '19653831', strips: '#94754f:af763ea5,#75593b:94024b41', field: 'b17bb52a' },
+  meadow: { valley: '10f02af3', strips: '#94754f:af763ea5,#75593b:94024b41', field: 'ab07337c' },
   city: { valley: '239d4ab1', strips: '#5a5f66:de4aeb64,#e8e6df:1d32ad60', field: '9f4c80b9' },
-  forest: { valley: 'e0fe5a1f', strips: '#94754f:254c89a8,#75593b:50a548c', field: 'a3cdc975' },
-  jungle: { valley: 'c43d445c', strips: '#94754f:672a97ac,#75593b:d61ff000', field: '116a04dd' },
+  forest: { valley: '6be53a2a', strips: '#94754f:254c89a8,#75593b:50a548c', field: '9d72e489' },
+  jungle: { valley: '25ba627f', strips: '#94754f:672a97ac,#75593b:d61ff000', field: '821e5c6e' },
   desert: { valley: 'ead90b5', strips: '#dcc193:787e8d89,#c3a476:55271732', field: '45427436' },
   beach: { valley: 'd6f9d223', strips: '#dcc193:787e8d89,#c3a476:55271732', field: '88b9d0f9' },
   ocean: { valley: 'd7d30bb1', strips: '#a07a4e:6bc0ae61,#6e5034:9dc66635,#6e5034:56433411', field: 'ca3f2ca0' },
@@ -205,5 +220,5 @@ const BEFORE: Readonly<Record<string, { readonly valley: string; readonly strips
   snow: { valley: '96c5022d', strips: '#e6edf4:de4aeb64,#bccbd9:d62e4120', field: '9d5077f9' },
   volcano: { valley: '2162de92', strips: '#94754f:672a97ac,#75593b:d61ff000', field: '10198d3e' },
   space: { valley: 'c0409fef', strips: '#94754f:dd0ac91,#75593b:9a853b2a', field: '5a198448' },
-  graveyard: { valley: '4784999f', strips: '#94754f:ca2725f8,#75593b:5dda668f', field: '4b9642d9' },
+  graveyard: { valley: '3bf119ea', strips: '#94754f:ca2725f8,#75593b:5dda668f', field: 'a900ccf9' },
 };

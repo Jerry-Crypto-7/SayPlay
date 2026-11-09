@@ -26,7 +26,7 @@ import { type BufferGeometry, Color } from 'three';
 import { type Cover, type InteriorFloor, type Look, SURFACES } from '@/play/arcade/look';
 import { LOOK_STYLE } from '@/play/arcade/look/style';
 
-import { buildPodium, groundPainter, groundPalette, smooth } from '../../ground';
+import { buildPodium, courtyardBase, groundPainter, groundPalette, smooth } from '../../ground';
 import { Faces, type Vertex, capOf } from './islands';
 import { hash, mix, noise } from './valley';
 
@@ -277,6 +277,8 @@ export function buildArenaFloor({ look, half }: ArenaFloorOptions): ArenaFloor {
   const shade = (color: Color, scale: number): Color => face.copy(color).multiplyScalar(scale);
   // Souš s odstíny a skvrnami (P46G T3); za hranou krajnice u stěn a do dálky tmavne.
   const earth = groundPainter(groundPalette(look, palette.land));
+  // Hradní nádvoří kamenem bez spár (P81 R2), za hranou arény tráva místa.
+  const courtyard = look.interior?.floor === 'stone' ? groundPainter(groundPalette(look, courtyardBase(look, palette.land))) : earth;
   // Velké měkké světlé a tmavé skvrny přes celou plochu a k okraji arény tmavší – zvlnění bez geometrie (P81 T4).
   const soft = (x: number, z: number, color: Color): Color => {
     const wash = 0.9 + 0.2 * noise(x * 0.07 + 13, z * 0.07 - 7);
@@ -306,7 +308,7 @@ export function buildArenaFloor({ look, half }: ArenaFloorOptions): ArenaFloor {
         return soft(x, z, face.copy(floor).lerp(seam, smooth((ripple - 0.4) / 0.5)).multiplyScalar(1 - 0.07 * smooth((-ripple - 0.4) / 0.5)));
       }
       // Tráva, skála i dlažba venku: odstíny a skvrny země sady (P46G T3).
-      return soft(x, z, earth(x, z, null, face));
+      return soft(x, z, courtyard(x, z, null, face));
     });
   }
   // Zem za hranou: čtyři pásy kolem hrací plochy, hrubší mřížka; krajnice se měří od hrany arény (interiér od kraje podlahy).

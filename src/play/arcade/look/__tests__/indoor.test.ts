@@ -135,11 +135,10 @@ function expectIndoor(id: (typeof INDOOR)[number], tree: ReactNode): void {
   const floor = floorOf(tree);
   expect(floor.props.userData, id).toMatchObject({ surface });
   expect(['grass', 'sand'], id).not.toContain(surface);
-  // P81 T4: hradní nádvoří (`stone`) je pod otevřeným nebem a má zem místa jako venek (předloha s4), ne dlaždice –
+  // P81 R2: hradní nádvoří (`stone`) je kámen se skvrnami bez mřížky dlaždic (zelená zem místa z T4 vyšla neonová);
   // spáry tam hlídá `p81-style.test.ts`. Hala má podlahu z povrchu dál.
   const share = surfaceShare(floor.props.geometry as BufferGeometry, SURFACES[surface].color);
-  if (surface === 'stone') expect(share, `${id}: courtyard is not laid in stone`).toBeLessThan(0.4);
-  else expect(share, `${id}: floor laid in ${surface}`).toBeGreaterThan(0.4);
+  expect(share, `${id}: floor laid in ${surface}`).toBeGreaterThan(0.4);
 
   const walls = wallsOf(tree);
   expect(new Set(walls.map((piece) => piece.id)).size, `${id} wall kinds`).toBeLessThanOrEqual(WALL_KINDS);
@@ -290,10 +289,10 @@ function describeTree(node: ReactNode): unknown[] {
  * P81 T4 přepsal `styled` všech míst: barva podlahy ve vrcholech, val místo kvádrů, tmavší krajnice.
  */
 const MAIN: Readonly<Record<string, { readonly look: string; readonly surface: string; readonly styled: string; readonly agar: string }>> = {
-  meadow: { look: 'f0c823d2', surface: '9b5032c0', styled: '929f8f2d', agar: 'af20e51a' },
+  meadow: { look: 'f0c823d2', surface: '9b5032c0', styled: 'df0ada26', agar: 'af20e51a' },
   city: { look: '834cead7', surface: '3d16a743', styled: 'feba2379', agar: '7aad2795' },
-  forest: { look: '76084c9', surface: '9b5032c0', styled: '4131e11b', agar: '94472e88' },
-  jungle: { look: '7867ee64', surface: '9b5032c0', styled: '348bb8ad', agar: '12b41537' },
+  forest: { look: '76084c9', surface: '9b5032c0', styled: 'd900908', agar: '94472e88' },
+  jungle: { look: '7867ee64', surface: '9b5032c0', styled: '7a82a8b0', agar: '12b41537' },
   desert: { look: 'b8bc57ab', surface: '353a5c9e', styled: 'eefaf690', agar: 'fce62cb4' },
   beach: { look: '2d96097a', surface: '353a5c9e', styled: '9674a6b7', agar: '8bf9e7a7' },
   ocean: { look: 'ca966c23', surface: 'fe1e5ae9', styled: 'cb2714f6', agar: 'dbbcc4b6' },
@@ -301,5 +300,5 @@ const MAIN: Readonly<Record<string, { readonly look: string; readonly surface: s
   snow: { look: '2de54103', surface: '2ee56f00', styled: '458330f6', agar: '30849ad9' },
   volcano: { look: '714af9a3', surface: '9b5032c0', styled: '3e352a82', agar: '484043d8' },
   space: { look: 'f5fec7d', surface: '9b5032c0', styled: '881c4ca0', agar: '63f2d812' },
-  graveyard: { look: 'a5adead8', surface: '9b5032c0', styled: '29641b1c', agar: 'af20e51a' },
+  graveyard: { look: 'a5adead8', surface: '9b5032c0', styled: 'e3c5d1c2', agar: 'af20e51a' },
 };
