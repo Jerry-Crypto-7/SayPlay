@@ -267,12 +267,13 @@ export interface SkyKind {
 
 /**
  * Paleta místa podle profilu (prototyp `variantLook`, směr mix: `golden(saturated(look, 0,14, 0,03), 0,5)`).
- * Noc, hala, místa bez slunce (pod vodou, jeskyně) a noční rodina si tón nechají; pod zataženou oblohou
+ * Noc, hala, místa bez slunce (pod vodou, jeskyně), noční rodina a bouřka (studená mokrá zem P76 – sytost
+ * a světlost navíc by ji zesvětlily nad suchou zem za slunce) si tón nechají; pod jinou zataženou oblohou
  * jen sytost, bez teplého slunce.
  */
 export function restyleLook(look: Look, id: LookId, sky: SkyKind, style: LookStyle = LOOK_STYLE): Look {
   const palette = style.palette;
-  if (palette === null || sky.night || look.ceiling !== undefined || look.glow === 0 || LOOK_FAMILY[id] === 'dark') return look;
+  if (palette === null || sky.night || look.storm === true || look.ceiling !== undefined || look.glow === 0 || LOOK_FAMILY[id] === 'dark') return look;
   const rich = saturated(look, palette.saturation, palette.lightness);
   return sky.overcast ? rich : golden(rich, palette);
 }

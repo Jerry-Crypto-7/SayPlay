@@ -172,6 +172,10 @@ describe('P81 T3: směr mix', () => {
       for (const [was, now] of floors) {
         const [a, b] = [lit(was, before.sunColor).getHSL({ h: 0, s: 0, l: 0 }), lit(now, after.sunColor).getHSL({ h: 0, s: 0, l: 0 })];
         if (a.s < 0.08 || b.s < 0.08) continue;
+        // Skoro bílý sníh `#f8fafc` dnešní teplé slunce barví do oranžova (odstín 33°, sytost 0,74); P81 ho vrací
+        // k neutrální (50°, 0,27) a odstín málo syté barvy už nic neříká. Oranžovější být nesmí: buď drží odstín,
+        // nebo aspoň o polovinu zneutrální.
+        if (b.s <= a.s / 2) continue;
         const shift = Math.abs(((b.h - a.h) * 360 + 540) % 360 - 180);
         expect(shift, `${was} → ${now}`).toBeLessThanOrEqual(15);
       }

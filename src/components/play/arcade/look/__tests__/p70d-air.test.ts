@@ -44,8 +44,10 @@ describe('mlha jen na dálku (P70D T2)', () => {
     expect(Math.abs(to.h - from.h)).toBeLessThan(0.01);
   });
 
-  it('les z auditu: mlha dřív od 20 m, teď od 42 m z 70 m', () => {
+  // P81 (směr mix): lehký opar od čtvrtiny dohledu – P70D posunul les na 42 m, P81 ho vrací na 20 m sady.
+  it('les z auditu: P70D mlha od 42 m z 70 m, P81 opar od čtvrtiny dohledu (20 m sady)', () => {
     expect(LOOKS.forest.fog).toEqual([20, 70]);
-    expect(airOf(LOOKS.forest)).toMatchObject({ near: 42, far: 70 });
+    expect(FOG_START).toBe(0.25);
+    expect(airOf(LOOKS.forest)).toMatchObject({ near: 20, far: 70 });
   });
 });

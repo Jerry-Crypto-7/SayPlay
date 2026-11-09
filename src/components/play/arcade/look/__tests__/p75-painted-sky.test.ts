@@ -10,6 +10,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { LOOK_IDS, LOOKS, PAINTED_SKIES, sceneLook } from '@/play/arcade/look';
+import { restyleLook } from '@/play/arcade/look/style';
 
 import { FEED_CARD, PAINT_FADE_S, type PaintLoad, paintedSkyOf, paintFade, stagePlace } from '../rig/painted-sky';
 
@@ -137,7 +138,8 @@ describe('P76 T2: bouřlivé město studeně', () => {
 
   it('leaves the clear city and every place without a storm its P75 ground and painting', () => {
     const clear = sceneLook({ setting: 'a city', mood: '', look: 'city' });
-    expect(clear.ground).toBe(LOOKS.city.ground);
+    // Zem jasného města = zem sady pod profilem vzhledu (P81 ji přebarví u všech míst stejně), bez mokré bouřky.
+    expect(clear.ground).toBe(restyleLook(LOOKS.city, 'city', { night: false, overcast: false }).ground);
     expect(paintedSkyOf(clear, 'city', 'high')?.url).toBe('/play/env/diorama-city.webp');
     for (const id of Object.keys(PAINTED_SKIES) as (keyof typeof PAINTED_SKIES)[]) {
       const day = sceneLook({ setting: `a ${id}`, mood: '', look: id });

@@ -11,8 +11,11 @@
 import { Color } from 'three';
 
 import { type Look, type LookId, LOOKS, PAINTED_SKIES } from '@/play/arcade/look';
+import { restyleLook } from '@/play/arcade/look/style';
 
 import type { QualityTier } from './quality';
+
+const CLEAR_DAY = { night: false, overcast: false } as const;
 
 /** Délka prolnutí (s) – plán chce do 1 s. */
 export const PAINT_FADE_S = 0.8;
@@ -47,7 +50,8 @@ export function stagePlace(stage: Element | null): 'game' | 'feed' {
 export function paintedSkyOf(look: Look, lookId: LookId, tier: QualityTier, place: 'game' | 'feed' = 'game'): PaintedSky | null {
   const row = PAINTED_SKIES[lookId];
   if (row === undefined || look.ceiling !== undefined || look.storm === true || (place === 'feed' && tier !== 'high')) return null;
-  const [said, base] = [new Color(look.horizon), new Color(LOOKS[lookId].horizon)];
+  // Základ = obzor místa za jasného dne pod týmž profilem (P81): teplý opar profilu obraz nezesvětlí, jen nálada.
+  const [said, base] = [new Color(look.horizon), new Color(restyleLook(LOOKS[lookId], lookId, CLEAR_DAY).horizon)];
   const ratio = (scene: number, place: number) => (place <= 0.001 ? 1 : Math.min(TINT_MAX, scene / place));
   return {
     url: `/play/env/diorama-${lookId}${tier === 'high' ? '' : '-low'}.webp`,

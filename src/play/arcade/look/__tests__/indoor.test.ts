@@ -281,18 +281,20 @@ function describeTree(node: ReactNode): unknown[] {
  * P75 T6 přepsal `look` louky (bez studny), města (teplejší dlažba) a sopky (světlejší kulisy a výplň stínu).
  * P75 T5 přepsal `look` louky, města, pláže, podmoří, sněhu, sopky a vesmíru (opar k malovanému pozadí, husté popředí,
  * teplá zem sopky a města, písek podmoří) a s nimi `styled` města, podmoří a sopky a `agar` sopky.
+ * P77 T2 (`bab71daf`) přidal každé sadě tóny kulis (`palette`, `PLACE_PALETTES`) – `look` všech míst přepsán v P81
+ * (červený už na `main` `bab71daf`, otisky tam i v P81 shodné; `surface`, `styled` a `agar` beze změny).
  */
 const MAIN: Readonly<Record<string, { readonly look: string; readonly surface: string; readonly styled: string; readonly agar: string }>> = {
-  meadow: { look: '61008c8f', surface: '9b5032c0', styled: '922f522c', agar: 'af20e51a' },
-  city: { look: '3081369f', surface: '3d16a743', styled: 'dcac3244', agar: '7aad2795' },
-  forest: { look: 'c02971b5', surface: '9b5032c0', styled: '7a637744', agar: '94472e88' },
-  jungle: { look: '54e2641a', surface: '9b5032c0', styled: 'cf1c9e6', agar: '12b41537' },
-  desert: { look: '8322600b', surface: '353a5c9e', styled: '81172b7a', agar: 'fce62cb4' },
-  beach: { look: 'f0ba9bf7', surface: '353a5c9e', styled: 'cdab1d1e', agar: '8bf9e7a7' },
-  ocean: { look: '1bf0d212', surface: 'fe1e5ae9', styled: '743053c4', agar: 'dbbcc4b6' },
-  underwater: { look: '4ce728c2', surface: 'bfa38346', styled: 'f8a72eec', agar: '62d66877' },
-  snow: { look: 'cab17557', surface: '2ee56f00', styled: 'c3ab0313', agar: '30849ad9' },
-  volcano: { look: 'fc43f74c', surface: '9b5032c0', styled: '7fa5344', agar: '484043d8' },
-  space: { look: 'd0ca2823', surface: '9b5032c0', styled: 'a1c003e6', agar: '63f2d812' },
-  graveyard: { look: '5632e88f', surface: '9b5032c0', styled: 'e37d9b33', agar: 'af20e51a' },
+  meadow: { look: 'f0c823d2', surface: '9b5032c0', styled: '922f522c', agar: 'af20e51a' },
+  city: { look: '834cead7', surface: '3d16a743', styled: 'dcac3244', agar: '7aad2795' },
+  forest: { look: '76084c9', surface: '9b5032c0', styled: '7a637744', agar: '94472e88' },
+  jungle: { look: '7867ee64', surface: '9b5032c0', styled: 'cf1c9e6', agar: '12b41537' },
+  desert: { look: 'b8bc57ab', surface: '353a5c9e', styled: '81172b7a', agar: 'fce62cb4' },
+  beach: { look: '2d96097a', surface: '353a5c9e', styled: 'cdab1d1e', agar: '8bf9e7a7' },
+  ocean: { look: 'ca966c23', surface: 'fe1e5ae9', styled: '743053c4', agar: 'dbbcc4b6' },
+  underwater: { look: '88fc0bda', surface: 'bfa38346', styled: 'f8a72eec', agar: '62d66877' },
+  snow: { look: '2de54103', surface: '2ee56f00', styled: 'c3ab0313', agar: '30849ad9' },
+  volcano: { look: '714af9a3', surface: '9b5032c0', styled: '7fa5344', agar: '484043d8' },
+  space: { look: 'f5fec7d', surface: '9b5032c0', styled: 'a1c003e6', agar: '63f2d812' },
+  graveyard: { look: 'a5adead8', surface: '9b5032c0', styled: 'e37d9b33', agar: 'af20e51a' },
 };
