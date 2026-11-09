@@ -1,5 +1,5 @@
 {
-    "$comment": "Submission manifest for Sayplay (/play), state on 7 November 2026. The AI director is gpt-6-astra through the paid OpenAI API, with no fallback model; without it the demo builds the quick version from the words alone. Measured numbers, each with its date and run file: evals/play/p74/run-2026-11-07.json (quick version on the held-out set of 200 sentences, final build), evals/play/p74/ai.json and phones.json (trial deployment, emulated phones), evals/play/p73/sceny/perf.md (phone frame rate). The video is cut from docs/video-script.md. A value starting with TODO: is a placeholder that the submission check treats as missing. The demo and its backend stay online until at least 31 December 2026.",
+    "$comment": "Submission manifest for Sayplay (/play), state on 8 November 2026. The AI director is gpt-6-astra through the paid OpenAI API, with no fallback model; without it the demo builds the quick version from the words alone. Every number in README.md, the description and the walkthrough has a row in evals/play/p79/claims.md with its date, file and exact excerpt; check 9 verifies it. The video is cut from docs/video-script.md. A value starting with TODO: is a placeholder that the submission check treats as missing. The demo and its backend stay online until at least 31 December 2026.",
     "repositoryUrl": "https://github.com/Jerry-Crypto-7/Hackathon",
     "demoUrl": "https://worldstream-sigma.vercel.app",
     "backendUrl": "https://worldstream-sigma.vercel.app/api/health",
@@ -20,6 +20,12 @@
         "evals/play/p74/run-2026-11-07.json",
         "evals/play/p74/ai.json",
         "evals/play/p74/phones.json",
-        "evals/play/p73/sceny/perf.md"
+        "evals/play/p74/live.md",
+        "evals/play/p73/sceny/perf.md",
+        "evals/play/p76/perf.md",
+        "evals/play/p76/vs-main.md",
+        "evals/play/p58b/director.json",
+        "evals/play/p79/catalog.json",
+        "evals/play/p79/claims.md"
     ]
 }

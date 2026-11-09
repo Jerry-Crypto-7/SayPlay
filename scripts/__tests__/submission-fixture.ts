@@ -147,6 +147,22 @@ export function description(): string {
   ].join('\n');
 }
 
+/** Tabulka tvrzení zeleného stromu: jediné číslo popisu i README s doslovným důkazem. */
+export function claims(): string {
+  return [
+    '# Claims',
+    '',
+    '| ID | Claim | Numbers | Date | File | Evidence |',
+    '|---|---|---|---|---|---|',
+    '| C1 | Candidates that passed without repair | 2/27 | 2026-11-07 | `evals/gates/run.json` | `"passed": 2` `"candidates": 27` |',
+    '',
+  ].join('\n');
+}
+
+export function readme(): string {
+  return '# Worldsmith\n\n2/27 candidates passed without repair ([run](evals/gates/run.json)).\n';
+}
+
 export function heartbeat(at = new Date(NOW - 60_000).toISOString()): string {
   return `${JSON.stringify({
     at,
@@ -295,6 +311,11 @@ export function buildTemplate(): string {
   write(dir, 'docs/submission/description.md', description());
   write(dir, 'docs/submission/submission.json', manifest());
   write(dir, 'evals/gates/report.md', 'rawPatchPassRate 2/27 = 7,4 %\n');
+  // Kontrola 9 (P79): zdroj čísla 2/27 pro README a popis. Vlastní soubor, ne
+  // `report.md` – případy kontroly 4 ho přepisují a shodily by i kontrolu 9.
+  write(dir, 'evals/gates/run.json', '{ "passed": 2, "candidates": 27 }\n');
+  write(dir, 'evals/play/p79/claims.md', claims());
+  write(dir, 'README.md', readme());
   write(dir, 'video/final.mp4', mp4(95));
   write(dir, 'ops/monitoring/uptime.json', monitoring());
   write(dir, 'ops/monitoring/heartbeat.jsonl', heartbeat());

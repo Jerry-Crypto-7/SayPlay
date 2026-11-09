@@ -1,0 +1,19 @@
+{
+  "about": "P79: size and origin of the model library, counted from src/assets/catalog.json and the rigged character lists. Written by scripts/readme-catalog-count.mjs.",
+  "measuredOn": "2026-11-08",
+  "catalogueModels": 1787,
+  "byOrigin": {
+    "cc0": 362,
+    "blenderByCode": 57,
+    "threeJsByCode": 32,
+    "generatedOffline": 1336,
+    "other": 0
+  },
+  "otherSources": [],
+  "riggedCharacters": 144,
+  "riggedByFile": {
+    "src/assets/rigged.json": 15,
+    "src/assets/rigged-p32.json": 7,
+    "src/assets/rigged-p54.json": 122
+  }
+}

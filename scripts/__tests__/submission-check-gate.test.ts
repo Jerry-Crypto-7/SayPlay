@@ -48,6 +48,7 @@ import {
   patchManifest,
   patchMonitoring,
   readRegistry,
+  readme,
   stage,
   write,
   writeRegistry,
@@ -109,10 +110,54 @@ function setRepositoryUrl(dir: string, url: string): void {
 }
 
 describe('zelený výchozí stav', () => {
-  it('projde všech osm kontrol nad stromem, kde nic nechybí', async () => {
+  it('projde všech devět kontrol nad stromem, kde nic nechybí', async () => {
     const results = await check(repo());
     expect(failed(results)).toEqual([]);
-    expect(results).toHaveLength(8);
+    expect(results).toHaveLength(9);
+  });
+});
+
+describe('[9] README a popis: číslo má měření, odkaz vede do repa (P79)', () => {
+  it('selže, když README uvádí číslo, které v claims.md nestojí', async () => {
+    const dir = repo();
+    write(dir, 'README.md', `${readme()}\nThe robot won 199/200 games.\n`);
+    const results = await check(dir);
+    expect(failed(results)).toEqual([9]);
+    expect(detailOf(results, 9)).toContain('199/200');
+  });
+
+  it('selže, když popis uvádí číslo, které v claims.md nestojí', async () => {
+    const dir = repo();
+    rewriteDescription(dir, `${description()}\nMedian 1.8 s.\n`);
+    const results = await check(dir);
+    expect(failed(results)).toEqual([9]);
+    expect(detailOf(results, 9)).toContain('description.md');
+  });
+
+  it('selže, když odkaz v README vede na gitignorovaný soubor', async () => {
+    const dir = repo();
+    write(dir, 'README.md', `${readme()}\nSee [the plan](plans/P79.md).\n`);
+    write(dir, 'plans/P79.md', '# Plan\n');
+    write(dir, '.gitignore', 'node_modules/\nblind-check.config.json\nplans/\n');
+    const results = await check(dir);
+    expect(failed(results)).toEqual([9]);
+    expect(detailOf(results, 9)).toContain('plans/P79.md');
+  });
+
+  it('selže, když měření, na které tabulka ukazuje, číslo už nenese', async () => {
+    const dir = repo();
+    write(dir, 'evals/gates/run.json', '{ "passed": 3, "candidates": 27 }\n');
+    const results = await check(dir);
+    expect(failed(results)).toEqual([9]);
+    expect(detailOf(results, 9)).toContain('"passed": 2');
+  });
+
+  it('selže, když tabulka tvrzení chybí', async () => {
+    const dir = repo();
+    rmSync(join(dir, 'evals/play/p79/claims.md'));
+    const results = await check(dir);
+    expect(failed(results)).toEqual([9]);
+    expect(detailOf(results, 9)).toContain('claims.md chybí');
   });
 });
 
@@ -518,6 +563,16 @@ describe('[6] disclosure napříč pěti třídami', () => {
     const results = await check(dir);
     expect(failed(results)).toEqual([6]);
     expect(detailOf(results, 6)).toContain('src/embedded.ts');
+  });
+
+  it('stejný literál v nástroji a ve vyjmenovaném vlastním textu projde (P79 T7)', async () => {
+    const dir = repo();
+    const literal = `export const data = '${'a'.repeat(LITERAL_BYTES_LIMIT + 1)}';\n`;
+    write(dir, 'scripts/expected-output.mjs', literal);
+    write(dir, 'src/play/__tests__/long.test.ts', literal);
+    write(dir, 'src/play/read/prompt.ts', literal);
+    stage(dir);
+    expect(failed(await check(dir))).toEqual([]);
   });
 
   it('selže na dlouhé kolekci, i když je v ní málo bajtů', async () => {
