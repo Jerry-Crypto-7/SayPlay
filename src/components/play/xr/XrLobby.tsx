@@ -23,7 +23,7 @@ import { openComfort } from '@/play/xr/comfort';
 import { type KeyPress, typed } from '@/play/xr/keyboard';
 
 import type { ArcadeSession } from '../arcade/session';
-import { createGame } from '../create-game';
+import { createGame, openGame } from '../create-game';
 import { IDEAS, PROMPT_LABEL, SENTENCE_LIMIT, STARTERS, TOO_VAGUE } from '../starters';
 import type { DeskReport } from './Diorama';
 import { madeInXrLobby } from './xr-lobby';
@@ -102,7 +102,7 @@ export function XrLobby({ shown, aim, covered }: { readonly shown: ArcadeSession
       return;
     }
     madeInXrLobby(onScreen.current);
-    router.push(created.url);
+    openGame(router, created.url);
   };
 
   // Nadiktovaná věta náhled nahradí jako karta nápadu (P67 T3): druhý pokus po špatném přepisu nemá co mazat.

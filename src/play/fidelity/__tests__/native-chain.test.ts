@@ -2,6 +2,18 @@ import {expect,it} from 'vitest';
 import {nativeSpec} from '../../compose/native';
 import {fidelityChain} from '../chain';
 import {namedProps,propModels} from '../../arcade/models';
+import {draftGameSpec} from '../../draft';
+
+// P78 T3: kontrola „sloveso přečteno“ zná novější hry – nativní let (generátor `glide_course`) a hru, která nese žánr ve `spec.genre`.
+it('a verb a newer game plays counts as read, a verb it does not play does not',()=>{
+ const glide=nativeSpec({move:'glide',objective:'collect',actions:['collect'],threats:[]},{genre:'voyage',mode:'race',hero:'bird',setting:'canyon'});
+ expect(fidelityChain(glide,[{item:'fly',slot:'verb',controls:['flap','steer']}])[0]?.why).toBe('ok');
+ expect(fidelityChain(glide,[{item:'negotiate',slot:'verb',controls:[]}])[0]?.why).toBe('not-in-spec');
+ const sorting=draftGameSpec('sort the parcels into the right bins at the post office');
+ expect(sorting.genre?.id).toBe('sort');
+ expect(fidelityChain(sorting,[{item:'sort',slot:'verb',controls:['timing']}])[0]?.why).toBe('ok');
+ expect(fidelityChain(sorting,[{item:'fly',slot:'verb',controls:['flap']}])[0]?.why).toBe('not-in-spec');
+});
 it('the live glide collectible is read and drawn by the body-driven named prop contract',()=>{
  const spec=nativeSpec({move:'glide',objective:'collect',actions:['collect'],threats:[]},{genre:'voyage',mode:'race',hero:'fish',setting:'reef',cast:[{label:'coin',does:'collect'}]});
  expect(namedProps(spec).coin).toBe('coin');expect(propModels(spec).coin).toBe('coin');

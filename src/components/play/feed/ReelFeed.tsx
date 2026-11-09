@@ -34,6 +34,7 @@ import demo from '../demo-game.json';
 import { Feed, type FeedGame, type KnownGame } from '../Feed';
 import type { FeedPreview } from '@/play/version/version';
 
+import { stayOnFeed, writeFeedAddress } from '../create-game';
 import { loopEvent } from '../loop-client';
 import { FeedNext, FeedPrev, feedSteps } from './feed-next';
 import { countCanvases, feedMode, previewFor, untaken } from './preview';
@@ -270,9 +271,11 @@ export function ReelFeed() {
     countCanvases(document);
   }, [index]);
 
+  // Feed na obrazovce (i po Back z nové hry): zápis `?g=` zase smí (`create-game.ts`, závod s přechodem na hru).
+  useEffect(() => stayOnFeed(), []);
   // Adresa bez `?g=` nebo s hrou, která ve feedu není: doplnit bez nového záznamu historie.
   useEffect(() => {
-    if (current !== undefined && found === -1) window.history.replaceState(null, '', `?g=${current.versionId}`);
+    if (current !== undefined && found === -1) writeFeedAddress('replace', current.versionId);
   }, [current, found]);
 
   // Feed sjede k aktivní kartě: po skoku plynule, po načtení a po Back hned.
@@ -300,7 +303,7 @@ export function ReelFeed() {
       // Další hra (P27D T4) se počítá za tu, kterou hráč opouští.
       if (current !== undefined) loopEvent('next_game', current.versionId);
       glide.current = true;
-      window.history.pushState(null, '', `?g=${game.versionId}`);
+      writeFeedAddress('push', game.versionId);
     },
     [games, index, current],
   );
@@ -356,7 +359,7 @@ export function ReelFeed() {
     const game = games[target];
     if (game === undefined || target === index) return;
     if (current !== undefined) loopEvent('next_game', current.versionId);
-    window.history.replaceState(null, '', `?g=${game.versionId}`);
+    writeFeedAddress('replace', game.versionId);
   }, [games, index, current]);
 
   useEffect(() => {

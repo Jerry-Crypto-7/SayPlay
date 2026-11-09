@@ -1,4 +1,4 @@
-import { expect, test, type APIRequestContext } from '@playwright/test';
+import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
 /**
  * Střelba a hod na `/play/[id]` (P25G T6): věta projde skutečnými dveřmi
@@ -16,6 +16,18 @@ const GAMES = [
   { control: 'shooter', sentence: 'zombie shooter in a mall' },
   { control: 'ball', sentence: 'throw a basketball into a hoop from crazy angles' },
 ] as const;
+
+/**
+ * Kam ťuknout, aby se hra pustila. Karta startu dotek propouští na scénu, jen řádek „Checked“ (P73B T3) ne – otevře
+ * dialog „Why this game is fair“ a hra stojí. Ten řádek leží uprostřed scény, proto startovní ťuk jde nad něj.
+ */
+async function startPoint(page: Page, box: { x: number; y: number; width: number; height: number }): Promise<{ x: number; y: number }> {
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  const checked = (await page.getByTestId('play-start-checked').count()) > 0 ? await page.getByTestId('play-start-checked').boundingBox() : null;
+  if (checked === null || y < checked.y - 8 || y > checked.y + checked.height + 8) return { x, y };
+  return { x, y: checked.y - 32 };
+}
 
 async function publish(request: APIRequestContext, sentence: string): Promise<string> {
   const response = await request.post('/api/play/games', { data: { sentence } });
@@ -40,7 +52,8 @@ test.describe('/play/[id] – shots are drawn (P28B T2)', () => {
     const x = box.x + box.width / 2;
     const y = box.y + box.height / 2;
     // První klik hru jen pustí; střela ze druhého už musí být vidět.
-    await page.mouse.click(x, y);
+    const start = await startPoint(page, box);
+    await page.mouse.click(start.x, start.y);
     await page.waitForFunction(() => window.__playShell!.tick() > 90, undefined, { timeout: 10_000 });
     const drawn = async (): Promise<number> => Number(await stage.getAttribute('data-shots-drawn'));
     const before = await drawn();
@@ -81,7 +94,8 @@ for (const game of GAMES) {
         // Střelnice čeká na první stisk a ten jen spustí hru (P28B T5 – dřív první klik
         // vystřelil, protože míření pustilo hodiny dřív, než se stisk spolkl).
         expect(await page.evaluate(() => window.__playShell!.tick())).toBe(0);
-        await page.mouse.click(x, y);
+        const start = await startPoint(page, box);
+        await page.mouse.click(start.x, start.y);
         await page.waitForFunction(() => window.__playShell!.tick() > 5);
         expect(await shotsLeft()).toBe(before);
         // Další klik doprostřed = zamíří a vystřelí.

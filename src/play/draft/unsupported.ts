@@ -283,9 +283,11 @@ function standIns(sentence: string, spec: GameSpecV1): string[] {
   const text = sentence.toLowerCase();
   const player = spec.roles.find((role) => role.kind === 'player')?.label ?? '';
   const enemy = enemyLabel(spec);
+  // Hráč i soupeř téhož jména („Pikachu battles in a Pokemon gym“, P78 T1) – jedna věta o slově, ne dvě za sebou.
+  const same = enemy.toLowerCase().split(' ').at(-1) === player.toLowerCase().split(' ').at(-1);
   const said = [
     standInCharacter(text, player, heroChoice(player, spec.genre?.id, spec.control)),
-    enemy === '' ? null : standInCharacter(text, enemy, heroChoice(enemy, undefined, spec.control, 'enemy')),
+    enemy === '' || same ? null : standInCharacter(text, enemy, heroChoice(enemy, undefined, spec.control, 'enemy')),
   ].filter((line): line is string => line !== null);
   const place = STAND_IN_PLACES.find(([cue]) => cue.test(text));
   if (place !== undefined) said.push(`${capital(place[1])} ${place[1].endsWith('s') ? "aren't" : "isn't"} here yet – it's ${lookName(lookOf(spec.theme))}.`);

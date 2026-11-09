@@ -90,6 +90,13 @@ const GENERATOR_MODE: Readonly<Record<string, readonly [genre: string, mode: str
   voyage_land: ['voyage', 'land'],
   quest_spatial: ['quest', 'spatial'],
   quest_station: ['quest', 'station'],
+  // P78 T3: nativní hry hrají žánr, za který je knihovna vydává (`compose/allowed.ts`): let = závod plavby, míč = hod,
+  // chůze = prostorový quest; útěk a plížení bludištěm hrají útěk (sloveso „sneak“ → `arena.escape`).
+  glide_course: ['voyage', 'race'],
+  ball_pitch: ['throw', 'default'],
+  walker_labyrinth: ['quest', 'spatial'],
+  walker_escape: ['arena', 'escape'],
+  walker_stealth: ['arena', 'escape'],
 };
 
 /** Co dělají těla, která doplněk přidá (P39): sloveso hrané jen doplňkem chce tuhle roli u věci, kterou věta jmenuje. */
@@ -294,7 +301,8 @@ export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEnt
     });
     const byRule = (spec.rules ?? []).filter((rule) => mentions(rule.verb, [entry.item, ...(entry.match ?? [])])).map((rule) => rule.verb);
     // Hra žánru nese sloveso režimem: generátor souboje hraje „fight“, ne ovládání `duel` ze seznamu.
-    const mode = typeof generator === 'string' ? GENERATOR_MODE[generator] : undefined;
+    // Hra novějšího žánru (třídění, golf, krájení …, P54C a dál) nese žánr ve `spec.genre` a generátor z tabulky nemá.
+    const mode = (typeof generator === 'string' ? GENERATOR_MODE[generator] : undefined) ?? (spec.genre === undefined ? undefined : [spec.genre.id, spec.genre.mode] as const);
     const byGenre = mode !== undefined && verbPlayedBy([entry.item, ...(entry.match ?? [])], mode[0], mode[1], roles.some((role) => role.kind === 'collectible' && readsRole(role)));
     const played = byControl || byMechanic.some((id) => readsMechanic(control, id, typeof generator === 'string' ? generator : undefined)) || byRule.some(proved) || byGenre;
     const read = played || byAddon.length > 0;
