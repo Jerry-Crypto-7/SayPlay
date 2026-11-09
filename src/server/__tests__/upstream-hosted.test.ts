@@ -234,9 +234,9 @@ describe('openai: generate', () => {
   });
 
   it('credits the model name the provider returned, the configured one only when it returned none (P73C T4)', async () => {
-    const named = await stub((_req, _body, res) => res.end(JSON.stringify({ ...JSON.parse(chat('{"plan":"run"}')), model: 'openai/gpt-oss-20b-2508' })));
+    const named = await stub((_req, _body, res) => res.end(JSON.stringify({ ...JSON.parse(chat('{"plan":"run"}')), model: 'openai/gpt-oss-120b' })));
     const outcome = await upstreamBranch(configOf({ WORLDSMITH_MODEL_ENDPOINT: `openai:${named}` })).generate(CALL);
-    expect(outcome.ok && outcome.provenance.model).toBe('openai/gpt-oss-20b-2508');
+    expect(outcome.ok && outcome.provenance.model).toBe('openai/gpt-oss-120b');
     const blank = await stub((_req, _body, res) => res.end(JSON.stringify({ ...JSON.parse(chat('{"plan":"run"}')), model: '  ' })));
     const fallback = await upstreamBranch(configOf({ WORLDSMITH_MODEL_ENDPOINT: `openai:${blank}` })).generate(CALL);
     expect(fallback.ok && fallback.provenance.model).toBe('openai/gpt-oss-20b');

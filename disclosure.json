@@ -98502,6 +98502,15 @@
       "reviewNote": "Veřejná konfigurační metadata a instrukční texty jediného modelu gpt-5.6-sol. Pinned raw SHA-256 497d7653bb22358baa29ebd4a70be55ce990b73a64896848a59179485b37db9d; odvozený katalog 59d22b4ae6532d4f869d776e56faaf2ae169f36038375597f4f1e581459b8791. Zachovány všechny ostatní hodnoty, změněny pouze tool_mode=direct a multi_agent_version=disabled. Není to nový benchmark, nezávislý holdout ani modelový výstup. Samotný katalog neprokazuje autentizaci, inference nebo produkční připravenost. Katalog a jeho popis odešly z repozitáře 7. 10. 2026 se starým produktem (P44D, historie v tagu legacy-worldstream); zůstávají přiložená licence a NOTICE, protože se katalog během hackathonu používal."
     },
     {
+      "name": "README images (docs/README-assets)",
+      "kind": "dataset",
+      "firstParty": true,
+      "reason": "Screenshots of Sayplay games taken in this repository (P77 measurement run, evals/play/p77/after) and composed by scripts/readme-assets.mjs. The 3D models visible in them have their own kind: asset entries; the images add no third-party material.",
+      "paths": [
+        "docs/README-assets"
+      ]
+    },
+    {
       "name": "Reality Compiler pilot sources",
       "kind": "dataset",
       "firstParty": true,

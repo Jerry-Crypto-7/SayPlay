@@ -255,7 +255,8 @@ gestem, chybějící soubor zní syntetickým ZzFX, `M` / `play-mute` ztlumí v�
 `PLAY_MUSIC=off` při buildu vypne hudbu. **Hlas vypravěče** přečte cíl hry jednou po prvním
 gestu, jen když je nahrávka hotová (dveře `…/voice`), ztlumená hra ho nespustí a ztlumení ho
 utne. Nahrávky dělá lokální Kokoro-82M (`ops/audio/server.py`) – bez `PLAY_VOICE_ENDPOINT`
-a `PLAY_VOICE_KEY` hra mlčí a publikace je stejná.
+a `PLAY_VOICE_KEY` hra mlčí a publikace je stejná. Na veřejném demu je hlas od 9. 11. 2026
+vypnutý (`PLAY_VOICE_KEY` v produkci není), hry tam jsou bez vypravěče.
 
 ## Sonda `window.__playShell`
 

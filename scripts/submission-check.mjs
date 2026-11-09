@@ -14,7 +14,7 @@
  *
  * ## Tři návratové kódy, ne dva
  *
- * `0` prošlo všech osm kontrol · `1` aspoň jedna selhala · **`2` aspoň jedna se
+ * `0` prošlo všech devět kontrol · `1` aspoň jedna selhala · **`2` aspoň jedna se
  * přeskočila**. Dvojka existuje kvůli `--offline`: přeskočená kontrola není
  * splněná kontrola, a kdyby offline běh vracel nulu, byl by to nejlevnější
  * způsob, jak si odklikat zelenou bránu bez nasazení. `T804` proto smí uznat
@@ -67,6 +67,7 @@ import ts from 'typescript';
 
 import { parseEnvFile } from './cloud/check-env.mjs';
 import { modelIdsIn, registeredModelNames } from './license-gate.mjs';
+import { claimProblems } from './readme-claims.mjs';
 
 /** Strom, který se kontroluje. Přepisuje ho `buildContext({ repo })` v testech. */
 const REPO = process.cwd();
@@ -507,6 +508,22 @@ export function isToolingPath(path) {
     || /[.](test|measure)[.](ts|tsx|mts|mjs|js)$/.test(path);
 }
 
+/**
+ * Soubory produktu, jejichž dlouhé literály jsou náš vlastní text, ne cizí
+ * datová sada. Část (d) kontroly 6 je přeskočí, jinak platí všechno ostatní.
+ *
+ * Výčet s důvodem, ne pravidlo: `kind: dataset` v registru vede jen skutečné
+ * cizí sady (WordNet…) a zapsat sem vlastní prózu jako dataset by disclosure
+ * zkreslilo. Nový soubor sem přibude jen vědomě, s vlastním řádkem.
+ *
+ * Rozhodnuto 8. 11. 2026 (P79 T7, varianta A) nad 13 nálezy: 11 v nástrojích
+ * (od té doby kryje `isToolingPath()`), 2 tady.
+ */
+export const OWN_PROSE = new Map([
+  ['src/play/arcade/witness.ts', 'own prose, not a third-party dataset: rule and role ids the play witness checks'],
+  ['src/play/read/prompt.ts', 'own prose, not a third-party dataset: the reader prompt we wrote'],
+]);
+
 /** Cesty deklarované položkami `kind: dataset`. */
 export function datasetPaths(registry) {
   const paths = [];
@@ -737,9 +754,11 @@ check(6, 'disclosure je úplná napříč pěti třídami', false, ({ repo, mani
     if (!coveredByPaths(path, registered)) problems.push(`${path} leží v datovém adresáři, ale žádná položka kind: dataset ho nepokrývá`);
   }
 
-  // (d) `dataset` (ii) — váha literálů nad celým sledovaným stromem.
+  // (d) `dataset` (ii) — váha literálů nad produktem. Nástroj vynechaný ze
+  // stejného důvodu jako v (b): literál v testu nebo harnesu je očekávaný
+  // výstup, který se nikam nenasazuje. `OWN_PROSE` je vlastní text produktu.
   for (const [path, source] of sources) {
-    if (coveredByPaths(path, registered)) continue;
+    if (coveredByPaths(path, registered) || isToolingPath(path) || OWN_PROSE.has(path)) continue;
     const { bytes, items } = literalWeight(path, source);
     if (bytes > LITERAL_BYTES_LIMIT) {
       problems.push(`${path} nese ${bytes} B literálů (práh ${LITERAL_BYTES_LIMIT}) a není registrovaný jako kind: dataset`);
@@ -854,6 +873,12 @@ check(8, 'blind-check prošel — odevzdané artefakty neprozrazují autora', fa
   return summarize(failures.length > 0 ? failures : [`blind-check skončil kódem ${result.status}`]);
 });
 
+check(9, 'README a popis: každé číslo má měření, žádný mrtvý odkaz', false, ({ repo }) =>
+  // P79: hodnotitel si ověřuje tvrzení odkazem. Pravidla a jejich hranice stojí
+  // v `readme-claims.mjs`; tady se jen spouští nad týmž stromem.
+  summarize(claimProblems(repo)),
+);
+
 // ---------------------------------------------------------------------------
 // Běh
 // ---------------------------------------------------------------------------
@@ -902,7 +927,7 @@ export async function main(argv = []) {
         '  node scripts/submission-check.mjs --offline   přeskočí síťové kontroly, exit 2',
         '',
         `Vstupy: ${MANIFEST_FILE}, ${REGISTRY_FILE}. Popis: aktuální Reality Compiler disclosure kontrakt.`,
-        'Exit 0 jen když prošlo všech osm kontrol. Přeskočená kontrola není splněná.',
+        `Exit 0 jen když prošlo všech ${checks.length} kontrol. Přeskočená kontrola není splněná.`,
       ].join('\n'),
     );
     return 0;
