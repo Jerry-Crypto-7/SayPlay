@@ -8,10 +8,12 @@
 import { PerspectiveCamera, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
+import { UNIT } from '@/play/arcade/contract';
 import { isSceneryModel, LOOK_IDS, LOOKS, modelHeight } from '@/play/arcade/look';
+import { PLATFORM } from '@/play/arcade/pieces/platform';
 
 import { placeChase } from '../../steer/SteerScene';
-import { placeRunner } from '../../track-camera';
+import { placePlatform, placeRunner } from '../../track-camera';
 import type { Box } from '../ground';
 import { FRAMING_COPIES, FRAMING_PERIOD_M, footOf, framingRow, placeTrackFraming } from '../landmark-places';
 import { PLAYABLE_HALF } from '../rig/terrain/valley';
@@ -78,6 +80,27 @@ describe('P77 T4: rámující řada po trati', () => {
         const h = modelHeight(piece.id) * piece.scale;
         expect(h).toBeGreaterThanOrEqual(Math.min(2.5, tallest));
         expect(h).toBeLessThanOrEqual(Math.max(4, tallest) + 0.01);
+      }
+    }
+  });
+
+  it('závod zezadu kusy dostane (práh směru kamery nevypne kameru podél trati)', () => {
+    for (const aspect of Object.values(ASPECTS)) {
+      expect(LOOK_IDS.some((lookId) => framingOf(TRACKS[1], lookId, aspect).pieces.length > 0)).toBe(true);
+    }
+  });
+
+  it('plošinovka z boku i ze tří čtvrtin nedostane žádný kus (T4 s5: maják přes rytíře / uprostřed záběru)', () => {
+    const water = PLATFORM.fallBelowY / UNIT - 0.4;
+    const slabHalf = PLATFORM.slabW / UNIT / 2;
+    for (const lookId of LOOK_IDS) {
+      for (const aspect of Object.values(ASPECTS)) {
+        const look = LOOKS[lookId];
+        const camera = new PerspectiveCamera(60, aspect, 0.1, look.fog[1]);
+        placePlatform(camera, new Vector3(), 0, water + 1);
+        camera.updateMatrixWorld();
+        const area = [{ x0: -slabHalf, x1: slabHalf, ...ALL_Z }];
+        expect(placeTrackFraming({ camera, look, seed: 11, area, hero: { x: 0, y: water + 1, z: 0, r: 0.6, h: 1.4 } })).toEqual([]);
       }
     }
   });
