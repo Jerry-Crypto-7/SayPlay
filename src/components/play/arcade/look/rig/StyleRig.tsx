@@ -37,6 +37,7 @@ import {
 } from 'three';
 
 import { type Look, type LookId, NIGHT } from '@/play/arcade/look';
+import { LOOK_STYLE } from '@/play/arcade/look/style';
 
 import { Ambient } from '../Ambient';
 import { setCharacterRim } from '../load';
@@ -141,7 +142,7 @@ void main() {
 }`;
 
 /** Kolik barvy oblohy přimíchat do obrazu přímo na obzoru – navazuje na kulisy v mlze. */
-const PAINT_HAZE = 0.3;
+const PAINT_HAZE = LOOK_STYLE.sky.paintHaze;
 
 /**
  * Strop haly (m): výška nad zemí, nejmenší odstup nad kamerou (kamera arény nad stropem), rozteč světel a půl
@@ -313,7 +314,7 @@ export const NIGHT_EXPOSURE = 1.3;
  */
 export function exposureOf(look: Look): number {
   const dim = Math.min(Math.max(2 - brightnessOf(look) / brightnessOf(NIGHT), 0), 1);
-  return look.exposure * (1 + (NIGHT_EXPOSURE - 1) * darkness(look) * dim);
+  return look.exposure * LOOK_STYLE.grade.exposure * (1 + (NIGHT_EXPOSURE - 1) * darkness(look) * dim);
 }
 
 /** Jak daleko před hrdinou je střed výřezu stínu (m) – kamera se dívá dopředu. Polovina hrany je z úrovně kvality. */
@@ -470,7 +471,7 @@ export function StyleRig({ look, lookId, control, surface }: { readonly look: Lo
   // Úroveň kvality jen na začátku: výměna obrazu uprostřed hry by stáhla druhý a prolínala znovu.
   const [paintTier] = useState(tier);
   const [place] = useState(() => stagePlace(surface.current));
-  const painted = useMemo(() => paintedSkyOf(look, lookId, paintTier, place), [look, lookId, paintTier, place]);
+  const painted = useMemo(() => (LOOK_STYLE.sky.painted ? paintedSkyOf(look, lookId, paintTier, place) : null), [look, lookId, paintTier, place]);
   // Okrajový svit postav barvou oblohy sady (P54B T14): jen uniformy, materiály se nepřekládají.
   // Paleta, přimíchání a okraj toonu sady (P56B T6): také jen uniformy.
   useEffect(() => {

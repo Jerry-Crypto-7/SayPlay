@@ -20,6 +20,7 @@
 import { type BufferGeometry, Color } from 'three';
 
 import { type Cover, type InteriorFloor, type Look, SURFACES } from '@/play/arcade/look';
+import { LOOK_STYLE } from '@/play/arcade/look/style';
 
 import { buildPodium, groundPainter, groundPalette } from '../../ground';
 import { Faces, type Vertex, capOf } from './islands';
@@ -49,21 +50,23 @@ export function arenaPalette(look: Look): ArenaPalette {
 function coverPalette(look: Look): ArenaPalette {
   const land = look.land ?? look.ground;
   const rock = look.terrain?.rock ?? look.block?.[0] ?? mix(land, '#57534e', 0.6);
+  // Kontrast spár a prasklin z profilu vzhledu (P81): 1 = jak bylo.
+  const seam = LOOK_STYLE.floor.seam;
   switch (look.cover) {
     case 'paving': {
       const floor = look.block?.[1] ?? land;
-      return { floor, seam: mix(floor, '#1c1917', 0.45), land, wall: look.block?.[0] ?? rock, wallTop: floor };
+      return { floor, seam: mix(floor, '#1c1917', 0.45 * seam), land, wall: look.block?.[0] ?? rock, wallTop: floor };
     }
     case 'snow': {
       const floor = look.terrain?.lane ?? mix(land, look.water, 0.4);
-      return { floor, seam: mix(floor, '#ffffff', 0.55), land, wall: look.block?.[0] ?? mix(land, floor, 0.5), wallTop: look.terrain?.cap ?? land };
+      return { floor, seam: mix(floor, '#ffffff', 0.55 * seam), land, wall: look.block?.[0] ?? mix(land, floor, 0.5), wallTop: look.terrain?.cap ?? land };
     }
     case 'sand':
-      return { floor: land, seam: mix(land, '#ffffff', 0.13), land, wall: mix(land, rock, 0.55), wallTop: land };
+      return { floor: land, seam: mix(land, '#ffffff', 0.13 * seam), land, wall: mix(land, rock, 0.55), wallTop: land };
     case 'rock':
-      return { floor: land, seam: mix(land, '#000000', 0.35), land, wall: rock, wallTop: mix(rock, '#ffffff', 0.12) };
+      return { floor: land, seam: mix(land, '#000000', 0.35 * seam), land, wall: rock, wallTop: mix(rock, '#ffffff', 0.12) };
     default:
-      return { floor: land, seam: mix(land, '#000000', 0.22), land, wall: rock, wallTop: mix(rock, land, 0.5) };
+      return { floor: land, seam: mix(land, '#000000', 0.22 * seam), land, wall: rock, wallTop: mix(rock, land, 0.5) };
   }
 }
 

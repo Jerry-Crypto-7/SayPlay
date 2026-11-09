@@ -20,19 +20,17 @@ import { BackSide, type BufferGeometry, Color, type Group, Mesh, type Object3D, 
 import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 
 import { colorHex } from '@/brand/tokens';
+import { type InkKind, LOOK_STYLE } from '@/play/arcade/look/style';
 
 import { type ToyUniforms, withToyDeform } from '../toy-deform';
 
 import { flagShadow } from './StyleRig';
 
 /** `obstacle` (P70D T2): překážka a nástraha v cestě inkoustem – v mlze a proti zemi splývaly. */
-export type Ink = 'hero' | 'foe' | 'obstacle';
+export type Ink = InkKind;
 
-/**
- * Tloušťka obrysu v CSS pixelech. Kit kreslí 2,5 px; modelína konceptu (P75 T2) má hranu jen naznačenou,
- * plná čára z ní dělala kreslenou figurku.
- */
-export const INK_PX = 1.5;
+/** Tloušťka obrysu v CSS pixelech (profil vzhledu, P81). */
+export const INK_PX = LOOK_STYLE.ink.px;
 
 export const INK_COLOR: Readonly<Record<Ink, number>> = { hero: colorHex.ink, foe: colorHex['tomato-deep'], obstacle: colorHex.ink };
 
@@ -42,7 +40,7 @@ export const INK_COLOR: Readonly<Record<Ink, number>> = { hero: colorHex.ink, fo
  * Obal se nesvítí ani netónuje: odstín 0,35 a čistý povrch vyšly na snímku (P75 T2, želva) SVĚTLEJŠÍ než stínované
  * tělo – světlá lemovka místo hrany. Proto tmavší odstín a třetina inkoustu.
  */
-export const INK_SURFACE: Readonly<Record<Ink, number>> = { hero: 0.7, foe: 0, obstacle: 0.7 };
+export const INK_SURFACE: Readonly<Record<Ink, number>> = LOOK_STYLE.ink.surface;
 const INK_SHADE = '0.2';
 
 const VERTEX = /* glsl */ `

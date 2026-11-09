@@ -20,24 +20,11 @@ import { Effect } from 'postprocessing';
 import { Uniform, Vector3 } from 'three';
 
 import type { LookId } from '@/play/arcade/look';
+import { type Grade, type GradeFamily, LOOK_STYLE } from '@/play/arcade/look/style';
 
 import type { QualityTier } from './quality';
 
-export const GRADE_FAMILIES = ['green', 'warm', 'cold', 'water', 'indoor', 'dark'] as const;
-export type GradeFamily = (typeof GRADE_FAMILIES)[number];
-
-export interface Grade {
-  /** Zdvih stínů po kanálech (0 = černá zůstane černou). */
-  readonly lift: readonly [number, number, number];
-  /** Zisk světel po kanálech (1 = beze změny). */
-  readonly gain: readonly [number, number, number];
-  /** Exponent středních tónů: > 1 ztmaví vybledlé, < 1 rozjasní tmavé. */
-  readonly gamma: number;
-  readonly saturation: number;
-  readonly contrast: number;
-  /** Ztmavení rohů (0 = bez viněty). */
-  readonly vignette: number;
-}
+export { GRADE_FAMILIES, type Grade, type GradeFamily } from '@/play/arcade/look/style';
 
 export const LOOK_FAMILY: Readonly<Record<LookId, GradeFamily>> = {
   meadow: 'green',
@@ -60,17 +47,8 @@ export const LOOK_FAMILY: Readonly<Record<LookId, GradeFamily>> = {
   space: 'dark',
 };
 
-export const GRADES: Readonly<Record<GradeFamily, Grade>> = {
-  // Zlatá hodina diorama (P73D T4): denní rodiny teplejší zisk a měkčí sytost – hračka, ne neon.
-  green: { lift: [0.01, 0.01, 0.015], gain: [1.05, 1.01, 0.94], gamma: 1.04, saturation: 1.06, contrast: 1.06, vignette: 0.22 },
-  warm: { lift: [0.02, 0.01, 0], gain: [1.05, 1, 0.92], gamma: 1.04, saturation: 1.04, contrast: 1.08, vignette: 0.22 },
-  // Mlha arény sníh vybělí: gama vrátí střední tóny, bílá zůstane bílou.
-  cold: { lift: [0, 0.01, 0.03], gain: [0.99, 1, 1.01], gamma: 1.22, saturation: 1.2, contrast: 1.1, vignette: 0.2 },
-  water: { lift: [0, 0.02, 0.03], gain: [0.98, 1.02, 1.03], gamma: 1.04, saturation: 1.12, contrast: 1.06, vignette: 0.26 },
-  indoor: { lift: [0.01, 0.01, 0], gain: [1.04, 1, 0.95], gamma: 1.03, saturation: 1.04, contrast: 1.06, vignette: 0.2 },
-  // Noc: černá se zvedne do modré, střední tóny se rozjasní – hrdina nezapadne.
-  dark: { lift: [0.03, 0.045, 0.07], gain: [1, 1.02, 1.04], gamma: 0.8, saturation: 1.1, contrast: 1, vignette: 0.3 },
-};
+/** Ladění rodin z profilu vzhledu (P81, `LOOK_STYLE.grade`). */
+export const GRADES: Readonly<Record<GradeFamily, Grade>> = LOOK_STYLE.grade.families;
 
 export const gradeOf = (lookId: LookId): Grade => GRADES[LOOK_FAMILY[lookId]];
 
@@ -78,7 +56,7 @@ export const gradeOf = (lookId: LookId): Grade => GRADES[LOOK_FAMILY[lookId]];
  * Kontrast navíc na telefonní úrovni (P54B T14): `low` nemá AO ani bloom, kontaktní stíny
  * a záře chybí a obraz na malém displeji splývá – postava se slévá se zemí.
  */
-export const LOW_CONTRAST = 0.08;
+export const LOW_CONTRAST = LOOK_STYLE.grade.lowContrast;
 
 /** Ladění rodiny na úrovni kvality; jen uniformy, změna úrovně nic nepřekládá. */
 export const gradeFor = (family: GradeFamily, tier: QualityTier): Grade =>

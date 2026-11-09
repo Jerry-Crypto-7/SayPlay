@@ -33,6 +33,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Box3, Group, InstancedMesh, Matrix4, type Mesh, MeshStandardMaterial, type Object3D, Vector3 } from 'three';
 
 import type { Flora, Look } from '@/play/arcade/look';
+import { LOOK_STYLE } from '@/play/arcade/look/style';
 
 import { compileForComposer } from '../../feed/StageHost';
 import { loadFlatModel, type PlantModel, paintedPlant, plantMaterial, toonMaterial } from '../look/load';
@@ -65,9 +66,9 @@ export function ArenaFloor({ look, half, seed, keep, hero, decor: decorated = tr
   // Interiér má místo prstence vegetace stěnu z kulis sady; venku je stěna prázdná.
   const ring = useMemo(() => (interior ? [] : [...ringKindsOf(arenaRingPlaces({ look, half, seed, keep }))]), [interior, look, half, seed, keep]);
   const kitWalls = useMemo(() => [...ringKindsOf(interiorWallPlaces({ look, half, seed, keep }))], [look, half, seed, keep]);
-  // Led se leskne, dlažba, písek a tráva ne.
-  const ground = useMemo(() => new MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: look.cover === 'snow' ? 0.45 : 0.9 }), [look.cover]);
-  const walls = useMemo(() => new MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.85 }), []);
+  // Led se leskne, dlažba, písek a tráva ne (drsnost z profilu vzhledu, P81).
+  const ground = useMemo(() => new MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: look.cover === 'snow' ? LOOK_STYLE.floor.ice : LOOK_STYLE.floor.roughness }), [look.cover]);
+  const walls = useMemo(() => new MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: LOOK_STYLE.floor.wall }), []);
   useEffect(
     () => () => {
       arena.floor.dispose();

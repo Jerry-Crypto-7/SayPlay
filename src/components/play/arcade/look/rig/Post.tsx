@@ -15,6 +15,7 @@ import { ToneMappingMode } from 'postprocessing';
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { Look } from '@/play/arcade/look';
+import { LOOK_STYLE } from '@/play/arcade/look/style';
 
 import { tiltFocus } from '../framing';
 import { REST_FOCUS, restWeightOf } from '../rest-shot';
@@ -137,7 +138,7 @@ export const TILT = { play: { blur: 0.12, taper: 1.2 }, rest: { blur: 0.2, taper
 export function macroFocus(focus: number, weight: number, width: number, height: number): { readonly blur: number; readonly taper: number; readonly focus: number } {
   const mix = (play: number, rest: number): number => play + (rest - play) * weight;
   const heights = height / Math.hypot(width, height);
-  return { blur: mix(TILT.play.blur, TILT.rest.blur), taper: mix(TILT.play.taper, TILT.rest.taper) * heights, focus: mix(focus, REST_FOCUS) };
+  return { blur: mix(TILT.play.blur, TILT.rest.blur) * LOOK_STYLE.post.tilt, taper:mix(TILT.play.taper, TILT.rest.taper) * heights, focus: mix(focus, REST_FOCUS) };
 }
 
 /**
@@ -195,7 +196,7 @@ export function Post({ look, family, tier, control }: { readonly look: Look; rea
       <EffectComposer multisampling={aa === 'msaa' ? MSAA_SAMPLES : 0} renderPriority={COMPOSER_PRIORITY}>
         {ao === false ? <></> : <N8AO ref={opaqueAo} aoRadius={1.2} distanceFalloff={1} intensity={2} halfRes={ao === 'half'} quality={ao === 'half' ? 'performance' : 'medium'} />}
         {aa === 'smaa' ? <SMAA /> : <></>}
-        {bloom ? <Bloom mipmapBlur luminanceThreshold={bloomThreshold(look)} luminanceSmoothing={0.1} intensity={0.8} /> : <></>}
+        {bloom ? <Bloom mipmapBlur luminanceThreshold={bloomThreshold(look)} luminanceSmoothing={0.1} intensity={LOOK_STYLE.post.bloom} /> : <></>}
         {focus === null ? <></> : <MacroFocus focus={focus} samples={tilt} cross={tier === 'high'} />}
         <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
         <Grading family={family} tier={tier} />
