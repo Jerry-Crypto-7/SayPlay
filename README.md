@@ -86,7 +86,7 @@ Every row is one measurement on a dated build. The full list, with the exact lin
 
 ## Licences and origin
 
-Third-party libraries, models, assets and APIs, each with source, author, licence and required notices, are listed in [DISCLOSURE.md](DISCLOSURE.md), generated from [disclosure.json](disclosure.json) and checked by `npm run gate:license`. The same file names the AI tools that wrote this code and the AI models that generated assets offline. The 3D catalogue has a `PROVENANCE.md` per model set under `public/assets/`.
+The code in this repository is released under the [MIT License](LICENSE). Third-party libraries, models, assets and APIs, each with source, author, licence and required notices, are listed in [DISCLOSURE.md](DISCLOSURE.md), generated from [disclosure.json](disclosure.json) and checked by `npm run gate:license`. The same file names the AI tools that wrote this code and the AI models that generated assets offline. The 3D catalogue has a `PROVENANCE.md` per model set under `public/assets/`.
 
 ## Limits
 
