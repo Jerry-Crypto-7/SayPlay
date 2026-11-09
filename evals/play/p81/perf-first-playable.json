@@ -1,13 +1,13 @@
 {
   "about": "Interleaved A/B time to first playable on /play: the same sentences and shared games on two servers, runs paired back to back. Method: evals/play/first-playable/README.md.",
-  "measuredAt": "2026-11-09T19:47:02.917Z",
+  "measuredAt": "2026-11-09T20:22:35.052Z",
   "a": {
     "url": "http://127.0.0.1:3213",
     "label": "main před P81 (origin/main s P77)"
   },
   "b": {
     "url": "http://127.0.0.1:3212",
-    "label": "P81 T5 (profil mix, podlaha, obrysy kulis)"
+    "label": "P81 82216a78 (obrysy kulis jen na high, od ~2 s)"
   },
   "probe": "scripts/measure/time-to-playable.mjs via scripts/measure/first-playable-ab.mjs",
   "profiles": {
@@ -38,19 +38,19 @@
         "A": {
           "failed": 0,
           "n": 3,
-          "median": 7314,
-          "min": 7040,
-          "max": 7971
+          "median": 6842,
+          "min": 6655,
+          "max": 7819
         },
         "B": {
           "failed": 0,
           "n": 3,
-          "median": 7488,
-          "min": 7360,
-          "max": 9691
+          "median": 6936,
+          "min": 6832,
+          "max": 7294
         },
-        "diffMedian": 174,
-        "pairedDiffMedian": 448
+        "diffMedian": 94,
+        "pairedDiffMedian": 94
       },
       {
         "profile": "pixel7-cpu4",
@@ -59,19 +59,19 @@
         "A": {
           "failed": 0,
           "n": 3,
-          "median": 8082,
-          "min": 7611,
-          "max": 8794
+          "median": 7753,
+          "min": 7617,
+          "max": 8102
         },
         "B": {
           "failed": 0,
           "n": 3,
-          "median": 8688,
-          "min": 8105,
-          "max": 9428
+          "median": 8008,
+          "min": 7687,
+          "max": 8517
         },
-        "diffMedian": 606,
-        "pairedDiffMedian": 606
+        "diffMedian": 255,
+        "pairedDiffMedian": 255
       },
       {
         "profile": "pixel7-cpu4",
@@ -80,19 +80,19 @@
         "A": {
           "failed": 0,
           "n": 3,
-          "median": 8481,
-          "min": 8302,
-          "max": 9636
+          "median": 8070,
+          "min": 8005,
+          "max": 8154
         },
         "B": {
-          "failed": 1,
-          "n": 2,
-          "median": 8665.5,
-          "min": 8624,
-          "max": 8707
+          "failed": 0,
+          "n": 3,
+          "median": 7987,
+          "min": 7891,
+          "max": 10535
         },
-        "diffMedian": 184.5,
-        "pairedDiffMedian": 274
+        "diffMedian": -83,
+        "pairedDiffMedian": -18
       },
       {
         "profile": "pixel7-cpu4",
@@ -101,19 +101,19 @@
         "A": {
           "failed": 0,
           "n": 3,
-          "median": 6054,
-          "min": 5916,
-          "max": 6757
+          "median": 6006,
+          "min": 5891,
+          "max": 6521
         },
         "B": {
           "failed": 0,
           "n": 3,
-          "median": 6521,
-          "min": 6391,
-          "max": 6963
+          "median": 5877,
+          "min": 5768,
+          "max": 6183
         },
-        "diffMedian": 467,
-        "pairedDiffMedian": 467
+        "diffMedian": -129,
+        "pairedDiffMedian": -238
       },
       {
         "profile": "pixel7-cpu4",
@@ -122,19 +122,19 @@
         "A": {
           "failed": 0,
           "n": 3,
-          "median": 5564,
-          "min": 5540,
-          "max": 5729
+          "median": 5620,
+          "min": 5576,
+          "max": 7055
         },
         "B": {
           "failed": 0,
           "n": 3,
-          "median": 6311,
-          "min": 5884,
-          "max": 6312
+          "median": 5688,
+          "min": 5680,
+          "max": 6050
         },
-        "diffMedian": 747,
-        "pairedDiffMedian": 747
+        "diffMedian": 68,
+        "pairedDiffMedian": 60
       },
       {
         "profile": "pixel7-cpu4",
@@ -143,19 +143,19 @@
         "A": {
           "failed": 0,
           "n": 3,
-          "median": 5588,
-          "min": 5587,
-          "max": 5695
+          "median": 5956,
+          "min": 5774,
+          "max": 6012
         },
         "B": {
           "failed": 0,
           "n": 3,
-          "median": 6182,
-          "min": 5978,
-          "max": 6411
+          "median": 5633,
+          "min": 5515,
+          "max": 5672
         },
-        "diffMedian": 594,
-        "pairedDiffMedian": 487
+        "diffMedian": -323,
+        "pairedDiffMedian": -323
       },
       {
         "profile": "pixel7-cpu4",
@@ -164,19 +164,19 @@
         "A": {
           "failed": 0,
           "n": 3,
-          "median": 8641,
-          "min": 8565,
-          "max": 8996
+          "median": 8465,
+          "min": 8367,
+          "max": 10096
         },
         "B": {
           "failed": 0,
           "n": 3,
-          "median": 9271,
-          "min": 9237,
-          "max": 9606
+          "median": 8511,
+          "min": 8457,
+          "max": 9147
         },
-        "diffMedian": 630,
-        "pairedDiffMedian": 610
+        "diffMedian": 46,
+        "pairedDiffMedian": -8
       },
       {
         "profile": "pixel7-cpu4",
@@ -185,19 +185,19 @@
         "A": {
           "failed": 0,
           "n": 3,
-          "median": 7636,
-          "min": 7492,
-          "max": 7900
+          "median": 7709,
+          "min": 7416,
+          "max": 7783
         },
         "B": {
           "failed": 0,
           "n": 3,
-          "median": 8053,
-          "min": 8009,
-          "max": 8069
+          "median": 7616,
+          "min": 7546,
+          "max": 7846
         },
-        "diffMedian": 417,
-        "pairedDiffMedian": 417
+        "diffMedian": -93,
+        "pairedDiffMedian": 137
       }
     ],
     "byKind": [
@@ -207,19 +207,19 @@
         "A": {
           "failed": 0,
           "n": 24,
-          "median": 7551.5,
-          "min": 5540,
-          "max": 9636
+          "median": 7516.5,
+          "min": 5576,
+          "max": 10096
         },
         "B": {
-          "failed": 1,
-          "n": 23,
-          "median": 8009,
-          "min": 5884,
-          "max": 9691
+          "failed": 0,
+          "n": 24,
+          "median": 7420,
+          "min": 5515,
+          "max": 10535
         },
-        "diffMedian": 457.5,
-        "pairedDiffMedian": 487
+        "diffMedian": -96.5,
+        "pairedDiffMedian": 26
       }
     ],
     "byProfile": [
@@ -228,34 +228,34 @@
         "A": {
           "failed": 0,
           "n": 24,
-          "median": 7551.5,
-          "min": 5540,
-          "max": 9636
+          "median": 7516.5,
+          "min": 5576,
+          "max": 10096
         },
         "B": {
-          "failed": 1,
-          "n": 23,
-          "median": 8009,
-          "min": 5884,
-          "max": 9691
+          "failed": 0,
+          "n": 24,
+          "median": 7420,
+          "min": 5515,
+          "max": 10535
         },
-        "diffMedian": 457.5,
-        "pairedDiffMedian": 487
+        "diffMedian": -96.5,
+        "pairedDiffMedian": 26
       }
     ],
     "gate": {
-      "failedTotal": 1,
+      "failedTotal": 0,
       "failed": {
         "A": 0,
-        "B": 1
+        "B": 0
       },
       "checks": [
         {
           "name": "failedTotal",
           "profile": null,
-          "value": 1,
+          "value": 0,
           "limit": 0,
-          "pass": false
+          "pass": true
         },
         {
           "name": "medianB",
@@ -274,9 +274,9 @@
         {
           "name": "pairedDiffMedian",
           "profile": "pixel7-cpu4",
-          "value": 487,
+          "value": 26,
           "limit": 200,
-          "pass": false
+          "pass": true
         }
       ],
       "pass": false
@@ -291,19 +291,19 @@
         "A": {
           "failed": 0,
           "n": 3,
-          "median": 4509,
-          "min": 4258,
-          "max": 4713
+          "median": 4143,
+          "min": 4023,
+          "max": 5433
         },
         "B": {
           "failed": 0,
           "n": 3,
-          "median": 4499,
-          "min": 4368,
-          "max": 4699
+          "median": 4346,
+          "min": 4166,
+          "max": 4562
         },
-        "diffMedian": -10,
-        "pairedDiffMedian": -14
+        "diffMedian": 203,
+        "pairedDiffMedian": 143
       },
       {
         "profile": "pixel7-cpu4",
@@ -312,19 +312,19 @@
         "A": {
           "failed": 0,
           "n": 3,
-          "median": 5236,
-          "min": 5051,
-          "max": 5780
+          "median": 5130,
+          "min": 4910,
+          "max": 5498
         },
         "B": {
           "failed": 0,
           "n": 3,
-          "median": 5569,
-          "min": 5320,
-          "max": 5968
+          "median": 5208,
+          "min": 4860,
+          "max": 5283
         },
-        "diffMedian": 333,
-        "pairedDiffMedian": 269
+        "diffMedian": 78,
+        "pairedDiffMedian": -50
       },
       {
         "profile": "pixel7-cpu4",
@@ -333,19 +333,19 @@
         "A": {
           "failed": 0,
           "n": 3,
-          "median": 5136,
-          "min": 4952,
-          "max": 5384
+          "median": 4820,
+          "min": 4793,
+          "max": 4989
         },
         "B": {
-          "failed": 1,
-          "n": 2,
-          "median": 5098.5,
-          "min": 5003,
-          "max": 5194
+          "failed": 0,
+          "n": 3,
+          "median": 4735,
+          "min": 4698,
+          "max": 5081
         },
-        "diffMedian": -37.5,
-        "pairedDiffMedian": -161.5
+        "diffMedian": -85,
+        "pairedDiffMedian": -85
       },
       {
         "profile": "pixel7-cpu4",
@@ -354,19 +354,19 @@
         "A": {
           "failed": 0,
           "n": 3,
-          "median": 4216,
-          "min": 4175,
-          "max": 4729
+          "median": 4191,
+          "min": 4167,
+          "max": 4645
         },
         "B": {
           "failed": 0,
           "n": 3,
-          "median": 4556,
-          "min": 4504,
-          "max": 4934
+          "median": 3984,
+          "min": 3901,
+          "max": 4184
         },
-        "diffMedian": 340,
-        "pairedDiffMedian": 329
+        "diffMedian": -207,
+        "pairedDiffMedian": -266
       },
       {
         "profile": "pixel7-cpu4",
@@ -375,19 +375,19 @@
         "A": {
           "failed": 0,
           "n": 3,
-          "median": 3679,
-          "min": 3657,
-          "max": 3706
+          "median": 3798,
+          "min": 3681,
+          "max": 4584
         },
         "B": {
           "failed": 0,
           "n": 3,
-          "median": 4051,
-          "min": 3693,
-          "max": 4153
+          "median": 3679,
+          "min": 3538,
+          "max": 4091
         },
-        "diffMedian": 372,
-        "pairedDiffMedian": 345
+        "diffMedian": -119,
+        "pairedDiffMedian": -143
       },
       {
         "profile": "pixel7-cpu4",
@@ -396,19 +396,19 @@
         "A": {
           "failed": 0,
           "n": 3,
-          "median": 4031,
-          "min": 4022,
-          "max": 4040
+          "median": 4242,
+          "min": 4235,
+          "max": 4340
         },
         "B": {
           "failed": 0,
           "n": 3,
-          "median": 4500,
-          "min": 4290,
-          "max": 4604
+          "median": 4030,
+          "min": 4003,
+          "max": 4039
         },
-        "diffMedian": 469,
-        "pairedDiffMedian": 478
+        "diffMedian": -212,
+        "pairedDiffMedian": -239
       },
       {
         "profile": "pixel7-cpu4",
@@ -417,19 +417,19 @@
         "A": {
           "failed": 0,
           "n": 3,
-          "median": 5842,
-          "min": 5670,
-          "max": 6175
+          "median": 5577,
+          "min": 5562,
+          "max": 6576
         },
         "B": {
           "failed": 0,
           "n": 3,
-          "median": 6177,
-          "min": 6082,
-          "max": 6351
+          "median": 5693,
+          "min": 5572,
+          "max": 6140
         },
-        "diffMedian": 335,
-        "pairedDiffMedian": 335
+        "diffMedian": 116,
+        "pairedDiffMedian": 10
       },
       {
         "profile": "pixel7-cpu4",
@@ -438,19 +438,19 @@
         "A": {
           "failed": 0,
           "n": 3,
-          "median": 5005,
-          "min": 4949,
-          "max": 5262
+          "median": 5039,
+          "min": 4913,
+          "max": 5142
         },
         "B": {
           "failed": 0,
           "n": 3,
-          "median": 5181,
-          "min": 5178,
-          "max": 5290
+          "median": 4904,
+          "min": 4793,
+          "max": 4991
         },
-        "diffMedian": 176,
-        "pairedDiffMedian": 173
+        "diffMedian": -135,
+        "pairedDiffMedian": -48
       }
     ],
     "byKind": [
@@ -460,19 +460,19 @@
         "A": {
           "failed": 0,
           "n": 24,
-          "median": 4839,
-          "min": 3657,
-          "max": 6175
+          "median": 4806.5,
+          "min": 3681,
+          "max": 6576
         },
         "B": {
-          "failed": 1,
-          "n": 23,
-          "median": 4934,
-          "min": 3693,
-          "max": 6351
+          "failed": 0,
+          "n": 24,
+          "median": 4630,
+          "min": 3538,
+          "max": 6140
         },
-        "diffMedian": 95,
-        "pairedDiffMedian": 241
+        "diffMedian": -176.5,
+        "pairedDiffMedian": -131
       }
     ],
     "byProfile": [
@@ -481,19 +481,19 @@
         "A": {
           "failed": 0,
           "n": 24,
-          "median": 4839,
-          "min": 3657,
-          "max": 6175
+          "median": 4806.5,
+          "min": 3681,
+          "max": 6576
         },
         "B": {
-          "failed": 1,
-          "n": 23,
-          "median": 4934,
-          "min": 3693,
-          "max": 6351
+          "failed": 0,
+          "n": 24,
+          "median": 4630,
+          "min": 3538,
+          "max": 6140
         },
-        "diffMedian": 95,
-        "pairedDiffMedian": 241
+        "diffMedian": -176.5,
+        "pairedDiffMedian": -131
       }
     ]
   },
@@ -506,12 +506,12 @@
       "run": 1,
       "pair": 0,
       "playable": true,
-      "ms": 7971,
-      "firstFrameMs": 4713,
-      "note": "surface also changes without input (40.72 % in 300 ms) – check the screenshot",
+      "ms": 7819,
+      "firstFrameMs": 5433,
+      "note": "surface also changes without input (38.41 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794252622513,
-      "tPlayable": 1794252630484,
+      "t0": 1794254873568,
+      "tPlayable": 1794254881387,
       "url": "http://127.0.0.1:3213/play/fa0522e3f8746f662f559c38149a89b4"
     },
     {
@@ -522,12 +522,12 @@
       "run": 1,
       "pair": 0,
       "playable": true,
-      "ms": 9691,
-      "firstFrameMs": 4699,
-      "note": "surface also changes without input (32.82 % in 300 ms) – check the screenshot",
-      "attempts": 3,
-      "t0": 1794252641822,
-      "tPlayable": 1794252651513,
+      "ms": 7294,
+      "firstFrameMs": 4562,
+      "note": "surface also changes without input (30.59 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794254892974,
+      "tPlayable": 1794254900268,
       "url": "http://127.0.0.1:3212/play/fa0522e3f8746f662f559c38149a89b4"
     },
     {
@@ -538,12 +538,12 @@
       "run": 1,
       "pair": 1,
       "playable": true,
-      "ms": 9428,
-      "firstFrameMs": 5968,
-      "note": "surface also changes without input (34.45 % in 300 ms) – check the screenshot",
+      "ms": 7687,
+      "firstFrameMs": 4860,
+      "note": "surface also changes without input (37.33 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794252663360,
-      "tPlayable": 1794252672788,
+      "t0": 1794254911783,
+      "tPlayable": 1794254919470,
       "url": "http://127.0.0.1:3212/play/495ace4d1b956581f84d7cc2df9d1af7"
     },
     {
@@ -554,12 +554,12 @@
       "run": 1,
       "pair": 1,
       "playable": true,
-      "ms": 8794,
-      "firstFrameMs": 5780,
-      "note": "surface also changes without input (53.05 % in 300 ms) – check the screenshot",
+      "ms": 7617,
+      "firstFrameMs": 4910,
+      "note": "surface also changes without input (51.64 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794252684608,
-      "tPlayable": 1794252693402,
+      "t0": 1794254931064,
+      "tPlayable": 1794254938681,
       "url": "http://127.0.0.1:3213/play/495ace4d1b956581f84d7cc2df9d1af7"
     },
     {
@@ -570,12 +570,12 @@
       "run": 1,
       "pair": 2,
       "playable": true,
-      "ms": 8481,
-      "firstFrameMs": 5384,
-      "note": "surface also changes without input (99.96 % in 300 ms) – check the screenshot",
+      "ms": 8070,
+      "firstFrameMs": 4793,
+      "note": "surface also changes without input (61.12 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794252704665,
-      "tPlayable": 1794252713146,
+      "t0": 1794254950246,
+      "tPlayable": 1794254958316,
       "url": "http://127.0.0.1:3213/play/9815614f5b80031cada278ac999d0807"
     },
     {
@@ -586,12 +586,12 @@
       "run": 1,
       "pair": 2,
       "playable": true,
-      "ms": 8707,
-      "firstFrameMs": 5194,
-      "note": "surface also changes without input (99.96 % in 300 ms) – check the screenshot",
-      "attempts": 2,
-      "t0": 1794252724985,
-      "tPlayable": 1794252733692,
+      "ms": 10535,
+      "firstFrameMs": 5081,
+      "note": "surface also changes without input (60.9 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1794254970880,
+      "tPlayable": 1794254981415,
       "url": "http://127.0.0.1:3212/play/9815614f5b80031cada278ac999d0807"
     },
     {
@@ -602,12 +602,12 @@
       "run": 1,
       "pair": 3,
       "playable": true,
-      "ms": 6963,
-      "firstFrameMs": 4934,
-      "note": "surface also changes without input (48.35 % in 300 ms) – check the screenshot",
+      "ms": 5877,
+      "firstFrameMs": 3984,
+      "note": "surface also changes without input (48.5 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794252745613,
-      "tPlayable": 1794252752576,
+      "t0": 1794254992764,
+      "tPlayable": 1794254998641,
       "url": "http://127.0.0.1:3212/play/d7b31b18b7807dd2599081e73018915f"
     },
     {
@@ -617,253 +617,253 @@
       "side": "A",
       "run": 1,
       "pair": 3,
-      "playable": true,
-      "ms": 6757,
-      "firstFrameMs": 4729,
-      "note": "surface also changes without input (64.26 % in 300 ms) – check the screenshot",
-      "attempts": 2,
-      "t0": 1794252763981,
-      "tPlayable": 1794252770738,
-      "url": "http://127.0.0.1:3213/play/d7b31b18b7807dd2599081e73018915f"
-    },
-    {
-      "profile": "pixel7-cpu4",
-      "kind": "sentence",
-      "target": "s5-play-mini-golf-in-a-candy-land",
-      "side": "A",
-      "run": 1,
-      "pair": 4,
-      "playable": true,
-      "ms": 5564,
-      "firstFrameMs": 3679,
-      "note": "surface also changes without input (3.47 % in 300 ms) – check the screenshot",
-      "attempts": 2,
-      "t0": 1794252781591,
-      "tPlayable": 1794252787155,
-      "url": "http://127.0.0.1:3213/play/79a57026dafa152897e9e59c8b283b41"
-    },
-    {
-      "profile": "pixel7-cpu4",
-      "kind": "sentence",
-      "target": "s5-play-mini-golf-in-a-candy-land",
-      "side": "B",
-      "run": 1,
-      "pair": 4,
-      "playable": true,
-      "ms": 6311,
-      "firstFrameMs": 4153,
-      "note": null,
-      "attempts": 2,
-      "t0": 1794252798066,
-      "tPlayable": 1794252804377,
-      "url": "http://127.0.0.1:3212/play/79a57026dafa152897e9e59c8b283b41"
-    },
-    {
-      "profile": "pixel7-cpu4",
-      "kind": "sentence",
-      "target": "s6-a-farmer-catches-falling-apples-in-the-o",
-      "side": "B",
-      "run": 1,
-      "pair": 5,
-      "playable": true,
-      "ms": 6411,
-      "firstFrameMs": 4604,
-      "note": "surface also changes without input (47.64 % in 300 ms) – check the screenshot",
-      "attempts": 2,
-      "t0": 1794252814321,
-      "tPlayable": 1794252820732,
-      "url": "http://127.0.0.1:3212/play/04747f10d5403ccec6c1d2a643ef01dd"
-    },
-    {
-      "profile": "pixel7-cpu4",
-      "kind": "sentence",
-      "target": "s6-a-farmer-catches-falling-apples-in-the-o",
-      "side": "A",
-      "run": 1,
-      "pair": 5,
-      "playable": true,
-      "ms": 5587,
-      "firstFrameMs": 4031,
-      "note": "surface also changes without input (17.02 % in 300 ms) – check the screenshot",
-      "attempts": 2,
-      "t0": 1794252831871,
-      "tPlayable": 1794252837458,
-      "url": "http://127.0.0.1:3213/play/04747f10d5403ccec6c1d2a643ef01dd"
-    },
-    {
-      "profile": "pixel7-cpu4",
-      "kind": "sentence",
-      "target": "s7-escape-a-volcano-before-the-lava-reaches",
-      "side": "A",
-      "run": 1,
-      "pair": 6,
-      "playable": true,
-      "ms": 8641,
-      "firstFrameMs": 5842,
-      "note": "surface also changes without input (44.3 % in 300 ms) – check the screenshot",
-      "attempts": 2,
-      "t0": 1794252848703,
-      "tPlayable": 1794252857344,
-      "url": "http://127.0.0.1:3213/play/ae4e848bd735c1ba039afb86298ddabf"
-    },
-    {
-      "profile": "pixel7-cpu4",
-      "kind": "sentence",
-      "target": "s7-escape-a-volcano-before-the-lava-reaches",
-      "side": "B",
-      "run": 1,
-      "pair": 6,
-      "playable": true,
-      "ms": 9237,
-      "firstFrameMs": 6177,
-      "note": "surface also changes without input (45.4 % in 300 ms) – check the screenshot",
-      "attempts": 2,
-      "t0": 1794252869294,
-      "tPlayable": 1794252878531,
-      "url": "http://127.0.0.1:3212/play/ae4e848bd735c1ba039afb86298ddabf"
-    },
-    {
-      "profile": "pixel7-cpu4",
-      "kind": "sentence",
-      "target": "s8-a-knight-jumps-across-floating-islands-t",
-      "side": "B",
-      "run": 1,
-      "pair": 7,
-      "playable": true,
-      "ms": 8069,
-      "firstFrameMs": 5181,
-      "note": "surface also changes without input (36.01 % in 300 ms) – check the screenshot",
-      "attempts": 2,
-      "t0": 1794252890335,
-      "tPlayable": 1794252898404,
-      "url": "http://127.0.0.1:3212/play/8386dd7d1dc084fc3b138201870050ae"
-    },
-    {
-      "profile": "pixel7-cpu4",
-      "kind": "sentence",
-      "target": "s8-a-knight-jumps-across-floating-islands-t",
-      "side": "A",
-      "run": 1,
-      "pair": 7,
-      "playable": true,
-      "ms": 7492,
-      "firstFrameMs": 4949,
-      "note": "surface also changes without input (28.99 % in 300 ms) – check the screenshot",
-      "attempts": 2,
-      "t0": 1794252910087,
-      "tPlayable": 1794252917579,
-      "url": "http://127.0.0.1:3213/play/8386dd7d1dc084fc3b138201870050ae"
-    },
-    {
-      "profile": "pixel7-cpu4",
-      "kind": "sentence",
-      "target": "s1-a-cat-delivering-pizzas-across-rooftops-",
-      "side": "A",
-      "run": 2,
-      "pair": 8,
-      "playable": true,
-      "ms": 7040,
-      "firstFrameMs": 4258,
-      "note": "surface also changes without input (25.85 % in 300 ms) – check the screenshot",
-      "attempts": 2,
-      "t0": 1794252929199,
-      "tPlayable": 1794252936239,
-      "url": "http://127.0.0.1:3213/play/fa0522e3f8746f662f559c38149a89b4"
-    },
-    {
-      "profile": "pixel7-cpu4",
-      "kind": "sentence",
-      "target": "s1-a-cat-delivering-pizzas-across-rooftops-",
-      "side": "B",
-      "run": 2,
-      "pair": 8,
-      "playable": true,
-      "ms": 7488,
-      "firstFrameMs": 4499,
-      "note": "surface also changes without input (30.98 % in 300 ms) – check the screenshot",
-      "attempts": 2,
-      "t0": 1794252948129,
-      "tPlayable": 1794252955617,
-      "url": "http://127.0.0.1:3212/play/fa0522e3f8746f662f559c38149a89b4"
-    },
-    {
-      "profile": "pixel7-cpu4",
-      "kind": "sentence",
-      "target": "s2-find-the-lost-crown-in-an-old-castle",
-      "side": "B",
-      "run": 2,
-      "pair": 9,
-      "playable": true,
-      "ms": 8105,
-      "firstFrameMs": 5320,
-      "note": "surface also changes without input (33.04 % in 300 ms) – check the screenshot",
-      "attempts": 2,
-      "t0": 1794252966973,
-      "tPlayable": 1794252975078,
-      "url": "http://127.0.0.1:3212/play/495ace4d1b956581f84d7cc2df9d1af7"
-    },
-    {
-      "profile": "pixel7-cpu4",
-      "kind": "sentence",
-      "target": "s2-find-the-lost-crown-in-an-old-castle",
-      "side": "A",
-      "run": 2,
-      "pair": 9,
-      "playable": true,
-      "ms": 7611,
-      "firstFrameMs": 5051,
-      "note": "surface also changes without input (50.6 % in 300 ms) – check the screenshot",
-      "attempts": 2,
-      "t0": 1794252986356,
-      "tPlayable": 1794252993967,
-      "url": "http://127.0.0.1:3213/play/495ace4d1b956581f84d7cc2df9d1af7"
-    },
-    {
-      "profile": "pixel7-cpu4",
-      "kind": "sentence",
-      "target": "s3-an-underwater-race-between-a-turtle-and-",
-      "side": "A",
-      "run": 2,
-      "pair": 10,
-      "playable": true,
-      "ms": 8302,
-      "firstFrameMs": 5136,
-      "note": "surface also changes without input (99.56 % in 300 ms) – check the screenshot",
-      "attempts": 2,
-      "t0": 1794253005032,
-      "tPlayable": 1794253013334,
-      "url": "http://127.0.0.1:3213/play/9815614f5b80031cada278ac999d0807"
-    },
-    {
-      "profile": "pixel7-cpu4",
-      "kind": "sentence",
-      "target": "s3-an-underwater-race-between-a-turtle-and-",
-      "side": "B",
-      "run": 2,
-      "pair": 10,
-      "playable": true,
-      "ms": 8624,
-      "firstFrameMs": 5003,
-      "note": "surface also changes without input (1.21 % in 300 ms) – check the screenshot",
-      "attempts": 2,
-      "t0": 1794253024683,
-      "tPlayable": 1794253033307,
-      "url": "http://127.0.0.1:3212/play/9815614f5b80031cada278ac999d0807"
-    },
-    {
-      "profile": "pixel7-cpu4",
-      "kind": "sentence",
-      "target": "s4-balance-a-tower-of-pancakes-on-a-windy-d",
-      "side": "B",
-      "run": 2,
-      "pair": 11,
       "playable": true,
       "ms": 6521,
-      "firstFrameMs": 4556,
-      "note": "surface also changes without input (48.24 % in 300 ms) – check the screenshot",
+      "firstFrameMs": 4645,
+      "note": "surface also changes without input (64.28 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253044590,
-      "tPlayable": 1794253051111,
+      "t0": 1794255010359,
+      "tPlayable": 1794255016880,
+      "url": "http://127.0.0.1:3213/play/d7b31b18b7807dd2599081e73018915f"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-play-mini-golf-in-a-candy-land",
+      "side": "A",
+      "run": 1,
+      "pair": 4,
+      "playable": true,
+      "ms": 7055,
+      "firstFrameMs": 4584,
+      "note": "surface also changes without input (36.12 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794255027887,
+      "tPlayable": 1794255034942,
+      "url": "http://127.0.0.1:3213/play/79a57026dafa152897e9e59c8b283b41"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-play-mini-golf-in-a-candy-land",
+      "side": "B",
+      "run": 1,
+      "pair": 4,
+      "playable": true,
+      "ms": 6050,
+      "firstFrameMs": 4091,
+      "note": "surface also changes without input (1.08 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794255046501,
+      "tPlayable": 1794255052551,
+      "url": "http://127.0.0.1:3212/play/79a57026dafa152897e9e59c8b283b41"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s6-a-farmer-catches-falling-apples-in-the-o",
+      "side": "B",
+      "run": 1,
+      "pair": 5,
+      "playable": true,
+      "ms": 5633,
+      "firstFrameMs": 4039,
+      "note": "surface also changes without input (6.59 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794255063210,
+      "tPlayable": 1794255068843,
+      "url": "http://127.0.0.1:3212/play/04747f10d5403ccec6c1d2a643ef01dd"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s6-a-farmer-catches-falling-apples-in-the-o",
+      "side": "A",
+      "run": 1,
+      "pair": 5,
+      "playable": true,
+      "ms": 5956,
+      "firstFrameMs": 4340,
+      "note": "surface also changes without input (14.04 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794255080315,
+      "tPlayable": 1794255086271,
+      "url": "http://127.0.0.1:3213/play/04747f10d5403ccec6c1d2a643ef01dd"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s7-escape-a-volcano-before-the-lava-reaches",
+      "side": "A",
+      "run": 1,
+      "pair": 6,
+      "playable": true,
+      "ms": 10096,
+      "firstFrameMs": 6576,
+      "note": "surface also changes without input (39 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794255097607,
+      "tPlayable": 1794255107703,
+      "url": "http://127.0.0.1:3213/play/ae4e848bd735c1ba039afb86298ddabf"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s7-escape-a-volcano-before-the-lava-reaches",
+      "side": "B",
+      "run": 1,
+      "pair": 6,
+      "playable": true,
+      "ms": 9147,
+      "firstFrameMs": 6140,
+      "note": "surface also changes without input (47.46 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794255119976,
+      "tPlayable": 1794255129123,
+      "url": "http://127.0.0.1:3212/play/ae4e848bd735c1ba039afb86298ddabf"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s8-a-knight-jumps-across-floating-islands-t",
+      "side": "B",
+      "run": 1,
+      "pair": 7,
+      "playable": true,
+      "ms": 7546,
+      "firstFrameMs": 4793,
+      "note": "surface also changes without input (26.91 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794255141465,
+      "tPlayable": 1794255149011,
+      "url": "http://127.0.0.1:3212/play/8386dd7d1dc084fc3b138201870050ae"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s8-a-knight-jumps-across-floating-islands-t",
+      "side": "A",
+      "run": 1,
+      "pair": 7,
+      "playable": true,
+      "ms": 7783,
+      "firstFrameMs": 5142,
+      "note": "surface also changes without input (28.36 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794255160711,
+      "tPlayable": 1794255168494,
+      "url": "http://127.0.0.1:3213/play/8386dd7d1dc084fc3b138201870050ae"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-a-cat-delivering-pizzas-across-rooftops-",
+      "side": "A",
+      "run": 2,
+      "pair": 8,
+      "playable": true,
+      "ms": 6842,
+      "firstFrameMs": 4143,
+      "note": "surface also changes without input (42.1 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794255180330,
+      "tPlayable": 1794255187172,
+      "url": "http://127.0.0.1:3213/play/fa0522e3f8746f662f559c38149a89b4"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-a-cat-delivering-pizzas-across-rooftops-",
+      "side": "B",
+      "run": 2,
+      "pair": 8,
+      "playable": true,
+      "ms": 6936,
+      "firstFrameMs": 4346,
+      "note": "surface also changes without input (30.78 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794255198479,
+      "tPlayable": 1794255205415,
+      "url": "http://127.0.0.1:3212/play/fa0522e3f8746f662f559c38149a89b4"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-find-the-lost-crown-in-an-old-castle",
+      "side": "B",
+      "run": 2,
+      "pair": 9,
+      "playable": true,
+      "ms": 8517,
+      "firstFrameMs": 5283,
+      "note": "surface also changes without input (36.03 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794255216522,
+      "tPlayable": 1794255225039,
+      "url": "http://127.0.0.1:3212/play/495ace4d1b956581f84d7cc2df9d1af7"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-find-the-lost-crown-in-an-old-castle",
+      "side": "A",
+      "run": 2,
+      "pair": 9,
+      "playable": true,
+      "ms": 8102,
+      "firstFrameMs": 5498,
+      "note": "surface also changes without input (52.5 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794255236635,
+      "tPlayable": 1794255244737,
+      "url": "http://127.0.0.1:3213/play/495ace4d1b956581f84d7cc2df9d1af7"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-an-underwater-race-between-a-turtle-and-",
+      "side": "A",
+      "run": 2,
+      "pair": 10,
+      "playable": true,
+      "ms": 8005,
+      "firstFrameMs": 4820,
+      "note": "surface also changes without input (99.48 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794255255731,
+      "tPlayable": 1794255263736,
+      "url": "http://127.0.0.1:3213/play/9815614f5b80031cada278ac999d0807"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-an-underwater-race-between-a-turtle-and-",
+      "side": "B",
+      "run": 2,
+      "pair": 10,
+      "playable": true,
+      "ms": 7987,
+      "firstFrameMs": 4735,
+      "note": "surface also changes without input (99.84 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794255275092,
+      "tPlayable": 1794255283079,
+      "url": "http://127.0.0.1:3212/play/9815614f5b80031cada278ac999d0807"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-balance-a-tower-of-pancakes-on-a-windy-d",
+      "side": "B",
+      "run": 2,
+      "pair": 11,
+      "playable": true,
+      "ms": 5768,
+      "firstFrameMs": 3901,
+      "note": "surface also changes without input (48.42 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794255294253,
+      "tPlayable": 1794255300021,
       "url": "http://127.0.0.1:3212/play/d7b31b18b7807dd2599081e73018915f"
     },
     {
@@ -874,12 +874,12 @@
       "run": 2,
       "pair": 11,
       "playable": true,
-      "ms": 6054,
-      "firstFrameMs": 4216,
-      "note": "surface also changes without input (64.29 % in 300 ms) – check the screenshot",
+      "ms": 6006,
+      "firstFrameMs": 4167,
+      "note": "surface also changes without input (7.85 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253061813,
-      "tPlayable": 1794253067867,
+      "t0": 1794255311733,
+      "tPlayable": 1794255317739,
       "url": "http://127.0.0.1:3213/play/d7b31b18b7807dd2599081e73018915f"
     },
     {
@@ -890,12 +890,12 @@
       "run": 2,
       "pair": 12,
       "playable": true,
-      "ms": 5540,
-      "firstFrameMs": 3706,
-      "note": "surface also changes without input (4.39 % in 300 ms) – check the screenshot",
+      "ms": 5620,
+      "firstFrameMs": 3798,
+      "note": "surface also changes without input (5.24 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253078974,
-      "tPlayable": 1794253084514,
+      "t0": 1794255328510,
+      "tPlayable": 1794255334130,
       "url": "http://127.0.0.1:3213/play/79a57026dafa152897e9e59c8b283b41"
     },
     {
@@ -906,12 +906,12 @@
       "run": 2,
       "pair": 12,
       "playable": true,
-      "ms": 6312,
-      "firstFrameMs": 4051,
-      "note": "surface also changes without input (9.08 % in 300 ms) – check the screenshot",
+      "ms": 5680,
+      "firstFrameMs": 3679,
+      "note": null,
       "attempts": 2,
-      "t0": 1794253094667,
-      "tPlayable": 1794253100979,
+      "t0": 1794255344247,
+      "tPlayable": 1794255349927,
       "url": "http://127.0.0.1:3212/play/79a57026dafa152897e9e59c8b283b41"
     },
     {
@@ -922,12 +922,12 @@
       "run": 2,
       "pair": 13,
       "playable": true,
-      "ms": 5978,
-      "firstFrameMs": 4290,
-      "note": "surface also changes without input (47.8 % in 300 ms) – check the screenshot",
+      "ms": 5515,
+      "firstFrameMs": 4003,
+      "note": "surface also changes without input (20.9 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253111419,
-      "tPlayable": 1794253117397,
+      "t0": 1794255360224,
+      "tPlayable": 1794255365739,
       "url": "http://127.0.0.1:3212/play/04747f10d5403ccec6c1d2a643ef01dd"
     },
     {
@@ -938,12 +938,12 @@
       "run": 2,
       "pair": 13,
       "playable": true,
-      "ms": 5588,
-      "firstFrameMs": 4040,
-      "note": "surface also changes without input (14.59 % in 300 ms) – check the screenshot",
+      "ms": 6012,
+      "firstFrameMs": 4242,
+      "note": "surface also changes without input (20.72 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253128247,
-      "tPlayable": 1794253133835,
+      "t0": 1794255376057,
+      "tPlayable": 1794255382069,
       "url": "http://127.0.0.1:3213/play/04747f10d5403ccec6c1d2a643ef01dd"
     },
     {
@@ -954,12 +954,12 @@
       "run": 2,
       "pair": 14,
       "playable": true,
-      "ms": 8996,
-      "firstFrameMs": 6175,
-      "note": "surface also changes without input (43.31 % in 300 ms) – check the screenshot",
+      "ms": 8465,
+      "firstFrameMs": 5562,
+      "note": "surface also changes without input (42.81 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253144349,
-      "tPlayable": 1794253153345,
+      "t0": 1794255392692,
+      "tPlayable": 1794255401157,
       "url": "http://127.0.0.1:3213/play/ae4e848bd735c1ba039afb86298ddabf"
     },
     {
@@ -970,12 +970,12 @@
       "run": 2,
       "pair": 14,
       "playable": true,
-      "ms": 9606,
-      "firstFrameMs": 6351,
-      "note": "surface also changes without input (45.76 % in 300 ms) – check the screenshot",
+      "ms": 8457,
+      "firstFrameMs": 5572,
+      "note": "surface also changes without input (47.48 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253164511,
-      "tPlayable": 1794253174117,
+      "t0": 1794255412767,
+      "tPlayable": 1794255421224,
       "url": "http://127.0.0.1:3212/play/ae4e848bd735c1ba039afb86298ddabf"
     },
     {
@@ -986,12 +986,12 @@
       "run": 2,
       "pair": 15,
       "playable": true,
-      "ms": 8009,
-      "firstFrameMs": 5290,
-      "note": "surface also changes without input (31.38 % in 300 ms) – check the screenshot",
+      "ms": 7616,
+      "firstFrameMs": 4904,
+      "note": "surface also changes without input (30.73 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253185770,
-      "tPlayable": 1794253193779,
+      "t0": 1794255432909,
+      "tPlayable": 1794255440525,
       "url": "http://127.0.0.1:3212/play/8386dd7d1dc084fc3b138201870050ae"
     },
     {
@@ -1002,12 +1002,12 @@
       "run": 2,
       "pair": 15,
       "playable": true,
-      "ms": 7900,
-      "firstFrameMs": 5262,
-      "note": "surface also changes without input (29.82 % in 300 ms) – check the screenshot",
+      "ms": 7416,
+      "firstFrameMs": 4913,
+      "note": "surface also changes without input (28.05 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253204991,
-      "tPlayable": 1794253212891,
+      "t0": 1794255452340,
+      "tPlayable": 1794255459756,
       "url": "http://127.0.0.1:3213/play/8386dd7d1dc084fc3b138201870050ae"
     },
     {
@@ -1018,12 +1018,12 @@
       "run": 3,
       "pair": 16,
       "playable": true,
-      "ms": 7314,
-      "firstFrameMs": 4509,
-      "note": "surface also changes without input (40.33 % in 300 ms) – check the screenshot",
+      "ms": 6655,
+      "firstFrameMs": 4023,
+      "note": "surface also changes without input (39.9 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253224265,
-      "tPlayable": 1794253231579,
+      "t0": 1794255471803,
+      "tPlayable": 1794255478458,
       "url": "http://127.0.0.1:3213/play/fa0522e3f8746f662f559c38149a89b4"
     },
     {
@@ -1034,12 +1034,12 @@
       "run": 3,
       "pair": 16,
       "playable": true,
-      "ms": 7360,
-      "firstFrameMs": 4368,
-      "note": "surface also changes without input (32.08 % in 300 ms) – check the screenshot",
+      "ms": 6832,
+      "firstFrameMs": 4166,
+      "note": "surface also changes without input (32.19 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253242569,
-      "tPlayable": 1794253249929,
+      "t0": 1794255490198,
+      "tPlayable": 1794255497030,
       "url": "http://127.0.0.1:3212/play/fa0522e3f8746f662f559c38149a89b4"
     },
     {
@@ -1050,12 +1050,12 @@
       "run": 3,
       "pair": 17,
       "playable": true,
-      "ms": 8688,
-      "firstFrameMs": 5569,
-      "note": "surface also changes without input (33.25 % in 300 ms) – check the screenshot",
+      "ms": 8008,
+      "firstFrameMs": 5208,
+      "note": "surface also changes without input (39.44 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253261134,
-      "tPlayable": 1794253269822,
+      "t0": 1794255508409,
+      "tPlayable": 1794255516417,
       "url": "http://127.0.0.1:3212/play/495ace4d1b956581f84d7cc2df9d1af7"
     },
     {
@@ -1066,12 +1066,12 @@
       "run": 3,
       "pair": 17,
       "playable": true,
-      "ms": 8082,
-      "firstFrameMs": 5236,
-      "note": "surface also changes without input (50.63 % in 300 ms) – check the screenshot",
+      "ms": 7753,
+      "firstFrameMs": 5130,
+      "note": "surface also changes without input (52.71 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253281358,
-      "tPlayable": 1794253289440,
+      "t0": 1794255527833,
+      "tPlayable": 1794255535586,
       "url": "http://127.0.0.1:3213/play/495ace4d1b956581f84d7cc2df9d1af7"
     },
     {
@@ -1082,12 +1082,12 @@
       "run": 3,
       "pair": 18,
       "playable": true,
-      "ms": 9636,
-      "firstFrameMs": 4952,
-      "note": "surface also changes without input (99.47 % in 300 ms) – check the screenshot",
-      "attempts": 3,
-      "t0": 1794253301311,
-      "tPlayable": 1794253310947,
+      "ms": 8154,
+      "firstFrameMs": 4989,
+      "note": "surface also changes without input (99.9 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794255546740,
+      "tPlayable": 1794255554894,
       "url": "http://127.0.0.1:3213/play/9815614f5b80031cada278ac999d0807"
     },
     {
@@ -1097,13 +1097,13 @@
       "side": "B",
       "run": 3,
       "pair": 18,
-      "playable": false,
-      "ms": null,
-      "firstFrameMs": null,
-      "note": "timeout after 120000 ms: surface changed but the game never accepted the input (data-inputs and data-tick did not both grow)",
-      "attempts": 62,
-      "t0": 1794253322039,
-      "tPlayable": null,
+      "playable": true,
+      "ms": 7891,
+      "firstFrameMs": 4698,
+      "note": "surface also changes without input (99.47 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1794255566264,
+      "tPlayable": 1794255574155,
       "url": "http://127.0.0.1:3212/play/9815614f5b80031cada278ac999d0807"
     },
     {
@@ -1114,12 +1114,12 @@
       "run": 3,
       "pair": 19,
       "playable": true,
-      "ms": 6391,
-      "firstFrameMs": 4504,
-      "note": "surface also changes without input (47.16 % in 300 ms) – check the screenshot",
+      "ms": 6183,
+      "firstFrameMs": 4184,
+      "note": "surface also changes without input (8.58 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253451153,
-      "tPlayable": 1794253457544,
+      "t0": 1794255585745,
+      "tPlayable": 1794255591928,
       "url": "http://127.0.0.1:3212/play/d7b31b18b7807dd2599081e73018915f"
     },
     {
@@ -1130,12 +1130,12 @@
       "run": 3,
       "pair": 19,
       "playable": true,
-      "ms": 5916,
-      "firstFrameMs": 4175,
-      "note": "surface also changes without input (65.32 % in 300 ms) – check the screenshot",
+      "ms": 5891,
+      "firstFrameMs": 4191,
+      "note": "surface also changes without input (16.15 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253468548,
-      "tPlayable": 1794253474464,
+      "t0": 1794255603220,
+      "tPlayable": 1794255609111,
       "url": "http://127.0.0.1:3213/play/d7b31b18b7807dd2599081e73018915f"
     },
     {
@@ -1146,12 +1146,12 @@
       "run": 3,
       "pair": 20,
       "playable": true,
-      "ms": 5729,
-      "firstFrameMs": 3657,
-      "note": "surface also changes without input (1.98 % in 300 ms) – check the screenshot",
+      "ms": 5576,
+      "firstFrameMs": 3681,
+      "note": "surface also changes without input (2.88 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253485136,
-      "tPlayable": 1794253490865,
+      "t0": 1794255620089,
+      "tPlayable": 1794255625665,
       "url": "http://127.0.0.1:3213/play/79a57026dafa152897e9e59c8b283b41"
     },
     {
@@ -1162,12 +1162,12 @@
       "run": 3,
       "pair": 20,
       "playable": true,
-      "ms": 5884,
-      "firstFrameMs": 3693,
-      "note": null,
+      "ms": 5688,
+      "firstFrameMs": 3538,
+      "note": "surface also changes without input (2.12 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253501692,
-      "tPlayable": 1794253507576,
+      "t0": 1794255635796,
+      "tPlayable": 1794255641484,
       "url": "http://127.0.0.1:3212/play/79a57026dafa152897e9e59c8b283b41"
     },
     {
@@ -1178,12 +1178,12 @@
       "run": 3,
       "pair": 21,
       "playable": true,
-      "ms": 6182,
-      "firstFrameMs": 4500,
-      "note": "surface also changes without input (47.74 % in 300 ms) – check the screenshot",
+      "ms": 5672,
+      "firstFrameMs": 4030,
+      "note": "surface also changes without input (21.17 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253518248,
-      "tPlayable": 1794253524430,
+      "t0": 1794255652182,
+      "tPlayable": 1794255657854,
       "url": "http://127.0.0.1:3212/play/04747f10d5403ccec6c1d2a643ef01dd"
     },
     {
@@ -1194,12 +1194,12 @@
       "run": 3,
       "pair": 21,
       "playable": true,
-      "ms": 5695,
-      "firstFrameMs": 4022,
-      "note": "surface also changes without input (24.41 % in 300 ms) – check the screenshot",
+      "ms": 5774,
+      "firstFrameMs": 4235,
+      "note": "surface also changes without input (17.67 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253534879,
-      "tPlayable": 1794253540574,
+      "t0": 1794255668808,
+      "tPlayable": 1794255674582,
       "url": "http://127.0.0.1:3213/play/04747f10d5403ccec6c1d2a643ef01dd"
     },
     {
@@ -1210,12 +1210,12 @@
       "run": 3,
       "pair": 22,
       "playable": true,
-      "ms": 8565,
-      "firstFrameMs": 5670,
-      "note": "surface also changes without input (42.99 % in 300 ms) – check the screenshot",
+      "ms": 8367,
+      "firstFrameMs": 5577,
+      "note": "surface also changes without input (42.28 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253551191,
-      "tPlayable": 1794253559756,
+      "t0": 1794255684973,
+      "tPlayable": 1794255693340,
       "url": "http://127.0.0.1:3213/play/ae4e848bd735c1ba039afb86298ddabf"
     },
     {
@@ -1226,12 +1226,12 @@
       "run": 3,
       "pair": 22,
       "playable": true,
-      "ms": 9271,
-      "firstFrameMs": 6082,
-      "note": "surface also changes without input (49.53 % in 300 ms) – check the screenshot",
+      "ms": 8511,
+      "firstFrameMs": 5693,
+      "note": "surface also changes without input (46.53 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253571836,
-      "tPlayable": 1794253581107,
+      "t0": 1794255704791,
+      "tPlayable": 1794255713302,
       "url": "http://127.0.0.1:3212/play/ae4e848bd735c1ba039afb86298ddabf"
     },
     {
@@ -1242,12 +1242,12 @@
       "run": 3,
       "pair": 23,
       "playable": true,
-      "ms": 8053,
-      "firstFrameMs": 5178,
-      "note": "surface also changes without input (36.63 % in 300 ms) – check the screenshot",
+      "ms": 7846,
+      "firstFrameMs": 4991,
+      "note": "surface also changes without input (31.01 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253592599,
-      "tPlayable": 1794253600652,
+      "t0": 1794255724724,
+      "tPlayable": 1794255732570,
       "url": "http://127.0.0.1:3212/play/8386dd7d1dc084fc3b138201870050ae"
     },
     {
@@ -1258,12 +1258,12 @@
       "run": 3,
       "pair": 23,
       "playable": true,
-      "ms": 7636,
-      "firstFrameMs": 5005,
-      "note": "surface also changes without input (31.17 % in 300 ms) – check the screenshot",
+      "ms": 7709,
+      "firstFrameMs": 5039,
+      "note": "surface also changes without input (30.38 % in 300 ms) – check the screenshot",
       "attempts": 2,
-      "t0": 1794253611818,
-      "tPlayable": 1794253619454,
+      "t0": 1794255744167,
+      "tPlayable": 1794255751876,
       "url": "http://127.0.0.1:3213/play/8386dd7d1dc084fc3b138201870050ae"
     }
   ]

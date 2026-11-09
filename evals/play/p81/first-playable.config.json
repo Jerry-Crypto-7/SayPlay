@@ -2,7 +2,7 @@
   "a": "http://127.0.0.1:3213",
   "b": "http://127.0.0.1:3212",
   "labelA": "main před P81 (origin/main s P77)",
-  "labelB": "P81 T5 (profil mix, podlaha, obrysy kulis)",
+  "labelB": "P81 82216a78 (obrysy kulis jen na high, od ~2 s)",
   "sentences": [
     "A cat delivering pizzas across rooftops while avoiding seagulls",
     "Find the lost crown in an old castle",
@@ -17,6 +17,6 @@
   "runs": 3,
   "pauseMs": 5000,
   "timeoutMs": 120000,
-  "rawDir": "D:/tmp/p81-fp-raw",
+  "rawDir": "D:/tmp/p81-fp-raw-2",
   "out": "evals/play/p81/perf-first-playable.json"
 }
