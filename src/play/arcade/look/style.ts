@@ -107,8 +107,11 @@ export interface LookStyle {
    * přes obraz nahoru (0 = obraz, jak je).
    */
   readonly sky: { readonly painted: boolean; readonly paintHaze: number; readonly hazeBand: number; readonly gradient: number };
-  /** Mlha: začíná v tomto podílu dohledu; barva = obzor sytější o `saturation` (HSL). */
-  readonly fog: { readonly start: number; readonly saturation: number };
+  /**
+   * Mlha: začíná v tomto podílu dohledu (`storm` za bouřky – déšť má vlastní hustší mlhu nálady, P76);
+   * barva = obzor sytější o `saturation` (HSL).
+   */
+  readonly fog: { readonly start: number; readonly storm: number; readonly saturation: number };
   /** Podlaha arény a dráhy: drsnost země, ledu a stěn, násobek kontrastu spár a čára jízdního pruhu. */
   readonly floor: { readonly roughness: number; readonly ice: number; readonly wall: number; readonly seam: number; readonly laneLine: string };
   /** Obrysy: tloušťka v CSS px a podíl tmavého odstínu povrchu místo inkoustu podle druhu. */
@@ -142,7 +145,7 @@ export const TODAY_STYLE: LookStyle = {
   },
   palette: null,
   sky: { painted: true, paintHaze: 0.3, hazeBand: 0.18, gradient: 0 },
-  fog: { start: 0.6, saturation: 0.18 },
+  fog: { start: 0.6, storm: 0.6, saturation: 0.18 },
   floor: { roughness: 0.9, ice: 0.45, wall: 0.85, seam: 1, laneLine: '#e2e8f0' },
   // Kit kreslí 2,5 px; modelína konceptu (P75 T2) má hranu jen naznačenou.
   ink: { px: 1.5, surface: { hero: 0.7, foe: 0, obstacle: 0.7 } },
@@ -177,9 +180,11 @@ export const MIX_STYLE: LookStyle = {
   light: { ...TODAY_STYLE.light, goldenWarmth: { green: 0, warm: 0, cold: 0, water: 0, indoor: 0, dark: 0 } },
   palette: { saturation: 0.14, lightness: 0.03, heat: 0.5, sunUp: 0.33, sunGain: 1.45, glowGain: 1.6, floorNeutral: 0.75 },
   sky: { painted: true, paintHaze: 0.45, hazeBand: 0.3, gradient: 0.3 },
-  // Lehký opar od čtvrtiny dohledu, z méně syté barvy obzoru.
-  fog: { start: 0.25, saturation: 0.06 },
-  grade: { ...TODAY_STYLE.grade, families: { green: MIX_DAY, warm: MIX_DAY, cold: COLD, water: WATER, indoor: MIX_DAY, dark: DARK } },
+  // Lehký opar od čtvrtiny dohledu, z méně syté barvy obzoru. Bouřka si nechá mlhu P76: od čtvrtiny by déšť
+  // ve městě (s9) zmodral a zesvětlil zem pod hrdinou o 46° a skryl panoráma.
+  fog: { start: 0.25, storm: 0.6, saturation: 0.06 },
+  // Hala a město (rodina `indoor`) si ladění nechají – chladný zdvih zmodral tmavou mokrou zem s9.
+  grade: { ...TODAY_STYLE.grade, families: { green: MIX_DAY, warm: MIX_DAY, cold: COLD, water: WATER, indoor: TODAY_STYLE.grade.families.indoor, dark: DARK } },
   // Silnější rozostření jen v úvodním a závěrečném záběru; za hry beze změny (P76 silnější rozmazání při hře vrátila).
   post: { bloom: 1, tilt: 1.6 },
 };

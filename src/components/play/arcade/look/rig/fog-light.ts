@@ -18,6 +18,8 @@ import { type GradeFamily, LOOK_STYLE } from '@/play/arcade/look/style';
 
 /** Mlha začíná nejdřív v tomto podílu viditelné hloubky (profil vzhledu, P81). */
 export const FOG_START = LOOK_STYLE.fog.start;
+/** Za bouřky (`look.storm`): déšť má vlastní hustší mlhu nálady (P76), opar profilu ji neposouvá blíž. */
+export const FOG_STORM_START = LOOK_STYLE.fog.storm;
 /** Kolik sytosti (HSL, 0–1) přibude obzoru: z oblohy místa, ne šedá. */
 export const FOG_SATURATION = LOOK_STYLE.fog.saturation;
 /** Násobek síly polokoule (výplň stínů) a slunce (klíčové světlo). */
@@ -38,11 +40,12 @@ export interface Air {
 const hsl = { h: 0, s: 0, l: 0 };
 
 /** Mlha sady, jak ji rig kreslí. */
-export function airOf(look: Pick<Look, 'fog' | 'horizon'>): Air {
+export function airOf(look: Pick<Look, 'fog' | 'horizon' | 'storm'>): Air {
   const [near, far] = look.fog;
   // HSL v sRGB, jak barvu vidí oko a jak ji píše paleta.
   const { h, s, l } = new Color(look.horizon).getHSL(hsl, SRGBColorSpace);
-  return { color: `#${new Color().setHSL(h, Math.min(1, s + FOG_SATURATION), l, SRGBColorSpace).getHexString()}`, near: Math.max(near, FOG_START * far), far };
+  const start = look.storm === true ? FOG_STORM_START : FOG_START;
+  return { color: `#${new Color().setHSL(h, Math.min(1, s + FOG_SATURATION), l, SRGBColorSpace).getHexString()}`, near: Math.max(near, start * far), far };
 }
 
 /**

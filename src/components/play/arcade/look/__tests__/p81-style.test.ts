@@ -15,7 +15,7 @@ import { LOOK_STYLE, MIX_STYLE, restyleLook, TODAY_STYLE } from '@/play/arcade/l
 
 import { isPurple } from '../../../../../../scripts/assets/cc0/palette.mjs';
 import { INK_PX, INK_SURFACE } from '../rig/InkOutline';
-import { airOf, BACK_LIGHT, BACK_SKY, FOG_SATURATION, FOG_START, GOLDEN_SUN, GOLDEN_UP, GOLDEN_WARMTH, HEMI_LIFT, SHADOW_INTENSITY, SHADOW_RADIUS, SUN_LIFT } from '../rig/fog-light';
+import { airOf, BACK_LIGHT, BACK_SKY, FOG_SATURATION, FOG_START, FOG_STORM_START, GOLDEN_SUN, GOLDEN_UP, GOLDEN_WARMTH, HEMI_LIFT, SHADOW_INTENSITY, SHADOW_RADIUS, SUN_LIFT } from '../rig/fog-light';
 import { GRADES, LOW_CONTRAST } from '../rig/grade';
 
 describe('profil „dnes“ = konstanty před P81', () => {
@@ -37,7 +37,7 @@ describe('profil „dnes“ = konstanty před P81', () => {
   it('paleta, obloha, mlha, podlaha, obrysy a následné zpracování', () => {
     expect(TODAY_STYLE.palette).toBeNull();
     expect(TODAY_STYLE.sky).toEqual({ painted: true, paintHaze: 0.3, hazeBand: 0.18, gradient: 0 });
-    expect(TODAY_STYLE.fog).toEqual({ start: 0.6, saturation: 0.18 });
+    expect(TODAY_STYLE.fog).toEqual({ start: 0.6, storm: 0.6, saturation: 0.18 });
     expect(TODAY_STYLE.floor).toEqual({ roughness: 0.9, ice: 0.45, wall: 0.85, seam: 1, laneLine: '#e2e8f0' });
     expect(TODAY_STYLE.ink).toEqual({ px: 1.5, surface: { hero: 0.7, foe: 0, obstacle: 0.7 } });
     expect(TODAY_STYLE.post).toEqual({ bloom: 0.8, tilt: 1 });
@@ -66,7 +66,7 @@ describe('profil „dnes“ = konstanty před P81', () => {
 describe('rig čte aktivní profil', () => {
   it('světlo a mlha (`fog-light.ts`)', () => {
     const { light, fog } = LOOK_STYLE;
-    expect([FOG_START, FOG_SATURATION]).toEqual([fog.start, fog.saturation]);
+    expect([FOG_START, FOG_STORM_START, FOG_SATURATION]).toEqual([fog.start, fog.storm, fog.saturation]);
     expect([GOLDEN_UP, GOLDEN_SUN, GOLDEN_WARMTH]).toEqual([light.goldenUp, light.goldenSun, light.goldenWarmth]);
     expect([HEMI_LIFT, SUN_LIFT, SHADOW_INTENSITY, SHADOW_RADIUS, BACK_LIGHT, BACK_SKY]).toEqual([light.hemiLift, light.sunLift, light.shadowIntensity, light.shadowRadius, light.backLight, light.backSky]);
   });
@@ -137,6 +137,16 @@ describe('P81 T3: směr mix', () => {
     for (const grade of Object.values(MIX_STYLE.grade.families)) {
       for (const tone of [grade.lift, grade.gain]) expect(Math.min(tone[0], tone[2]) > tone[1] + 0.02 && tone[2] > tone[0], `${tone}`).toBe(false);
     }
+  });
+
+  // s9 (déšť ve městě): opar od čtvrtiny a chladný zdvih posunuly zem pod hrdinou o 46° do modré.
+  it('bouřka si nechá zem a mlhu P76, hala a město ladění', () => {
+    const rain = sceneLook({ setting: 'a city', mood: '', look: 'city', weather: 'rain' });
+    expect(rain.storm).toBe(true);
+    expect(rain).toEqual(sceneLook({ setting: 'a city', mood: '', look: 'city', weather: 'rain' }, TODAY_STYLE));
+    expect(airOf(rain).near).toBeGreaterThanOrEqual(TODAY_STYLE.fog.start * rain.fog[1]);
+    expect(airOf({ ...rain, storm: undefined }).near).toBeLessThan(TODAY_STYLE.fog.start * rain.fog[1]);
+    expect(GRADES.indoor).toEqual(TODAY_STYLE.grade.families.indoor);
   });
 
   it('noc, hala, místa bez slunce a noční rodina si tón nechají', () => {
