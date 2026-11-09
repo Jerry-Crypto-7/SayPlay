@@ -15,10 +15,11 @@ import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { placeChase } from '../../steer/SteerScene';
 import { placePlatform, placeRunner } from '../../track-camera';
 import type { Box } from '../ground';
-import { FRAMING_COPIES, FRAMING_PERIOD_M, FRAMING_TRACK_TALLEST_M, footOf, framingRow, placeTrackFraming } from '../landmark-places';
+import { FRAMING_COPIES, FRAMING_PERIOD_M, FRAMING_TRACK_REACH, FRAMING_TRACK_TALLEST_M, footOf, framingRow, placeTrackFraming } from '../landmark-places';
+import { knownReachOf } from '../vegetation-places';
 
 /** Kulisy místa, které smí rámovat trať: modely do `FRAMING_TRACK_TALLEST_M` (mrakodrap ne, T6 s9). */
-const framers = (lookId: (typeof LOOK_IDS)[number]) => LOOKS[lookId].props.filter(isSceneryModel).filter((id) => modelHeight(id) <= FRAMING_TRACK_TALLEST_M);
+const framers = (lookId: (typeof LOOK_IDS)[number]) => LOOKS[lookId].props.filter(isSceneryModel).filter((id) => modelHeight(id) <= FRAMING_TRACK_TALLEST_M && (knownReachOf(id) ?? 0) <= FRAMING_TRACK_REACH);
 import { PLAYABLE_HALF } from '../rig/terrain/valley';
 
 const ALL_Z = { z0: -Infinity, z1: Infinity } as const;
@@ -92,6 +93,17 @@ describe('P77 T4: rámující řada po trati', () => {
     }
     // Aspoň jedno místo má kulisu přes mez (město) – jinak by mez nic nehlídala.
     expect(LOOK_IDS.some((lookId) => LOOKS[lookId].props.filter(isSceneryModel).some((id) => modelHeight(id) > FRAMING_TRACK_TALLEST_M))).toBe(true);
+  });
+
+  it('rám je svislý kus: iglú, ledový oblouk ani zastávka trať nerámují (9. 11., s12 a s9)', () => {
+    for (const lookId of LOOK_IDS) {
+      for (const piece of framingOf(TRACKS[0], lookId, ASPECTS.desktop).pieces) expect(knownReachOf(piece.id) ?? 0, `${lookId} ${piece.id}`).toBeLessThanOrEqual(FRAMING_TRACK_REACH);
+    }
+    const ids = (lookId: (typeof LOOK_IDS)[number]) => framingOf(TRACKS[0], lookId, ASPECTS.desktop).pieces.map((piece) => piece.id);
+    expect(ids('snow')).not.toContain('gen3d-ice-igloo');
+    expect(ids('snow')).not.toContain('gen3d-ice-arch');
+    expect(ids('city')).not.toContain('gen3d-bus-stop');
+    expect(ids('city').length).toBeGreaterThan(0);
   });
 
   it('závod zezadu kusy dostane (práh směru kamery nevypne kameru podél trati)', () => {

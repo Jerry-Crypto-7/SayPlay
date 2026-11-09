@@ -88,6 +88,8 @@ const REACH: ReadonlyMap<string, number> = new Map(
   catalog.assets.map(({ assetId, bounds: { min, max } }) => [assetId, Math.hypot(Math.max(-min[0]!, max[0]!), Math.max(-min[2]!, max[2]!)) / (max[1]! - min[1]!)]),
 );
 export const reachOf = (id: string): number => REACH.get(id)!;
+/** `reachOf` pro model, který v katalogu být nemusí (kulisa z kódu); `undefined` = rozměry neznáme. */
+export const knownReachOf = (id: string): number | undefined => REACH.get(id);
 
 /**
  * Půdorys (x, z, `reach`) leží vně cesty rozšířené o `clear` po celé své délce z:

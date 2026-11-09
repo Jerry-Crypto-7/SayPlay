@@ -24,6 +24,7 @@ import { type PerspectiveCamera, Vector3 } from 'three';
 import { isSceneryModel, landmarks, type Look, modelHeight, type SceneryModel } from '@/play/arcade/look';
 
 import type { Box } from './ground';
+import { knownReachOf } from './vegetation-places';
 
 /** Pásmo vzdálenosti orientačního bodu od kamery (m, po zemi). */
 export const LANDMARK_NEAR_M = 25;
@@ -409,7 +410,7 @@ export function placeFraming({ camera, look, seed, area, hero, play = [], ground
  * nízký kus (lavička z `framingPool`) by u kraje obrazu stál jako další kulisa, ne jako rám (první pokus T4).
  */
 export function placeTrackFraming({ camera, look, area, hero, ground = flat }: PlaceInput): Placed[] {
-  const tall = [...new Set(look.props)].filter((kind): kind is SceneryModel => isSceneryModel(kind) && modelHeight(kind) <= FRAMING_TRACK_TALLEST_M).sort((a, b) => modelHeight(b) - modelHeight(a));
+  const tall = [...new Set(look.props)].filter((kind): kind is SceneryModel => isSceneryModel(kind) && modelHeight(kind) <= FRAMING_TRACK_TALLEST_M && (knownReachOf(kind) ?? 0) <= FRAMING_TRACK_REACH).sort((a, b) => modelHeight(b) - modelHeight(a));
   if (tall.length === 0) return [];
   // Druhý kus jiný, jen když není o víc než čtvrtinu nižší – jinak by vpravo rámoval keřík.
   const framing = [tall[0]!, tall.find((id, i) => i > 0 && modelHeight(id) >= 0.75 * modelHeight(tall[0]!)) ?? tall[0]!];
@@ -437,6 +438,12 @@ export function placeTrackFraming({ camera, look, area, hero, ground = flat }: P
 const FRAMING_TREE_M = 4;
 /** Nejvyšší model rámující řady u trati (m): mrakodrapy u klouzání ve městě soudce vzal jako „oversized, cluttered“ (T6 s9). */
 export const FRAMING_TRACK_TALLEST_M = 6;
+/**
+ * Nejširší model rámující řady u trati (poloměr půdorysu na metr výšky, `knownReachOf`). Široký kus zvětšený na výšku
+ * rámu stojí u trati jako zeď: iglú a ledový oblouk zakryly sjezd (s12), skleněná zastávka v dešti vypadala vybledle
+ * (s9) – nezávislý pohled 9. 11. Rám je svislý kus: strom, sloup, řasa.
+ */
+export const FRAMING_TRACK_REACH = 0.7;
 const FRAMING_GROW_MAX = 1.6;
 
 /** Rozteč kopií rámujícího kusu po trati (m): kopie zmizí za kamerou dřív, než další dojede do rohu obrazu. */
