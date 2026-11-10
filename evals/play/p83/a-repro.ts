@@ -26,9 +26,11 @@ export const JUDGE_SENTENCES = [
 
 export const SEEDS = 10;
 
-/** Svět, který dveře zveřejní jako rychlou verzi věty (první semínko, které projde). */
-export function quickWorld(sentence: string): ArcadeWorld {
-  const spec = draftGameSpecWithMeta(sentence, 1).spec;
+/** Svět, který dveře zveřejní jako rychlou verzi věty (první semínko, které projde); `saved` = spec uložený před P83A T2 (bez `near`). */
+export function quickWorld(sentence: string, saved = false): ArcadeWorld {
+  const drafted = draftGameSpecWithMeta(sentence, 1).spec;
+  const { near: _near, ...before } = (drafted.controlParams?.tuning ?? {}) as Record<string, number | boolean | string>;
+  const spec = saved ? { ...drafted, controlParams: { ...drafted.controlParams, tuning: before } } : drafted;
   for (const seed of derivedSeeds(seedFrom(sentence.trim()))) {
     const made = arcadeWorldOf(spec, seed);
     if (made.ok) return made.world;

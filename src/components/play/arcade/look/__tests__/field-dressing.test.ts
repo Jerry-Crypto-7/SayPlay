@@ -211,7 +211,10 @@ describe('P62 T4: the play area itself is dressed', () => {
       if (seed === 1) {
         // P66: nová věta je `genre.v6` (háčky mění hru); otisk `main` drží táž věta uložená jako `genre.v5`.
         const { spec } = draftGameSpecWithMeta(row.sentence, 1);
-        const stored = arcadeWorldOf({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v5' } }, seed);
+        // P83A T2: věta s počtem dostala v ladění `near`; uložená hra z `main` ho nemá.
+        const tuning = spec.controlParams?.tuning as Readonly<Record<string, unknown>> | undefined;
+        const saved = tuning?.near === undefined ? spec : { ...spec, controlParams: { ...spec.controlParams, tuning: Object.fromEntries(Object.entries(tuning).filter(([key]) => key !== 'near')) } };
+        const stored = arcadeWorldOf({ ...saved, genre: { ...spec.genre!, compilerVersion: 'genre.v5' } }, seed);
         if (!stored.ok) throw new Error(stored.issues.join('; '));
         expect(hashArcade(instantiate(stored.world)), 'start hash as on main').toBe(row.main.init);
         expect(verifyArcade(stored.world).bot.hash, 'robot run hash as on main').toBe(row.main.bot);

@@ -54,7 +54,7 @@ import {
 } from '../contract';
 import { guardParams, guardedHit } from '../abilities/state';
 import { nounSchema } from '../rules/schema';
-import { WAVE_LIMITS, WAVE_PLAN, collectClock, countedClock, countedTicks, entrySpots, isSpark, wavePositions, waveOf, waveSpeedStep, wavesChasers } from './waves';
+import { COUNTED_NEAR, WAVE_LIMITS, WAVE_PLAN, collectClock, countedClock, countedTicks, entrySpots, isSpark, wavePositions, waveOf, waveSpeedStep, wavesChasers } from './waves';
 
 export const ARENA_DENSITIES = ['sparse', 'normal', 'dense'] as const;
 export type ArenaDensity = (typeof ARENA_DENSITIES)[number];
@@ -227,9 +227,28 @@ const controlParams = z
     /** Útěk: pronásledovatele vede ovládání a odpočítává ochranu (`GRACE_COUNTER`). */
     preySpeed: z.int().min(20).max(300).optional(),
     chase: chaseParams.optional(),
+    /** Věta s počtem blízko (P83A T2, `COUNTED_NEAR`): věc blíž než tolik jede k hráči; bez něj věci stojí. */
+    magnet: z.int().min(UNIT).max(5 * UNIT).optional(),
   })
   .strict();
 export type ArenaControlParams = z.infer<typeof controlParams>;
+
+/** Přitažení (P83A T2): živá věc (pohyblivá, `kinematic`) blíž než `reach` jede k hráči `COUNTED_NEAR.pull` za tik, jiná stojí. */
+function pullItems(state: Int32Array, player: number, reach: number): void {
+  const p = bodyBase(player);
+  const px = state[p + BODY.x] as number;
+  const pz = state[p + BODY.z] as number;
+  for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
+    const base = bodyBase(i);
+    if (((state[base + BODY.flags] as number) & (FLAG.alive | FLAG.kinematic)) !== (FLAG.alive | FLAG.kinematic) || state[base + BODY.role] !== ROLE.collectible) continue;
+    const dx = px - (state[base + BODY.x] as number);
+    const dz = pz - (state[base + BODY.z] as number);
+    const gap = length(dx, dz);
+    const pulled = gap > 0 && gap <= reach;
+    state[base + BODY.vx] = pulled ? Math.trunc((dx * COUNTED_NEAR.pull) / gap) : 0;
+    state[base + BODY.vz] = pulled ? Math.trunc((dz * COUNTED_NEAR.pull) / gap) : 0;
+  }
+}
 
 /** Deterministický „náhodný“ směr bloudění z indexu a tiku (celá čísla, žádná náhoda za běhu). */
 const wanderDirection = (index: number, tick: number): number => (((Math.imul(index + 1, 73_856_093) ^ Math.imul(Math.floor(tick / ARENA.wanderTicks) + 1, 19_349_663)) >>> 0) % 32);
@@ -441,6 +460,7 @@ export const moveFreeControl: ControlPiece<ArenaControlParams> = {
 
     moveCells(state, player, params.half, params.preySpeed);
     if (params.chase !== undefined) steerChasers(state, player, params.half, params.chase, input.buttons);
+    if (params.magnet !== undefined) pullItems(state, player, params.magnet);
   },
 };
 
@@ -811,7 +831,7 @@ const itemCount = (items: number): number => (items === 0 ? 0 : items + 2 + Math
  * `backArc`, −z) na férové vzdálenosti, věci rozeseté s odstupem od startu,
  * od pronásledovatelů, od sebe a od stěny. Vzdálenosti celočíselně na druhou.
  */
-function openArena(seed: number, chasers: number, speed: number, items: number, count: number = itemCount(items)): ArcadeLevel {
+function openArena(seed: number, chasers: number, speed: number, items: number, count: number = itemCount(items), reach?: number): ArcadeLevel {
   const rng = createCompileRng(seed);
   const player: BodyInit = { role: 'player', kind: 'player', x: 0, y: 0, z: 0, w: ESCAPE.playerSize, h: ARENA.height, d: ESCAPE.playerSize, solid: false };
   const bodies: BodyInit[] = [player];
@@ -827,7 +847,7 @@ function openArena(seed: number, chasers: number, speed: number, items: number, 
     bodies.push({ role: 'chaser', kind: 'chaser', x: Math.trunc((dir.dx * reach) / 1000), y: 0, z: Math.trunc((dir.dz * reach) / 1000), ...size, h: ESCAPE.chaserHeight, solid: false, kinematic: true });
   }
   const starts = bodies.slice(1);
-  const edge = ARENA.half - ESCAPE.itemSize / 2 - ESCAPE.itemClearance.wall;
+  const edge = Math.min(reach ?? ARENA.half, ARENA.half - ESCAPE.itemSize / 2 - ESCAPE.itemClearance.wall);
   const far = (x: number, zz: number, from: { readonly x: number; readonly z: number }, gap: number): boolean => (x - from.x) ** 2 + (zz - from.z) ** 2 >= gap * gap;
   const placed: BodyInit[] = [];
   for (let k = 0; k < count; k += 1) {
@@ -886,6 +906,8 @@ const escapeParams = z
     counted: z.literal(true).optional(),
     /** Slovo věty pro počítadlo HUD (`keys 0/3`), jen s `counted`. */
     noun: nounSchema.optional(),
+    /** Věci věty s počtem blízko a dřív (P83A T2, `COUNTED_NEAR`, píše žánr nových her), jen s `counted`. */
+    near: z.literal(true).optional(),
   })
   .strict().superRefine((params, context) => {
     if (params.entryDistance !== undefined && params.waves === undefined && params.counted === undefined) context.addIssue({ code: 'custom', path: ['entryDistance'], message: 'entryDistance requires reinforcement waves' });
@@ -910,6 +932,16 @@ interface WaveSetup {
   readonly sizes?: readonly number[];
   /** Nejdřívější tik vln od druhé (věta s počtem, `countedTicks`): vlna věcí počká i na něj. */
   readonly at?: readonly number[];
+  /** Věci věty s počtem blízko (`COUNTED_NEAR`): první vlna v `±first`, další v `±reach` dál než `hole` od středu. */
+  readonly near?: { readonly first: number; readonly reach: number; readonly hole: number };
+}
+
+/** Věta s počtem blízko (P83A T2, `near`): věci u hrdiny a kolem středu a větší, pokud věta velikost neřekla. */
+function nearSetup(params: { readonly near?: true; readonly itemSizePct?: number }, sizes: readonly number[], need: number): Pick<WaveSetup, 'at' | 'near' | 'itemSizePct'> {
+  if (params.near !== true) return { at: countedTicks(sizes.length, need) };
+  // Víc věcí první vlny (20 baterií = 7) se do `±first` u hrdiny nevejde – leží jako další vlny v `±reach`.
+  const first = sizes[0] === 1 ? COUNTED_NEAR.first : COUNTED_NEAR.reach;
+  return { at: countedTicks(sizes.length, need, COUNTED_NEAR.last), near: { first, reach: COUNTED_NEAR.reach, hole: COUNTED_NEAR.hole }, itemSizePct: params.itemSizePct ?? COUNTED_NEAR.sizePct };
 }
 
 /** Sběr nemá na startu pronásledovatele: předloha těch z dalších vln leží mrtvá za zády hráče. */
@@ -917,8 +949,10 @@ const chaserTemplate: BodyInit = { role: 'chaser', kind: 'chaser', x: 0, y: 0, z
 
 /** První vlna: přesně `items` věcí (bez rezervy – vlna končí poslední sebranou), u sběru předloha pronásledovatele. */
 function waveLevel(seed: number, setup: WaveSetup): ArcadeLevel {
-  const original = openArena(seed, setup.chasers, setup.speed, setup.items, setup.items);
-  const level = setup.itemSizePct === undefined ? original : { ...original, bodies: original.bodies.map(body => body.role === 'collectible' ? { ...body, w: Math.round(body.w * setup.itemSizePct! / 100), d: Math.round(body.d * setup.itemSizePct! / 100) } : body) };
+  const original = openArena(seed, setup.chasers, setup.speed, setup.items, setup.items, setup.near?.first);
+  const sized = setup.itemSizePct === undefined ? original : { ...original, bodies: original.bodies.map(body => body.role === 'collectible' ? { ...body, w: Math.round(body.w * setup.itemSizePct! / 100), d: Math.round(body.d * setup.itemSizePct! / 100) } : body) };
+  // Věc věty s počtem blízko se hýbe (přitažení `pullItems`); kopie dalších vln ji dědí z předlohy.
+  const level = setup.near === undefined ? sized : { ...sized, bodies: sized.bodies.map((body) => (body.role === 'collectible' ? { ...body, kinematic: true } : body)) };
   // Sloty pro probuzené a nové pronásledovatele (nejvýš `chasers.max`) a pro věci jedné vlny.
   return { ...level, bodies: setup.chasers === 0 ? [...level.bodies, chaserTemplate] : level.bodies, spawnSlots: ESCAPE.chasers.max + setup.items };
 }
@@ -936,10 +970,10 @@ function waveParts(seed: number, setup: WaveSetup, health: number | undefined): 
   const level = waveLevel(seed, setup);
   const rng = createCompileRng(seed, 'spawn');
   const spots = entrySpots(rng, ARENA.half - ESCAPE.chaserSize);
-  const edge = ARENA.half - ESCAPE.itemSize / 2 - WAVE_PLAN.itemInset;
+  const edge = Math.min(setup.near?.reach ?? ARENA.half, ARENA.half - ESCAPE.itemSize / 2 - WAVE_PLAN.itemInset);
   const chase: ChaseParams = { speed, lead: setup.chaseLead ?? ESCAPE.lead, step: setup.pursuitCeiling === undefined ? waveSpeedStep(waves) : Math.min(40, Math.ceil((setup.pursuitCeiling - speed) / 2)), ...(setup.pursuitCeiling === undefined ? {} : { ceiling: setup.pursuitCeiling }), ...(setup.patrol === undefined ? {} : { patrol: setup.patrol }) };
   const later = Array.from({ length: waves - 1 }, (_, k) => ({
-    ...(items > 0 ? { items: wavePositions(rng, setup.sizes?.[k + 1] ?? items, edge, ESCAPE.itemClearance.item), ...(setup.at?.[k] === undefined ? {} : { at: setup.at[k] }) } : { at: Math.round(((k + 1) * setup.seconds * ARCADE_HZ) / waves) }),
+    ...(items > 0 ? { items: wavePositions(rng, setup.sizes?.[k + 1] ?? items, edge, ESCAPE.itemClearance.item, setup.near?.hole),...(setup.at?.[k] === undefined ? {} : { at: setup.at[k] }) } : { at: Math.round(((k + 1) * setup.seconds * ARCADE_HZ) / waves) }),
     chasers: wavesChasers(chasers, k + 1) - wavesChasers(chasers, k),
   }));
   const rules: PieceRef[] = [
@@ -952,7 +986,7 @@ function waveParts(seed: number, setup: WaveSetup, health: number | undefined): 
   const template = { item: 1 + chasers, chaser: chasers === 0 ? level.bodies.length - 1 : 1 };
   rules.push({ id: 'arena_waves', params: { until: items > 0 ? 'items' : 'ticks', ...(items > 0 ? { item: template.item } : {}), chaser: template.chaser, spots, waves: later, ...(setup.entryDistance === undefined ? {} : { entryDistance: setup.entryDistance }) } });
   return {
-    control: { id: 'move_free', params: { half: ARENA.half, size: ESCAPE.playerSize, chase } },
+    control: { id: 'move_free', params: { half: ARENA.half, size: ESCAPE.playerSize, chase, ...(setup.near === undefined ? {} : { magnet: COUNTED_NEAR.magnet }) } },
     bot: { id: 'arena_bot', params: { half: ARENA.half, chase } },
     level,
     rules,
@@ -965,12 +999,13 @@ function waveParts(seed: number, setup: WaveSetup, health: number | undefined): 
 function countedEscapeSetup(params: EscapeParams): WaveSetup {
   const sizes = countedWaves(params.items);
   return {
-    chasers: params.chasers, speed: params.chaserSpeed, items: sizes[0] as number, seconds: params.seconds, waves: sizes.length, sizes, at: countedTicks(sizes.length, params.items),
+    chasers: params.chasers, speed: params.chaserSpeed, items: sizes[0] as number, seconds: params.seconds, waves: sizes.length, sizes,
     ...(params.patrol === undefined ? {} : { patrol: params.patrol }),
     ...(params.pursuitCeiling === undefined ? {} : { pursuitCeiling: params.pursuitCeiling }),
     ...(params.entryDistance === undefined ? {} : { entryDistance: params.entryDistance }),
     ...(params.chaseLead === undefined ? {} : { chaseLead: params.chaseLead }),
     ...(params.itemSizePct === undefined ? {} : { itemSizePct: params.itemSizePct }),
+    ...nearSetup(params, sizes, params.items),
   };
 }
 
@@ -1026,6 +1061,8 @@ const collectParams = z
     counted: z.literal(true).optional(),
     /** Slovo věty pro počítadlo HUD (`keys 0/3`), jen s `counted`. */
     noun: nounSchema.optional(),
+    /** Věci věty s počtem blízko a dřív (P83A T2, `COUNTED_NEAR`, píše žánr nových her), jen s `counted`. */
+    near: z.literal(true).optional(),
   })
   .strict();
 export type CollectParams = z.infer<typeof collectParams>;
@@ -1070,10 +1107,10 @@ function countedCollect(seed: number, params: CollectParams, health: number | un
     if (health !== undefined) rules.push({ id: 'out_of_health', params: {} });
     return { control: { id: 'move_free', params: { half: ARENA.half, size: ESCAPE.playerSize } }, bot: { id: 'arena_bot', params: { half: ARENA.half } }, level, rules, issues: checkEscapeLevel(level, { items: first, chaserSpeed: 0 }), health };
   }
-  const parts = waveParts(seed, { ...collectSetup(first, sizes.length, params), sizes, at: countedTicks(sizes.length, need) }, health);
+  const parts = waveParts(seed, { ...collectSetup(first, sizes.length, params), sizes, ...nearSetup(params, sizes, need) }, health);
   const rules = parts.rules.flatMap((rule): PieceRef[] => {
     if (rule.id === 'grow_to') return countedGoal(parts.level, need, params.noun);
-    return rule.id === 'time_limit' ? [{ ...rule, params: { seconds: countedClock(need) } }] : [rule];
+    return rule.id === 'time_limit' ? [{ ...rule, params: { seconds: countedClock(need, params.near === true ? COUNTED_NEAR.last : undefined) } }] : [rule];
   });
   return { ...parts, rules };
 }

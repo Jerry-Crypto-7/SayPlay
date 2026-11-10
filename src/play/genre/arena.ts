@@ -67,7 +67,8 @@ function compileArena(spec: GenreSpecOf<'arena'>) {
     // Věta s počtem (P61 T5): „collect three keys“ = právě tolik věcí celkem, sebraná poslední vyhraje a HUD je počítá slovem věty.
     const saidCount = spec.counts?.collectible !== undefined;
     const noun = saidCount ? goalNoun(thing) : null;
-    const goal = saidCount ? { items, counted: true, ...(noun === null ? {} : { noun }) } : { items, waves };
+    // P83A T2: věci věty s počtem blízko a dřív (`near`) – jen nové hry; uložený spec bez klíče staví tentýž svět.
+    const goal = saidCount ? { items, counted: true, near: true, ...(noun === null ? {} : { noun }) } : { items, waves };
     return legacySpec(spec, {
       control: 'move_free',
       controlParams: { generator: 'arena_collect', tuning: { ...goal, ...(spec.params?.pursuitCeiling === undefined ? {} : { pursuitCeiling: spec.params.pursuitCeiling }), ...(spec.params?.itemSizePct === undefined ? {} : { itemSizePct: spec.params.itemSizePct }) } },
@@ -95,7 +96,7 @@ function compileArena(spec: GenreSpecOf<'arena'>) {
     const patrol: Record<string, number> = foe?.patrol === true ? { patrol: ESCAPE.patrolSight } : {};
     return legacySpec(spec, {
       control: 'move_free',
-      controlParams: { generator: 'arena_escape', tuning: { ...tuningOf(spec, { items, ...patrol }), counted: true, ...(noun === null ? {} : { noun }) } },
+      controlParams: { generator: 'arena_escape', tuning: { ...tuningOf(spec, { items, ...patrol }), counted: true, near: true, ...(noun === null ? {} : { noun }) } },
       archetype: 'collect_exit',
       title: `${title} Escape`,
       objective: { kind: 'collect', description: `Collect ${String(items)} ${things} before the ${hunter} catches you.`, count: items, role: 'item' },

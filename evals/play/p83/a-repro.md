@@ -35,3 +35,19 @@ Skriptovaný hráč soudu tedy za 55 s neměl co sebrat: jeden malý klíč něk
 1. „+1“ jen tam, kde roste cíl (oprava ve sběrnici, ne v HUD).
 2. Věc věty dřív a víc na dohled (méně čekání na vlny) a čitelnější než jiskra.
 3. Měřit znovu stejnými skripty: začátečník obou vět do 60 s, náhodný hráč ≥ 1/3 u 8 z 10 seedů.
+
+## Po T2 (10. 11. 2026)
+
+| Věta | Robot vyhraje | Začátečník vyhraje do 60 s | Náhodný hráč ≥ 1 věc za 60 s | „+1“ bez růstu počítadla |
+|---|---|---|---|---|
+| rytíř a tři zlaté klíče | 33,7 s | 10/10 (31,7–35,2 s) | 9/10 | 0 ze 3 |
+| obchod, tři věci na pult | 33,9 s | 10/10 (32,1–35,9 s) | 9/10 | 0 ze 3 |
+
+Co se změnilo (jen nové hry – klíč `near` v ladění věty s počtem; uložené hry staví svět jako dřív):
+
+- „+1“ jen za zmizelou věc, když tik přinesl kladné `score` nebo `count` – `src/components/play/arcade/effects/bus.ts`. Uložená hra s jiskrami: 12 a 6 fantomových „+1“ → 0.
+- První klíč 2–2,6 m od hrdiny, další kolem středu (±6 m), tělo o 50 % větší a kreslí se úměrně (1,05 m), věc do 3 m jede k hrdinovi (`COUNTED_NEAR`, `waves.ts`; `pullItems`, `arena.ts`).
+- Poslední klíč leží na zemi, boss ho nenese – začátečník ztratil 3 životy za 6–12 s boje s ním (`itemField`, `pacing-parts.ts`). Boss dál přijde s poslední vlnou a dá body. Jiskry tepu tahle hra nemá.
+- Rozvrh vln o 2 s delší (poslední vlna 31 s), aby robot dál hrál 30–90 s (P36A).
+
+Prohlížeč (`a-shots.ts --tag after`, náhodný hráč seed 1): rytíř „keys 1/3“ ve 30 s, 2/3 na konci; obchod „items 2/3“; žádné „+1“ při 0/3. Klíč je na startu vidět vedle rytíře – `D:/tmp/p83a/after-knight-card.png`.

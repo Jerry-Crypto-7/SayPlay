@@ -28,7 +28,7 @@ import { ARCADE_HZ, type ArcadeWorld, COUNTER, HEADER, type InputEvent, NO_INPUT
 import { instantiate, loadProgram, outcomeOf, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { countedWaves } from '../pieces/arena';
-import { countedTicks } from '../pieces/waves';
+import { COUNTED_NEAR, countedTicks } from '../pieces/waves';
 import { verifyArcade } from '../verify';
 
 const KEYS = 'A knight must collect three keys in a haunted castle';
@@ -110,7 +110,7 @@ describe('arena.collect: a sentence with a count', () => {
 
   it('three keys: need 3, the noun "keys", and the HUD pill reads "keys 0/3"', () => {
     expect(spec.genre).toMatchObject({ id: 'arena', mode: 'collect' });
-    expect(tuning(spec)).toEqual({ items: 3, counted: true, noun: 'keys' });
+    expect(tuning(spec)).toEqual({ items: 3, counted: true, near: true, noun: 'keys' });
     expect(spec.tutorial.goalLine).toBe('Collect 3 keys.');
     const world = worldOf(spec, 1);
     expect(nativeRule(world.rules, 'finish_collected')?.params).toEqual({ need: 3, noun: 'keys' });
@@ -155,8 +155,18 @@ describe('arena.collect: a sentence with a count', () => {
     expect(countedWaves(30)).toEqual([10, 10, 10]);
   });
 
-  it('the waves come on a clock and the boss carries the last key: the win waits for its fall', () => {
+  it('the waves come on a clock and the last key lies on the ground (P83A T2): the boss comes with it for points', () => {
     const world = worldOf(spec, 1);
+    const waves = (nativeRule(world.rules, 'arena_waves')!.params.waves as readonly { readonly items?: readonly number[]; readonly at?: number }[]);
+    expect(waves.map((wave) => wave.at)).toEqual(countedTicks(3, 3, COUNTED_NEAR.last));
+    expect(waves.at(-1)!.items).toHaveLength(2);
+    expect(nativeRule(world.rules, 'boss_beat')?.params.drop).toBeUndefined();
+    expect((nativeRule(world.rules, 'pacing')!.params as { finale: string }).finale).toBe('boss');
+  });
+
+  it('a saved spec without `near` still has the boss carry the last key: the win waits for its fall', () => {
+    const { near: _near, ...saved } = tuning(spec);
+    const world = worldOf({ ...spec, controlParams: { ...spec.controlParams, tuning: saved } } as GameSpecV1, 1);
     const waves = (nativeRule(world.rules, 'arena_waves')!.params.waves as readonly { readonly items?: readonly number[]; readonly at?: number }[]);
     expect(waves.map((wave) => wave.at)).toEqual(countedTicks(3, 3));
     expect(waves.at(-1)!.items).toBeUndefined();
