@@ -23,7 +23,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { baseControlOf } from '@/play/arcade/addons';
 import { arcadeWorldOf } from '@/play/arcade/compile';
-import { type ArcadeWorld, BODY, FLAG, HEADER, NO_INPUT, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { type ArcadeWorld, BODY, FLAG, HEADER, NO_INPUT, ROLE, START_LIVES, UNIT, bodyBase } from '@/play/arcade/contract';
 import { hashArcade, instantiate, loadProgram, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { floraIds, type Look, LOOK_IDS, LOOKS, isSceneryModel, landmarks, sceneLook } from '@/play/arcade/look';
@@ -60,6 +60,9 @@ interface Row {
   /** Hash startu a konce běhu robota na `main` c1dfd552 (P63 změnil jen první větu), semínko 1. */
   readonly main: { readonly init: string; readonly bot: string };
 }
+
+/** Věcí ve vlně sběru bez počtu na `main` – před sběrem první minuty (P83A T3). */
+const MAIN_COLLECT_ITEMS = 10;
 
 /** Každý arénový žánr a režim (útěk s věcmi i přežití, sběr, souboj, úkol v prostoru i u pultu) a střelnice. */
 const ROWS: readonly Row[] = [
@@ -212,8 +215,12 @@ describe('P62 T4: the play area itself is dressed', () => {
         // P66: nová věta je `genre.v6` (háčky mění hru); otisk `main` drží táž věta uložená jako `genre.v5`.
         const { spec } = draftGameSpecWithMeta(row.sentence, 1);
         // P83A T2: věta s počtem dostala v ladění `near`; uložená hra z `main` ho nemá.
-        const tuning = spec.controlParams?.tuning as Readonly<Record<string, unknown>> | undefined;
-        const saved = tuning?.near === undefined ? spec : { ...spec, controlParams: { ...spec.controlParams, tuning: Object.fromEntries(Object.entries(tuning).filter(([key]) => key !== 'near')) } };
+        // P83A T3: sběr bez počtu je u nové hry „první minuta“ (`FIRST_MINUTE`: 8 věcí, 5 životů, `clock`, `calm`);
+        // uložená hra z `main` má 10 věcí ve vlně, výchozí životy a hodiny i vlny podle nich.
+        const { near: _near, clock: _clock, calm, ...kept } = (spec.controlParams?.tuning ?? {}) as Readonly<Record<string, unknown>>;
+        const tuning = calm === true ? { ...kept, items: MAIN_COLLECT_ITEMS } : kept;
+        const mechanics = calm !== true ? spec.mechanics : spec.mechanics.map((mechanic) => (mechanic.id === 'health' ? { ...mechanic, params: { ...mechanic.params, max: START_LIVES } } : mechanic));
+        const saved = { ...spec, mechanics, ...(spec.controlParams === undefined ? {} : { controlParams: { ...spec.controlParams, tuning } }) } as typeof spec;
         const stored = arcadeWorldOf({ ...saved, genre: { ...spec.genre!, compilerVersion: 'genre.v5' } }, seed);
         if (!stored.ok) throw new Error(stored.issues.join('; '));
         expect(hashArcade(instantiate(stored.world)), 'start hash as on main').toBe(row.main.init);
