@@ -234,21 +234,46 @@ const RELEASE_TTL_SECONDS = 1;
 /** Pokus běží v jiné instanci: dotaz dostane `pending` a nic nezaplatí. Porovnává se identitou. */
 const RUNNING_ELSEWHERE: UpgradeOutcome = { status: 'draft-final', reason: 'FAILED' };
 
+/**
+ * Verdikty, které závisí na tom, co model zrovna odpověděl (P83B T4): v soudu 10. 11. dostala opakovaná věta
+ * hned starou chybu. Opakování po skončení návštěvy (`UPGRADE_CEILING_MS` od verdiktu) dostane jeden nový pokus
+ * za `DRAFT_FINAL_TTL_SECONDS`; dotazy téže návštěvy dostanou verdikt bez placení (R10). Řetěz a obsah odmítnutý
+ * při publikaci se opakováním nezmění.
+ */
+const RETRIED_VERDICTS: ReadonlySet<DraftFinalReason> = new Set(['MALFORMED', 'UNREPAIRED', 'VERB_UNPROVED', 'ACTION_LOST', 'UNCHANGED', 'NOT_PLAYABLE']);
+
+/** Uložený verdikt nese čas vzniku (`MALFORMED@<ms>`); hodnota bez času (starší build) je stará. */
+function storedVerdict(remembered: string | null): { readonly reason: DraftFinalReason; readonly at: number } | null {
+  if (remembered === null) return null;
+  const [reason, at] = remembered.split('@') as [DraftFinalReason, string | undefined];
+  return SENTENCE_VERDICTS.has(reason) ? { reason, at: at === undefined ? 0 : Number(at) } : null;
+}
+
+/** Klíč jediného nového pokusu: `claim` ho vezme atomicky, takže z instancí zaplatí jen jedna (#118). */
+const retryKey = (draftId: string): string => `${draftId}:retry`;
+
 async function runUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, onReading: (versionId: string, fresh: boolean) => void): Promise<UpgradeOutcome> {
   const draftId = draft.version.versionId;
   const existing = await publishedUpgrade(versions, draft, request.sentence);
   if (existing !== null) return { status: 'ready', versionId: existing };
   const remembered = await versions.upgradeVerdict(draftId);
-  if (remembered !== null && SENTENCE_VERDICTS.has(remembered as DraftFinalReason)) return { status: 'draft-final', reason: remembered as DraftFinalReason };
-  if (remembered === UPGRADE_RUNNING) return RUNNING_ELSEWHERE;
-  // Klíč s přechodným důvodem (uvolněný zámek, starší build) se přepíše – `claim` by na něm jinak selhal.
-  const claimed = remembered === null
-    ? await versions.claimUpgradeVerdict(draftId, UPGRADE_RUNNING, UPGRADE_RUNNING_TTL_SECONDS)
-    : (await versions.rememberUpgradeVerdict(draftId, UPGRADE_RUNNING, UPGRADE_RUNNING_TTL_SECONDS), true);
-  if (!claimed) return RUNNING_ELSEWHERE;
+  const verdict = storedVerdict(remembered);
+  if (verdict !== null) {
+    const final: UpgradeOutcome = { status: 'draft-final', reason: verdict.reason };
+    if (!RETRIED_VERDICTS.has(verdict.reason) || Date.now() - verdict.at < UPGRADE_CEILING_MS) return final;
+    if (!(await versions.claimUpgradeVerdict(retryKey(draftId), UPGRADE_RUNNING, DRAFT_FINAL_TTL_SECONDS))) return (await versions.upgradeVerdict(draftId)) === UPGRADE_RUNNING ? RUNNING_ELSEWHERE : final;
+    await versions.rememberUpgradeVerdict(draftId, UPGRADE_RUNNING, UPGRADE_RUNNING_TTL_SECONDS);
+  } else {
+    if (remembered === UPGRADE_RUNNING) return RUNNING_ELSEWHERE;
+    // Klíč s přechodným důvodem (uvolněný zámek, starší build) se přepíše – `claim` by na něm jinak selhal.
+    const claimed = remembered === null
+      ? await versions.claimUpgradeVerdict(draftId, UPGRADE_RUNNING, UPGRADE_RUNNING_TTL_SECONDS)
+      : (await versions.rememberUpgradeVerdict(draftId, UPGRADE_RUNNING, UPGRADE_RUNNING_TTL_SECONDS), true);
+    if (!claimed) return RUNNING_ELSEWHERE;
+  }
 
   const outcome = await directUpgrade(versions, draft, request, getDirector, onReading);
-  if (outcome.status === 'draft-final') await versions.rememberUpgradeVerdict(draftId, outcome.reason, isTransient(outcome) ? RELEASE_TTL_SECONDS : DRAFT_FINAL_TTL_SECONDS);
+  if (outcome.status === 'draft-final') await versions.rememberUpgradeVerdict(draftId, isTransient(outcome) ? outcome.reason : `${outcome.reason}@${Date.now()}`, isTransient(outcome) ? RELEASE_TTL_SECONDS : DRAFT_FINAL_TTL_SECONDS);
   return outcome;
 }
 
@@ -720,7 +745,8 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
   const job: Job = { done: attempt, startedAt: request.startedAt, outcome: null, reading: null, readingArrived };
   const remembered = attempt.then((outcome) => {
     console.warn(upgradeAttemptLine(draftId, 'settled'));
-    if (isTransient(outcome) || outcome === CHAIN_REFUSED) {
+    // Verdikt, který opakování může změnit, drží jen úložiště (P83B T4) – z paměti procesu by ho dostal i další návštěvník.
+    if (isTransient(outcome) || outcome === CHAIN_REFUSED || (outcome.status === 'draft-final' && RETRIED_VERDICTS.has(outcome.reason))) {
       if (map.get(draftId) === job) map.delete(draftId);
       return;
     }

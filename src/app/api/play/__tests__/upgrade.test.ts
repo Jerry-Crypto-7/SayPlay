@@ -419,6 +419,51 @@ describe('GET …/upgrade', () => {
     expect(director.calls).toBe(1);
   });
 
+  // Soud 10. 11.: opakovaná věta vrátila tutéž hru a starou chybu. Po skončení návštěvy dostane jeden nový pokus.
+  describe('opakovaná věta po neúspěchu (P83B T4)', () => {
+    const realNow = Date.now.bind(Date);
+    let skew = 0;
+    const later = (): void => {
+      skew += UPGRADE_CEILING_MS + 1000;
+    };
+    let clock: { mockRestore(): void } | null = null;
+    beforeEach(() => {
+      skew = 0;
+      clock = vi.spyOn(Date, 'now').mockImplementation(() => realNow() + skew);
+    });
+    afterEach(() => {
+      clock?.mockRestore();
+    });
+
+    it('nový pokus místo staré chyby z paměti procesu', async () => {
+      director.script = [answered('this is not a game')];
+      const created = await publish({ sentence: SENTENCE });
+      const id = created.body.versionId as string;
+      expect(await settled(id)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
+      later();
+      director.script = [answered(genreAnswer())];
+      const again = await publish({ sentence: SENTENCE });
+      expect(again.body.versionId).toBe(id);
+      expect((await settled(id)).status).toBe('ready');
+      expect(director.calls).toBe(2);
+    }, 90_000);
+
+    it('nový pokus jen jeden (i po restartu): druhý neúspěch se dalšímu opakování vrátí bez placení', async () => {
+      director.script = [answered('this is not a game')];
+      const created = await publish({ sentence: SENTENCE });
+      const id = created.body.versionId as string;
+      expect(await settled(id)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
+      later();
+      __resetUpgrades();
+      director.script = [answered('still not a game')];
+      expect(await settled(id)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
+      later();
+      director.script = [answered(genreAnswer())];
+      expect(await settled(id)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
+      expect(director.calls).toBe(2);
+    });
+  });
+
   it('uložený přechodný důvod (starší build) se nečte – nový pokus (revize R10 kolo 2)', async () => {
     director.script = [failed('UPSTREAM_UNAVAILABLE')];
     const created = await publish({ sentence: SENTENCE });
