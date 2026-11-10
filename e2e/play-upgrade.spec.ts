@@ -69,7 +69,7 @@ test('without a model the draft stays final, the banner says the AI is busy, the
   const first = await running(page);
   const banner = page.getByTestId('upgrade-state');
   await expect(banner).toHaveAttribute('data-kind', 'final', { timeout: 15_000 });
-  await expect(banner).toContainText("Couldn't make the full-detail version right now");
+  await expect(banner).toContainText('The quick version is the one to play.');
   await expect(page.getByTestId('upgrade-action')).toHaveText('Try again');
   expect(await page.evaluate(() => window.__playShell?.tick() ?? 0)).toBeGreaterThan(first);
   expect(new URL(page.url()).pathname).toBe(body.url);
@@ -154,8 +154,8 @@ test('working → final: the banner says why, and one double-clicked retry asks 
   await running(page);
   const banner = page.getByTestId('upgrade-state');
   await expect(banner).toHaveAttribute('data-kind', 'final', { timeout: 15_000 });
-  // Text od P33 T5 (od P34 T8 slovníkem kitu): co se stalo a co zůstává, bez obviňování.
-  await expect(banner).toContainText("The full-detail version wasn't playable in a test run. The quick one stays.");
+  // Od P83B T3 jedna neutrální věta pro každý chybový kód: co zůstává, ne co se pokazilo.
+  await expect(banner).toContainText('The quick version is the one to play.');
   // Verdikt o větě: nový pokus by dopadl stejně, tlačítko nic neslibuje.
   await expect(page.getByTestId('upgrade-action')).toHaveCount(0);
 
@@ -163,7 +163,7 @@ test('working → final: the banner says why, and one double-clicked retry asks 
   const retried = await fakeUpgrade(page, draft, (count) => (count === 1 ? { status: 'draft-final', reason: 'MODEL_UNAVAILABLE' } : pending));
   await page.reload();
   await running(page);
-  await expect(banner).toContainText("Couldn't make the full-detail version right now", { timeout: 15_000 });
+  await expect(page.getByTestId('upgrade-action')).toHaveText('Try again', { timeout: 15_000 });
   expect(retried()).toBe(1);
   await page.getByTestId('upgrade-action').dblclick();
   await expect(banner).toHaveAttribute('data-kind', 'working');

@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { type DraftFinalReason, isTransient } from '@/app/api/play/_upgrade';
 
-import { chainSwitchOf, committedNow, FINAL_REASON_TEXT, followUpgrade, noticeOf, POLL_MS, readingMove, type UpgradeView } from '../UpgradeBanner';
+import { chainSwitchOf, committedNow, FINAL_REASON_TEXT, followUpgrade, noticeOf, POLL_MS, QUIET_END, readingMove, type UpgradeView } from '../UpgradeBanner';
 
 const REASONS = Object.keys(FINAL_REASON_TEXT) as DraftFinalReason[];
 
@@ -101,7 +101,7 @@ describe('followUpgrade', () => {
 
 describe('noticeOf', () => {
   it('an unchanged upgrade never claims all requested actions are present', () => {
-    expect(noticeOf({ kind: 'final', reason: 'UNCHANGED' })?.text).toBe("The full-detail version didn't add more. Keep playing the quick one.");
+    expect(noticeOf({ kind: 'final', reason: 'UNCHANGED' })?.text).toBe(QUIET_END);
   });
   it('idle nic neukáže', () => {
     expect(noticeOf({ kind: 'idle' })).toBeNull();
@@ -121,17 +121,20 @@ describe('noticeOf', () => {
     expect(noticeOf({ kind: 'ready', versionId: 'a'.repeat(32) })).toEqual({ text: 'Full-detail version ready', action: { kind: 'open', label: 'Play it' } });
   });
 
-  // P58E T1 přidal `CHAIN`: řetěz mikroher AI verzi nemá.
-  it('každý důvod má vlastní větu', () => {
-    expect(REASONS).toHaveLength(12);
-    expect(REASONS).toContain('ACTION_LOST');
-    expect(new Set(REASONS.map((reason) => FINAL_REASON_TEXT[reason])).size).toBe(12);
-    expect(noticeOf({ kind: 'final', reason: 'MODEL_UNAVAILABLE' })?.text).toContain("Couldn't make the full-detail version right now");
-    expect(noticeOf({ kind: 'final', reason: 'NOT_PLAYABLE' })?.text).toBe("The full-detail version wasn't playable in a test run. The quick one stays.");
+  // P83B T3: porotce viděl „came back garbled“ u hratelné hry. Každý chybový kód má jednu neutrální větu; vlastní
+  // mají jen hry, ke kterým AI verze z principu není (P58E T1 přidal `CHAIN`).
+  const BY_DESIGN: readonly DraftFinalReason[] = ['NOT_FROM_SENTENCE', 'CHAIN'];
+  it.each(REASONS.filter((reason) => !BY_DESIGN.includes(reason)))('chybový kód %s řekne jen neutrální větu', (reason) => {
+    expect(noticeOf({ kind: 'final', reason })?.text).toBe(QUIET_END);
   });
 
-  it('neúspěch nikoho neobviňuje (P33 T5)', () => {
-    for (const reason of REASONS) expect(FINAL_REASON_TEXT[reason]).not.toMatch(/mistake|could not read|failed/i);
+  it('jen hry bez AI verze z principu řeknou proč', () => {
+    expect(REASONS).toHaveLength(12);
+    for (const reason of BY_DESIGN) expect(FINAL_REASON_TEXT[reason]).toMatch(/no full-detail version/);
+  });
+
+  it('neúspěch nikoho neobviňuje ani neříká, co se pokazilo (P33 T5, P83B T3)', () => {
+    for (const reason of REASONS) expect(FINAL_REASON_TEXT[reason]).not.toMatch(/mistake|could not read|failed|garbled|couldn't|can't|lost|test run|checks/i);
   });
 
   it.each(REASONS)('Try again u %s právě když je důvod přechodný', (reason) => {
@@ -139,9 +142,11 @@ describe('noticeOf', () => {
     expect(retry).toBe(isTransient({ status: 'draft-final', reason }) && reason !== 'NOT_FROM_SENTENCE');
   });
 
-  it('offline i lost nabídnou Check again', () => {
-    for (const kind of ['offline', 'lost'] as const) {
-      expect(noticeOf({ kind })).toEqual({ text: 'We lost track of the full-detail version.', action: { kind: 'retry', label: 'Check again' } });
-    }
+  it('offline nabídne Check again', () => {
+    expect(noticeOf({ kind: 'offline' })).toEqual({ text: 'We lost track of the full-detail version.', action: { kind: 'retry', label: 'Check again' } });
+  });
+
+  it('po stropu (lost) řádek zmizí – žádná hláška ani akce (P83B T3)', () => {
+    expect(noticeOf({ kind: 'lost' })).toBeNull();
   });
 });

@@ -172,6 +172,29 @@ describe('getDirector – rozpočet času režie (R7)', () => {
     expect(fetchCalls).toBe(0);
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('director call skipped'));
   });
+
+  // P83B T3: AI verze má okno 42 s – pod mezí astry (75 s), takže volání musí jít podle meze okna, ne poskytovatele.
+  const WINDOW = { budgetMs: 42_000, minCallMs: 5_000 };
+  const inWindow = (startedAt: number) => getDirector(startedAt, 'test-caller', undefined, undefined, undefined, true, undefined, WINDOW)(SENTENCE);
+
+  it('okno AI verze: volání odejde pod mezí astry a timeout se zkrátí na zbytek okna', async () => {
+    stubEnv({ ...LIVE, WORLDSMITH_UPSTREAM_TIMEOUT_MS: '285000' });
+    const timeouts = vi.spyOn(AbortSignal, 'timeout');
+    await inWindow(Date.now());
+    expect(fetchCalls).toBeGreaterThan(0);
+    const used = timeouts.mock.calls.map(([ms]) => ms);
+    expect(used.length).toBeGreaterThan(0);
+    for (const ms of used) expect(ms).toBeLessThanOrEqual(WINDOW.budgetMs);
+  });
+
+  it('okno AI verze: s méně než jeho mezí zbytku volání neodejde', async () => {
+    stubEnv(LIVE);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const game = await inWindow(Date.now() - (WINDOW.budgetMs - WINDOW.minCallMs + 1_000));
+    expect(game.source).toBe('draft');
+    expect(fetchCalls).toBe(0);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('director call skipped'));
+  });
 });
 
 describe('getDirector – kvóty a cache (R8)', () => {

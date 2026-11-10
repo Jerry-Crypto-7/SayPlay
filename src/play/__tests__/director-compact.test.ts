@@ -8,7 +8,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { answered, fakeBranch } from '../director/__fixtures__/branch';
-import { GENRE_ANSWER_SCHEMA } from '../director/answer-schema';
+import { RECIPE_ANSWER_SCHEMA } from '../director/answer-schema';
 import { COMPACT_PROMPT_VERSION, buildCompactRequest, compactSystemPrompt } from '../director/compact';
 import { direct } from '../director/index';
 import { DIRECTOR_PROMPT_VERSION, genrePromptLines } from '../director/prompt';
@@ -33,7 +33,7 @@ describe('compact request', () => {
   it('stays under the 15 400 B prompt budget, asks for a live recipe and has its own cache version', () => {
     const request = buildCompactRequest(SENTENCE, draftGameSpecWithMeta(SENTENCE).genre);
     expect(Buffer.byteLength(request.system + request.user, 'utf8')).toBeLessThanOrEqual(15_400);
-    expect(request.outputSchema).toBe(GENRE_ANSWER_SCHEMA);
+    expect(request.outputSchema).toBe(RECIPE_ANSWER_SCHEMA);
     expect(request.system).toContain('LIVE COMBINATIONS');
     expect(request.system).toContain('unmet');
     expect(request.user).toContain('Starting point (a keyword guess, replace what it got wrong): {"genre":"platformer"');
@@ -45,7 +45,7 @@ describe('compact request', () => {
     const branch = fakeBranch([answered(answer())]);
     let tick = 0;
     const game = await direct(SENTENCE, { branch, now: () => (tick += 250), compact: true });
-    expect(branch.calls[0]?.request.outputSchema).toBe(GENRE_ANSWER_SCHEMA);
+    expect(branch.calls[0]?.request.outputSchema).toBe(RECIPE_ANSWER_SCHEMA);
     expect(game).toMatchObject({ source: 'authored', fallbackReason: null, calls: 1, unmet: [] });
     expect(game.failure).toBeUndefined();
     expect(branch.calls).toHaveLength(1);

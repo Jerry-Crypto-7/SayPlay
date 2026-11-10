@@ -84,8 +84,7 @@ const { GET: readUpgrade } = await import('../games/[id]/upgrade/route');
 const { __resetUpgrades, directUpgrade, readingDiffers } = await import('../_upgrade');
 const { derivedSeeds, publishReadSpec, seedFrom } = await import('../_publish');
 
-const { DIRECTOR_BUDGET_MS } = await import('../_director');
-const { UPGRADE_DEADLINE_SLACK_MS } = await import('../_upgrade');
+const { UPGRADE_CEILING_MS, UPGRADE_WINDOW } = await import('../_upgrade');
 const PENDING = { status: 'pending', deadlineAt: expect.stringMatching(/^\d{4}-\d\d-\d\dT/) };
 
 const SENTENCE = 'A hamster escapes a supermarket while a giant Roomba hunts it.';
@@ -189,15 +188,18 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect(await upgrade(created.body.versionId)).toEqual(PENDING);
   });
 
-  it('pending nese deadlineAt: start práce + rozpočet režie + 15 s rezerva (P27C T1)', async () => {
+  it('pending nese deadlineAt: start práce + strop AI verze 45 s (P27C T1, P83B T3)', async () => {
     holdDirector();
     const before = Date.now();
     const created = await publish({ sentence: SENTENCE });
     const after = Date.now();
     const pending = await upgrade(created.body.versionId);
     const deadline = Date.parse(pending.deadlineAt);
-    expect(deadline).toBeGreaterThanOrEqual(before + DIRECTOR_BUDGET_MS + UPGRADE_DEADLINE_SLACK_MS);
-    expect(deadline).toBeLessThanOrEqual(after + DIRECTOR_BUDGET_MS + UPGRADE_DEADLINE_SLACK_MS);
+    expect(UPGRADE_CEILING_MS).toBe(45_000);
+    expect(deadline).toBeGreaterThanOrEqual(before + UPGRADE_CEILING_MS);
+    expect(deadline).toBeLessThanOrEqual(after + UPGRADE_CEILING_MS);
+    // Režie končí před stropem, aby kontrola robotem a zápis (naměřeno do 2,1 s) doběhly, než se klient přestane ptát.
+    expect(UPGRADE_WINDOW.budgetMs).toBeLessThanOrEqual(UPGRADE_CEILING_MS - 2_100);
     // Druhý dotaz lhůtu neposune: patří práci, ne dotazu.
     expect((await upgrade(created.body.versionId)).deadlineAt).toBe(pending.deadlineAt);
   });
@@ -415,6 +417,51 @@ describe('GET …/upgrade', () => {
     director.script = [answered(genreAnswer())];
     expect(await upgrade(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
     expect(director.calls).toBe(1);
+  });
+
+  // Soud 10. 11.: opakovaná věta vrátila tutéž hru a starou chybu. Po skončení návštěvy dostane jeden nový pokus.
+  describe('opakovaná věta po neúspěchu (P83B T4)', () => {
+    const realNow = Date.now.bind(Date);
+    let skew = 0;
+    const later = (): void => {
+      skew += UPGRADE_CEILING_MS + 1000;
+    };
+    let clock: { mockRestore(): void } | null = null;
+    beforeEach(() => {
+      skew = 0;
+      clock = vi.spyOn(Date, 'now').mockImplementation(() => realNow() + skew);
+    });
+    afterEach(() => {
+      clock?.mockRestore();
+    });
+
+    it('nový pokus místo staré chyby z paměti procesu', async () => {
+      director.script = [answered('this is not a game')];
+      const created = await publish({ sentence: SENTENCE });
+      const id = created.body.versionId as string;
+      expect(await settled(id)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
+      later();
+      director.script = [answered(genreAnswer())];
+      const again = await publish({ sentence: SENTENCE });
+      expect(again.body.versionId).toBe(id);
+      expect((await settled(id)).status).toBe('ready');
+      expect(director.calls).toBe(2);
+    }, 90_000);
+
+    it('nový pokus jen jeden (i po restartu): druhý neúspěch se dalšímu opakování vrátí bez placení', async () => {
+      director.script = [answered('this is not a game')];
+      const created = await publish({ sentence: SENTENCE });
+      const id = created.body.versionId as string;
+      expect(await settled(id)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
+      later();
+      __resetUpgrades();
+      director.script = [answered('still not a game')];
+      expect(await settled(id)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
+      later();
+      director.script = [answered(genreAnswer())];
+      expect(await settled(id)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
+      expect(director.calls).toBe(2);
+    });
   });
 
   it('uložený přechodný důvod (starší build) se nečte – nový pokus (revize R10 kolo 2)', async () => {

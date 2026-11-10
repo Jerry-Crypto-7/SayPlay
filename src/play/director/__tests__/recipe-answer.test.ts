@@ -98,12 +98,17 @@ describe('native recipe parameter boundaries', () => {
     expect(recipeAnswerSchema.safeParse({ recipe, hero: 'fox', setting: 'forest', params: good, unmet: [] }).success).toBe(true);
   });
 
-  it('ball count aliases must also be consumed and bounded', () => {
+  it('a count the factory does not read is dropped, never passed on; params win', () => {
     const cell = { recipe: { move: 'ball' }, assembly: 'native', preset: { genre: 'arena', mode: 'collect', hero: 'fox', setting: 'field' } as GenreSpec };
-    expect(readRecipeContent(cell, { counts: { target: 5 } }).ok).toBe(true);
-    expect(readRecipeContent(cell, { counts: { target: 6 } }).ok).toBe(false);
-    expect(readRecipeContent(cell, { counts: { enemy: 3 } }).ok).toBe(false);
-    expect(readRecipeContent(cell, { params: { targets: 2 }, counts: { target: 3 } }).ok).toBe(false);
+    const counts = (content: Record<string, unknown>) => { const read = readRecipeContent(cell, content); if (!read.ok) throw new Error(read.issues.join('; ')); return read.value.counts; };
+    expect(counts({ counts: { target: 5 } })).toEqual({ target: 5 });
+    expect(counts({ counts: { target: 6 } })).toBeUndefined();
+    expect(counts({ counts: { enemy: 3, target: 4 } })).toEqual({ target: 4 });
+    expect(counts({ params: { targets: 2 }, counts: { target: 3 } })).toBeUndefined();
+    const walk = liveCells().find(live => live.id === 'walk.collect+guard')!;
+    const read = readRecipeContent(walk, { counts: { collectible: 3 } });
+    if (!read.ok) throw new Error(read.issues.join('; '));
+    expect(read.value.counts).toBeUndefined();
   });
 });
 
@@ -120,10 +125,10 @@ describe('P70B T4a: codex gets the recipe-only schema', () => {
     expect(legacy.filter((genre) => !recipeGenres.has(genre))).toEqual([]);
   });
 
-  it('rides on both director requests while the other providers keep the full schema', () => {
+  // P83B: placená cesta (OpenAI API) dostane totéž – plné schéma stálo 22–27 s a 0,55 USD na volání.
+  it('rides on both director requests for every provider', () => {
     for (const request of [buildCompactRequest('a race car speeds around the track', null), buildDirectorRequest('a race car speeds around the track', null)]) {
-      expect(request.outputSchema).toBe(GENRE_ANSWER_SCHEMA);
-      expect(request.codexOutputSchema).toBe(RECIPE_ANSWER_SCHEMA);
+      expect(request.outputSchema).toBe(RECIPE_ANSWER_SCHEMA);
     }
   });
 });

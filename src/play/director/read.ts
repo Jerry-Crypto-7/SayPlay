@@ -108,13 +108,14 @@ export function readRecipeContent(cell: RecipeContentCell, content: unknown): { 
   if (!shape.success) return { ok: false, issues: shape.error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`) };
   const params = nativeRecipeParams[native].safeParse(shape.data.params ?? {});
   if (!params.success) return { ok: false, issues: params.error.issues.map(issue => `params.${issue.path.join('.')}: ${issue.message}`) };
-  // Ball alone currently reads a content count (target). Other native counts
-  // must not disappear into a legacy placeholder genre or a factory default.
-  for (const [key, value] of Object.entries(shape.data.counts ?? {})) {
-    if (native !== 'ball' || key !== 'target' || value === undefined || !nativeRecipeParams.ball.shape.targets.safeParse(value).success) return { ok: false, issues: [`counts.${key}: unsupported or out of bounds for ${native}`] };
-  }
-  if (native === 'ball' && shape.data.params?.targets !== undefined && shape.data.counts?.target !== undefined && shape.data.params.targets !== shape.data.counts.target) return { ok: false, issues: ['params.targets and counts.target conflict'] };
-  return { ok: true, value: shape.data };
+  // Ball alone reads a content count (target). The strict answer schema makes the
+  // model fill `counts` for every recipe ("three keys" → walk collectible: 3, P83B
+  // T1), so an unsupported, out-of-bounds or conflicting count is dropped here
+  // instead of rejecting a playable game; params win over counts.
+  const { counts, ...rest } = shape.data;
+  const target = counts?.target;
+  const kept = native === 'ball' && target !== undefined && rest.params?.targets === undefined && nativeRecipeParams.ball.shape.targets.safeParse(target).success;
+  return { ok: true, value: kept ? { ...rest, counts: { target } } : rest };
 }
 
 /** Convert only an already validated legacy answer to the selected native vocabulary.

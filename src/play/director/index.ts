@@ -99,6 +99,11 @@ export function aiProvenance(game: DirectedGame, ms: number): AiProvenance | nul
   return { model: game.authoredBy, ms: Math.round(ms), cached: game.source === 'cached', revised: game.repairRounds };
 }
 
+/** Kolik musí do `deadline` zbývat, aby opravné kolo začalo: trvá naměřeně 5,0–9,2 s (`evals/play/p83/b-repro.md`). */
+export const MIN_REPAIR_MS = 5_000;
+
+const roomForRepair = (deps: Pick<DirectorDeps, 'deadline' | 'now'>): boolean => deps.deadline === undefined || deps.deadline - deps.now() >= MIN_REPAIR_MS;
+
 export interface DirectorDeps {
   readonly branch: GenerationBranch;
   readonly cache?: DirectorCache;
@@ -111,6 +116,12 @@ export interface DirectorDeps {
    */
   readonly onDraft?: (spec: GameSpecV1, grid: boolean, reading: Reading | null) => void;
   readonly maxRepairRounds?: number;
+  /**
+   * Termín režie v ms epochy (P83B T3): opravné kolo nezačne, když do něj zbývá méně než `MIN_REPAIR_MS` – doběhlo
+   * by po stropu, kdy hráč AI verzi už nečeká. Neopravené nálezy pak dojdou tam, kam po vyčerpání `maxRepairRounds`.
+   * Bez termínu kola omezuje jen jejich počet.
+   */
+  readonly deadline?: number;
   /**
    * Ověření hry robotem nad specem, který kritik pustil (P26 T10a): neprošlý
    * keypoint jde modelu jako nález do opravného kola. Jestli je chybná hra, nebo
@@ -375,7 +386,7 @@ async function directSpec(sentence: string, deps: DirectorDeps): Promise<Directe
       ...verified.unmet.flatMap((triple, index) => declared.some(item => item.actor === triple.actor && item.verb === triple.verb && item.object === triple.object) ? [] : [verified.actions[index]!]),
     ];
     let issues = issuesOf();
-    while (issues.length > 0 && rounds < (deps.maxRepairRounds ?? MAX_REPAIR_ROUNDS)) {
+    while (issues.length > 0 && rounds < (deps.maxRepairRounds ?? MAX_REPAIR_ROUNDS) && roomForRepair(deps)) {
       rounds++; calls++;
       step({ kind: 'fixing' });
       const repaired = await deps.branch.generate({ prompt: sentence, request: buildRepairRequest(nativeSpec, issues, intent) });
@@ -514,7 +525,7 @@ async function directSpec(sentence: string, deps: DirectorDeps): Promise<Directe
   let checked = blocks.length === 0 ? checkOf(spec) : [];
   const maxRounds = deps.maxRepairRounds ?? MAX_REPAIR_ROUNDS;
   let repairRounds = 0;
-  while ((blocks.length > 0 || checked.length > 0) && repairRounds < maxRounds) {
+  while ((blocks.length > 0 || checked.length > 0) && repairRounds < maxRounds && roomForRepair(deps)) {
     repairRounds += 1;
     calls += 1;
     step({ kind: 'fixing' });
