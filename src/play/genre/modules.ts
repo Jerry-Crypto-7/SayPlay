@@ -20,6 +20,7 @@ import { railfpsGenre } from './railfps';
 import { rhythmGenre } from './rhythm';
 import { runnerGenre } from './runner';
 import { shooterGenre } from './shooter';
+import { shopGenre } from './shop';
 import { sliceGenre } from './slice';
 import { sortGenre } from './sort';
 import { stealGenre } from './steal';
@@ -67,5 +68,6 @@ export const GENRE_MODULES: { readonly [G in GenreId]: GenreModule<G> } = {
   drawsave: drawsaveGenre,
   // P83C T2: klikací simulace, `staged` do T4 – směrování, režisér ani čtečka ji zatím nevidí.
   orrery: orreryGenre,
+  shop: shopGenre,
 };
 

@@ -40,6 +40,8 @@ export const STAGES = {
   drawsave: { scene: 'drawsave', input: 'genre' },
   // P83C: klikací simulace – dotykový adaptér `genres/orrery/OrreryTouch` najde věc pod prstem.
   orrery: { scene: 'orrery', input: 'genre' },
+  // P83E: obchod – ťuk na cenovku přes vlastní adaptér `genres/shop/ShopTouch.tsx` (police nesedí na mřížku pruhů).
+  shop: { scene: 'shop', input: 'genre' },
 } as const;
 export type Stage = (typeof STAGES)[keyof typeof STAGES];
 export function stageOf(control: string): Stage | null {

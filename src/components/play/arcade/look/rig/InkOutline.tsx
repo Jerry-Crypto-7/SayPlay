@@ -17,7 +17,7 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useRef } from 'react';
 import { BackSide, Box3, BufferGeometry, Color, type Group, type InstancedBufferGeometry, InstancedMesh, Mesh, type Object3D, ShaderMaterial, SkinnedMesh, UniformsLib, UniformsUtils, Vector2, Vector3 } from 'three';
-import { mergeVertices, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+import { deinterleaveGeometry, mergeVertices, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 
 import { colorHex } from '@/brand/tokens';
 import { type InkKind, LOOK_STYLE } from '@/play/arcade/look/style';
@@ -142,6 +142,9 @@ function hullOf(source: BufferGeometry, welded: boolean): BufferGeometry {
         if (attribute !== undefined) bare.setAttribute(name, attribute);
       }
       bare.setIndex(source.index);
+      // Prokládané atributy (GLB s jedním bufferem, pult P83E) `mergeVertices` neumí: postaví je z holého pole
+      // a první zápis spadne „Cannot set properties of undefined (setting 'NaN')“. Rozloží se jen v `bare`.
+      deinterleaveGeometry(bare);
       hull = mergeVertices(bare, 1e-4);
       hull.computeVertexNormals();
     } else

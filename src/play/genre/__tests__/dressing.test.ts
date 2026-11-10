@@ -79,6 +79,10 @@ const ROWS: readonly Row[] = [
   ...(GENRE_MODULES.orrery.availability('default') === 'ready'
     ? [{ genre: 'orrery', sentence: 'show me a farm with a cow, a pig, a sheep and a horse, and tapping one makes it jump and say its name', place: 'farm', slots: { 'thing.orrery0': 'cow' } } as const]
     : []),
+  // P83E T4: obchod se součtem (vývojová věta T1), stejná podmínka.
+  ...(GENRE_MODULES.shop.availability('default') === 'ready'
+    ? [{ genre: 'shop', sentence: 'a bakery where I put cakes on the counter until the total is exactly 12 dollars', place: 'bakery', slots: { 'thing.item': 'cake' } } as const]
+    : []),
 ];
 
 /** Dev věty P61, které `main` prohrál na prostředí nebo protivníkovi (`evals/play/p61/baseline-dev.json`). */

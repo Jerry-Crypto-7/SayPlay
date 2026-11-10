@@ -145,6 +145,7 @@ const ARCADE_CLOSEST: Readonly<Record<Exclude<ControlId, 'tap_go'>, string>> = {
   buildshift: 'a shop building game',
   drawsave: 'a draw-to-save puzzle',
   orrery: 'a tap-to-explore scene',
+  shop: 'a shop counter with a running total',
 };
 
 /** Hra žánru (P32B T2) se jmenuje podle žánru a režimu – ovládání pahýlu je jen dnešní náhrada. */

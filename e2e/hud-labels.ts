@@ -13,8 +13,9 @@ import { readCountedNouns } from '../src/play/draft/lexicon';
  * `m`, `hits`, `notes` a `rounds` nese postup v řádku cíle „42 m / 220 m“, „3 notes“ (P70C T2, `goalProgressOf`,
  * `data-testid="play-goal-progress"`); hlídá je `p70c-start-card.spec.ts`.
  * `explored` je pilulka klikací simulace „explored 3/5“ (P83C T7, `finish_collected.noun` v `pieces/orrery.ts`).
+ * `total` je součet obchodu „$7.50 / $12.00“ a `items` věci na pultu proti potřebě (P83E T3, `genres/shop/shop-text.ts`).
  */
-export const HUD_COUNTER_LABELS: readonly string[] = ['collected', 'gate', 'placed', 'mistakes', 'tools', 'step', 'ammo', 'shots', 'lives', 'defeated', 'best', 'dare', 'powerup', 'combo', 'round', 'ghost', 'rare', 'epic', 'served', 'coins', 'smash', 'air', 'strokes', 'par', 'm', 'hits', 'notes', 'rounds', 'explored'];
+export const HUD_COUNTER_LABELS: readonly string[] = ['collected', 'gate', 'placed', 'mistakes', 'tools', 'step', 'ammo', 'shots', 'lives', 'defeated', 'best', 'dare', 'powerup', 'combo', 'round', 'ghost', 'rare', 'epic', 'served', 'coins', 'smash', 'air', 'strokes', 'par', 'm', 'hits', 'notes', 'rounds', 'explored', 'total', 'items'];
 
 /**
  * Popisky, které smí ukázat hra z věty `sentence`: uzavřený seznam a podstatná jména, která věta počítá

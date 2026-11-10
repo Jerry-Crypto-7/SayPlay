@@ -571,6 +571,8 @@ export class WitnessRecorder {
     }
     // P83C T2: klepnutí klikací simulace probudí věc (stupeň v HP stoupne) – průzkum i dotyk té věci.
     if (ref.id === 'orrery_tap' && effect.kind === 'heal') for (const verb of ['explore', 'interact']) this.add(verb, player, effect.body, tick, 'thing-woke-on-tap', state);
+    // P83E T4: věc položená na pult (počítadlo `items` pravidla `shop_total`) přičte cenovku k součtu.
+    if (ref.id === 'shop_total' && effect.kind === 'count') for (const verb of ['tally', 'collect']) this.add(verb, player, null, tick, 'item-placed-total-added', state);
     if ((ref.id === 'survivor_hit' || ref.id === 'survivor_round') && effect.kind === 'despawn' && roleAt(state, effect.body) === ROLE.enemy) this.add('defeat', player, effect.body, tick, 'enemy-shot-down', state);
     // Výhra obrany: žádný nepřítel už nejde a hradba drží – hrdina ji ubránil.
     if (ref.id === 'defense_goal' && effect.kind === 'win') {

@@ -56,6 +56,7 @@ import { RailfpsScene } from './genres/railfps/RailfpsScene';
 import { BuildshiftScene } from './genres/buildshift/BuildshiftScene';
 import { DrawsaveScene } from './genres/drawsave/DrawsaveScene';
 import { OrreryScene } from './genres/orrery/OrreryScene';
+import { ShopScene } from './genres/shop/ShopScene';
 import { GENRE_TOUCH } from './genres/touch-registry';
 import { HooksLayer } from './hooks/HooksLayer';
 import { PopAnchor } from './hooks/ScorePop';
@@ -1290,6 +1291,8 @@ const StageCanvas = memo(function StageCanvas({
             <DrawsaveScene {...world} />
           ) : stage.scene === 'orrery' ? (
             <OrreryScene {...world} />
+          ) : stage.scene === 'shop' ? (
+            <ShopScene {...world} />
           ) : (
             <World {...world} control={control} />
           )}

@@ -392,8 +392,8 @@ describe('classifyGenre', () => {
     const baseline = JSON.parse(readFileSync(new URL('../../../../evals/play/p56a/baseline.json', import.meta.url), 'utf8')) as { sets: Record<string, { rows: { id: string; ranked: string }[] }> };
     const sets = { p30Dev: 'p30/dev.json', p54cDev: 'p54c/dev.json', p55HoldoutOpened: 'p55/holdout.json' };
     // P68 T11: hry P68 výchozí čísla P56A taky znát nemohla – vyjmou se stejně jako žánry P66.
-    // P83C T4: klikací simulace (`orrery`) stejně.
-    const P66 = new Set(['survivor', 'hole', 'steal', 'sort', 'arrows', 'stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave', 'orrery']);
+    // P83C T4: klikací simulace (`orrery`) stejně; P83E T4: obchod se součtem (`shop`) také.
+    const P66 = new Set(['survivor', 'hole', 'steal', 'sort', 'arrows', 'stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave', 'orrery', 'shop']);
     // P71D T4: x12 („slice through the jungle with a machete to find the temple“) hledá jednu věc – Úkol před sběrem;
     // h71 („… and find the treasure“) má první žánr dál quest.station, Úkol v prostoru jen poskočí za sběr.
     const P68R_REORDERED = new Set(['p55HoldoutOpened h70', 'p54cDev x12', 'p55HoldoutOpened h71']);

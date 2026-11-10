@@ -1187,6 +1187,7 @@ const GENRE_SETTING: Readonly<Record<GenreId, string>> = {
   buildshift: 'cozy diner', // T11: obchod je uvnitř (`stavba/integration.md`)
   drawsave: 'meadow',
   orrery: 'space',
+  shop: 'toy shop',
 };
 const VERB_SETTING: Readonly<Record<string, string>> = { cook: 'kitchen', repair: 'workshop' };
 

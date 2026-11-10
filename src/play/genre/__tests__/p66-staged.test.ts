@@ -53,6 +53,8 @@ describe('P66 genres go live (T2 staged them, T12 routes sentences to them)', ()
     // P83: další typy jdou na konec seznamu za P68 (`drawsave`), dějiny do P68 se nemění.
     const throughP68 = GENRES.slice(0, GENRES.indexOf('drawsave') + 1);
     expect(throughP68.filter((genre) => !(P68_GENRES as readonly string[]).includes(genre))).toHaveLength(24);
+    // P68 T1 přidal pět dalších koster (`p68-staged.test.ts`) – 24 platí pro žánry do P66. Pozdější žánry stojí za nimi.
+    expect(GENRES.slice(0, 29).filter((genre) => !(P68_GENRES as readonly string[]).includes(genre))).toHaveLength(24);
     for (const genre of P66) {
       expect(GENRES).toContain(genre);
       expect(GENRE_MODES[genre as GenreId]).toEqual(['default']);

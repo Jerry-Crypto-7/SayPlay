@@ -155,6 +155,7 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   drawsave: arcade({ cues: 'draw a wall with your finger to protect the hero from the threats until time runs out', roles: [], finish: false, labels: [], mechanics: [] }),
   // P83C T2: věci k prozkoumání `orrery0`–`orrery8` (2–9 z věty); model každé věci volí její popisek.
   orrery: arcade({ setting: true, cues: 'tap a thing to see its name and wake it; tap it again to make it glow, spin or grow more', roles: ['orrery0', 'orrery1', 'orrery2', 'orrery3', 'orrery4', 'orrery5', 'orrery6', 'orrery7', 'orrery8'], finish: false, labels: ['player', 'orrery0', 'orrery1', 'orrery2', 'orrery3', 'orrery4', 'orrery5', 'orrery6', 'orrery7', 'orrery8'], mechanics: [] }),
+  shop: arcade({ setting: true, cues: 'tap an item on the shelf, the hero carries it to the counter and the total adds its price tag', roles: ['item'], finish: false, labels: ['player', 'item'], mechanics: ['health'] }),
 };
 
 export const controlOf = (spec: Pick<GameSpecV1, 'control'>): ControlId => spec.control ?? 'tap_go';

@@ -102,6 +102,7 @@ const GENRE_FOE: Readonly<Record<GenreId, string>> = {
   buildshift: 'robot',
   drawsave: 'bomb',
   orrery: 'star',
+  shop: 'teddy bear',
 };
 
 const placeRoles = (setting: string): PlaceRoles | null => {

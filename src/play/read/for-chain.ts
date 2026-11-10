@@ -33,6 +33,8 @@ const CLASS_OF_CONTROL: Readonly<Record<ControlId, VerbClass>> = {
   stunt: 'steer', minigolf: 'throw', railfps: 'aim_shoot', buildshift: 'manipulate', drawsave: 'manipulate',
   // P83C T2: klikací simulace – klepnutí na věc.
   orrery: 'tap_go',
+  // P83E: obchod – nést věci rukou na pult.
+  shop: 'manipulate',
 };
 
 const roleOf = (spec: GameSpecV1, ...kinds: readonly GameSpecV1['roles'][number]['kind'][]): string | null =>

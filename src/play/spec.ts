@@ -267,7 +267,7 @@ export const tutorialSchema = z
  * a **bez výchozí hodnoty**: default by ho vepsal do každého přečteného specu
  * a pohnul `specHash` všech dnešních her.
  */
-export const CONTROLS = ['tap_go', 'runner', 'platform', 'flap', 'steer', 'move_free', 'shooter', 'throw', 'timing', 'rhythm', 'duel', 'glide', 'walker', 'ball', 'lanes', 'hop', 'crowd', 'merge', 'push', 'survivor', 'hole', 'steal', 'sort', 'arrows', 'stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave', 'orrery'] as const;
+export const CONTROLS = ['tap_go', 'runner', 'platform', 'flap', 'steer', 'move_free', 'shooter', 'throw', 'timing', 'rhythm', 'duel', 'glide', 'walker', 'ball', 'lanes', 'hop', 'crowd', 'merge', 'push', 'survivor', 'hole', 'steal', 'sort', 'arrows', 'stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave', 'orrery', 'shop'] as const;
 export type ControlId = (typeof CONTROLS)[number];
 
 /**
@@ -278,7 +278,7 @@ export type ControlId = (typeof CONTROLS)[number];
  */
 // P68 T1: ovládání pěti koster P68 ze stejného důvodu; každé odsud vyjme jen úloha „zapoj X“ v P68-I. R9 vyjal
 // `railfps` (hraje od T10, čtečka ho nabízí), R12 `minigolf`.
-export const STAGED_CONTROLS: readonly ControlId[] = ['lanes', 'hop', 'crowd', 'merge', 'push', 'survivor', 'hole', 'steal', 'sort', 'arrows', 'stunt', 'buildshift', 'drawsave', 'orrery'];
+export const STAGED_CONTROLS: readonly ControlId[] = ['lanes', 'hop', 'crowd', 'merge', 'push', 'survivor', 'hole', 'steal', 'sort', 'arrows', 'stunt', 'buildshift', 'drawsave', 'orrery', 'shop'];
 
 /** Ovládání, mezi kterými volí čtení modelem: všechna kromě `STAGED_CONTROLS`, v pořadí `CONTROLS`. */
 export const READ_CONTROLS = CONTROLS.filter((id) => !STAGED_CONTROLS.includes(id)) as unknown as readonly [ControlId, ...ControlId[]];
@@ -507,6 +507,8 @@ export const CONTROL_PARAMS = {
   drawsave: z.object({}).strict(),
   // P83C: klikací simulace, ladění nese `tuning` generátoru `orrery_scene`.
   orrery: z.object({}).strict(),
+  // P83E: obchod se součtem, ladění nese `tuning` generátoru `shop_counter`.
+  shop: z.object({}).strict(),
 } as const;
 
 /**
@@ -551,6 +553,7 @@ const SPEC_CONTROL_PARAMS = {
   buildshift: delegated(CONTROL_PARAMS.buildshift),
   drawsave: delegated(CONTROL_PARAMS.drawsave),
   orrery: delegated(CONTROL_PARAMS.orrery),
+  shop: delegated(CONTROL_PARAMS.shop),
 } as const;
 
 /** `spec.scriptLevel` (P68 T13): data úrovně ze skriptu, SHA-256 kódu a verze běhu QuickJS + API. */
@@ -601,6 +604,7 @@ export const gameSpecSchema = z
         SPEC_CONTROL_PARAMS.buildshift,
         SPEC_CONTROL_PARAMS.drawsave,
         SPEC_CONTROL_PARAMS.orrery,
+        SPEC_CONTROL_PARAMS.shop,
       ])
       .optional(),
     addons: z.array(z.enum(ADDONS)).max(3).optional(),
