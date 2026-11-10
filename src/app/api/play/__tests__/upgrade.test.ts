@@ -584,14 +584,20 @@ describe('dotaz upgradu hlásí hru ze čtení (P58D T2)', () => {
     expect(final).not.toHaveProperty('reading');
   }, 120_000);
 
-  it('long-poll procesu, který o návrhu nevěděl, se s hrou ze čtení vrátí hned', async () => {
+  // Živě 10. 11.: POST a dotaz přistály na dvou instancích a každá zaplatila vlastní režii. Zámek v úložišti
+  // drží pokus jeden; dotaz jiné instance vrátí hned `pending` s hrou ze čtení, kterou publikovala ta první.
+  it('dotaz procesu, který o návrhu nevěděl, pokus nespustí znovu a hru ze čtení přečte z úložiště', async () => {
     const created = await publish({ sentence: SENTENCE });
-    // Jiná instance: práci z POST drží jiný proces, dotaz ji spustí sám a čeká nejvýš 25 s.
+    await vi.waitFor(async () => {
+      expect((await upgrade(created.body.versionId)).reading).toBeDefined();
+    }, { timeout: 60_000, interval: 200 });
+    const before = director.calls;
     __resetUpgrades();
     const started = performance.now();
     const pending = await upgrade(created.body.versionId);
     expect(pending).toEqual({ ...PENDING, reading: { versionId: expect.stringMatching(/^[0-9a-f]{32}$/) } });
     expect(performance.now() - started).toBeLessThan(15_000);
+    expect(director.calls).toBe(before);
   }, 120_000);
 
   // Živá kontrola T4: strop odmítl AI verzi, každý dotaz našel uloženou hru ze čtení, vrátil `pending` s novou lhůtou
