@@ -12,17 +12,18 @@ import { describe, expect, it } from 'vitest';
 import { draftGameSpecWithMeta } from '@/play/draft';
 
 import { ROUTE_PENDING, classifyGenre } from '../classify';
-import { readShop, shopItemOf } from '../shop';
+import { readShop, shopItemOf, shopPlaceOf } from '../shop';
 
 const json = <T>(...path: string[]): T => JSON.parse(readFileSync(join(process.cwd(), 'evals', 'play', ...path), 'utf8')) as T;
-const SET = json<{ dev: string[]; mustNot: string[] }>('p83', 'e-sentences.json');
+// `sealed` je od brány T5 spálená (P83E T7 na ní smí ladit); `sealed2` test nečte – otevře ji až druhá brána.
+const SET = json<{ dev: string[]; sealed: string[]; mustNot: string[] }>('p83', 'e-sentences.json');
 const P30 = json<{ sentences: { id: string; text: string }[] }>('p30', 'test-200.json').sentences;
 const top = (sentence: string): string => {
   const best = classifyGenre(sentence, null).ranked[0]!;
   return `${best.genre}.${best.mode}`;
 };
 
-interface Tuning { readonly items: number; readonly unit: string; readonly target?: number }
+interface Tuning { readonly items: number; readonly unit: string; readonly target?: number; readonly spot?: string; readonly name?: string }
 const tuningOf = (sentence: string): Tuning => {
   const meta = draftGameSpecWithMeta(sentence, 1);
   expect(meta.spec.control, sentence).toBe('shop');
@@ -69,5 +70,42 @@ describe('pick-place-count sentences route to shop (P83E T4)', () => {
     expect(readShop('weigh fruit on the scale').unit).toBe(1);
     expect(readShop('put five books on the cart and count the total pages').unit).toBe(2);
     expect(readShop('until the total is exactly 99 dollars').target).toBe(50);
+  });
+});
+
+/**
+ * P83E T7 – co první brána našla (`evals/play/p83/e-gate.md`). Každé z nich hra „projde“: postaví se, robot vyhraje,
+ * součet sedí – a přitom hraje jinou hru, než věta řekla. Oko to na snímku přehlédne, soudce ne.
+ */
+describe('the first gate findings stay fixed (P83E T7)', () => {
+  it('keeps the count of a vague noun: four items are four, not the default three', () => {
+    expect(tuningOf(SET.sealed[0]!).items).toBe(4);
+    expect(tuningOf(SET.dev[1]!).items).toBe(5);
+    expect(tuningOf(SET.dev[13]!).items).toBe(6);
+    expect(tuningOf('a gift shop where I carry seven things to the till and see the total').items).toBe(7);
+  });
+
+  it('counts money when the sentence names a value or a price, even on a scale', () => {
+    expect(tuningOf(SET.sealed[8]!).unit).toBe('price');
+    expect(readShop('weigh the gold on the scale and see its value').unit).toBe(0);
+    expect(readShop('a post office where I put parcels on the scale and the total weight decides the stamp').unit).toBe(1);
+    expect(readShop('a market where I put apples on the scale until it shows exactly 4 kilos').unit).toBe(1);
+  });
+
+  it('routes "see the price" and a basket with a cost to shop, a basket without money stays out', () => {
+    expect(top(SET.sealed[5]!)).toBe('shop.default');
+    expect(top(SET.sealed[7]!)).toBe('shop.default');
+    expect(top('catch the falling apples in a basket before they hit the ground')).not.toBe('shop.default');
+    expect(top('catch eggs in a basket and add up the total score')).not.toBe('shop.default');
+  });
+
+  it('draws the drop spot and the place the sentence names, and shelves food rather than bears', () => {
+    expect(tuningOf(SET.sealed[1]!).spot).toBe('bowl');
+    expect(tuningOf(SET.sealed[9]!)).toMatchObject({ spot: 'tray', name: 'food' });
+    expect(tuningOf(SET.sealed[7]!).spot).toBe('basket');
+    expect(tuningOf(SET.dev[0]!).spot).toBeUndefined();
+    expect(shopPlaceOf(SET.sealed[0]!)).toBe('corner shop');
+    expect(draftGameSpecWithMeta(SET.sealed[4]!, 1).spec.theme.setting).toBe('post office');
+    expect(draftGameSpecWithMeta(SET.sealed[0]!, 1).spec.theme.setting).toBe('corner shop');
   });
 });

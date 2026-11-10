@@ -12,13 +12,14 @@
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
-import { Box3, type Group, type MeshStandardMaterial, type PerspectiveCamera, Vector3 } from 'three';
+import { useEffect, useMemo, useRef } from 'react';
+import { Box3, CanvasTexture, type Group, type MeshStandardMaterial, type PerspectiveCamera, SRGBColorSpace, Vector3 } from 'three';
 
 import { color } from '@/brand/tokens';
 import { BODY, HEADER, UNIT, bodyBase, targetStateOf } from '@/play/arcade/contract';
+import { type SceneryModel, isSceneryModel, modelHeight } from '@/play/arcade/look';
 import { riggedCharacter } from '@/play/arcade/models';
-import { KEEP, SHOP_LAYOUT, SHOP_STATE, shelfSpot } from '@/play/arcade/pieces/shop-level';
+import { KEEP, SHOP_LAYOUT, SHOP_STATE, type ShopSpot, shelfSpot } from '@/play/arcade/pieces/shop-level';
 
 import { renderHeld } from '../../effects/render-feel';
 import { HorizonBackdrop } from '../../look/Backdrop';
@@ -52,6 +53,91 @@ const REFUSE_S = 0.45;
 
 const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;
 
+/**
+ * Nádoba z věty (P83E T7) na stole místo pultu: model z knihovny (tác je z geometrie), jeho kvádr (m) a jak věci
+ * na ní leží – `inner` polovina šíře, do které se položené věci stáhnou, `lift` výška dna nad deskou, `size` zmenšení
+ * položené věci. Vozík stojí na zemi místo stolu, jeho koš je ve výšce pultu. Jen obraz – jádro má jedno místo.
+ */
+const SPOT_LOOK: Readonly<Record<Exclude<ShopSpot, 'counter'>, { readonly model: string | null; readonly w: number; readonly h: number; readonly d: number; readonly inner: number; readonly lift: number; readonly size: number }>> = {
+  bowl: { model: 'gen3d-fruit-bowl', w: 2.2, h: 0.7, d: 1.1, inner: 0.45, lift: 0.08, size: 0.7 },
+  tray: { model: null, w: 2.6, h: 0.08, d: 1.0, inner: 1.05, lift: 0.06, size: 0.75 },
+  basket: { model: 'gen3d-shopping-basket', w: 2.2, h: 0.8, d: 1.1, inner: 0.45, lift: 0.08, size: 0.7 },
+  scale: { model: 'gen3d-deli-scale', w: 2.2, h: 1.0, d: 1.1, inner: 0.4, lift: 0.35, size: 0.7 },
+  cart: { model: 'shopping-cart', w: 2.6, h: 1.4, d: 1.4, inner: 0.45, lift: 0, size: 0.7 },
+};
+/** Půlka šíře řady položených věcí na pultu (m) pro `count` věcí (`counterSpot`). */
+const rowHalf = (count: number): number => m(((count - 1) * SHOP_LAYOUT.counterSlot) / 2);
+
+/** Jmenovka věci bez modelu (P83E T7): slovo věty na čele krabičky, ať je poznat, co se nosí („ingredient“). */
+function nameTexture(name: string): CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const context = canvas.getContext('2d') as CanvasRenderingContext2D;
+  context.fillStyle = color.sun;
+  context.fillRect(0, 0, 256, 256);
+  context.strokeStyle = color.ink;
+  context.lineWidth = 10;
+  context.strokeRect(5, 5, 246, 246);
+  context.fillStyle = color.ink;
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  let size = 64;
+  context.font = `900 ${String(size)}px Roboto, system-ui, sans-serif`;
+  while (context.measureText(name).width > 226 && size > 22) {
+    size -= 4;
+    context.font = `900 ${String(size)}px Roboto, system-ui, sans-serif`;
+  }
+  context.fillText(name, 128, 128);
+  const texture = new CanvasTexture(canvas);
+  texture.colorSpace = SRGBColorSpace;
+  return texture;
+}
+
+/** Tác z geometrie (knihovna tác nemá): deska s nízkým okrajem. */
+function Tray({ w, d }: { readonly w: number; readonly d: number }) {
+  const rim = 0.05;
+  const high = 0.1;
+  return (
+    <group>
+      <mesh position={[0, 0.02, 0]} castShadow receiveShadow>
+        <boxGeometry args={[w, 0.04, d]} />
+        <meshStandardMaterial color={color['sky-deep']} roughness={0.45} />
+      </mesh>
+      {[-1, 1].map((side) => (
+        <mesh key={`x${String(side)}`} position={[(side * (w - rim)) / 2, high / 2, 0]} castShadow>
+          <boxGeometry args={[rim, high, d]} />
+          <meshStandardMaterial color={color['sky-deep']} roughness={0.45} />
+        </mesh>
+      ))}
+      {[-1, 1].map((side) => (
+        <mesh key={`z${String(side)}`} position={[0, high / 2, (side * (d - rim)) / 2]} castShadow>
+          <boxGeometry args={[w, high, rim]} />
+          <meshStandardMaterial color={color['sky-deep']} roughness={0.45} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+/** Stěna krabice, kterou kamera vidí: kouká shora po +z, takže čelo je stěna −z (pořadí stěn `BoxGeometry`). */
+const FRONT_FACE = 5;
+
+/** Neutrální krabička se jmenovkou na čele. */
+function NamedBox({ name }: { readonly name: string }) {
+  const texture = useMemo(() => nameTexture(name), [name]);
+  useEffect(() => () => texture.dispose(), [texture]);
+  const side = ITEM * 0.8;
+  return (
+    <mesh position={[0, side / 2, 0]} castShadow>
+      <boxGeometry args={[side, side, side]} />
+      {[0, 1, 2, 3, 4, 5].map((face) => (
+        <meshStandardMaterial key={face} attach={`material-${String(face)}`} color={face === FRONT_FACE ? color.paper : color.sun} map={face === FRONT_FACE ? texture : null} roughness={0.6} />
+      ))}
+    </mesh>
+  );
+}
+
 /** Police s věcmi: dvě desky na bočnicích, zadní stěna. */
 function Shelf() {
   const wood = color['cream-deep'];
@@ -82,6 +168,7 @@ export function ShopScene({ session, cast, surface, scene: look }: ShopSceneProp
   const game = useMemo(() => shopGameOf(world), [world]);
   const items = useMemo(() => (game === null ? [] : Array.from({ length: game.count }, (_, slot) => game.first + slot)), [game]);
   const itemModel = cast.things?.item;
+  const spotLook = game?.spot === undefined || game.spot === 'counter' ? null : SPOT_LOOK[game.spot];
   const itemGroups = useRef<(Group | null)[]>([]);
   const hero = useRef<Group | null>(null);
   const cursor = useRef<Group | null>(null);
@@ -102,11 +189,16 @@ export function ShopScene({ session, cast, surface, scene: look }: ShopSceneProp
     const at = (body: number, slot: number): number => lerp(prev[bodyBase(body) + slot] as number, state[bodyBase(body) + slot] as number, alpha);
     const keep = bodyBase(game.keeper);
 
-    // Věci: tam, kam je postavilo ovládání nebo jádro (nesená jde s hrdinou).
+    // Věci: tam, kam je postavilo ovládání nebo jádro (nesená jde s hrdinou). V nádobě se položené stáhnou k jejímu
+    // středu a zmenší – řada pultu by z mísy přetekla.
+    const squeeze = spotLook === null ? 1 : Math.min(1, spotLook.inner / Math.max(rowHalf(game.count), 1e-3));
     items.forEach((body, slot) => {
       const group = itemGroups.current[slot];
       if (group === null || group === undefined) return;
-      group.position.set(-m(at(body, BODY.x)), m(at(body, BODY.y)), m(at(body, BODY.z)));
+      const inside = spotLook !== null && targetStateOf(state, body) === SHOP_STATE.placed;
+      const x = -m(at(body, BODY.x)) * (inside ? squeeze : 1);
+      group.position.set(x, m(at(body, BODY.y)) + (inside ? spotLook.lift : 0), m(at(body, BODY.z)));
+      group.scale.setScalar(inside ? spotLook.size : 1);
     });
 
     // Kurzor (klávesy): kroužek pod věcí na místě kurzoru, jen dokud leží na polici.
@@ -165,7 +257,9 @@ export function ShopScene({ session, cast, surface, scene: look }: ShopSceneProp
   });
 
   if (game === null) return null;
-  const decor = 'gen3d-bread-rack';
+  // Kulisa místa věty (kit prostředí, `shop.ts`), jinak regál obchodu; výška jako ve světě, nejvýš jako police.
+  const decor = game.decor ?? 'gen3d-bread-rack';
+  const decorH = game.decor !== undefined && isSceneryModel(game.decor as SceneryModel) ? Math.min(2.2, modelHeight(game.decor as SceneryModel)) : 2.2;
   return (
     <>
       <FieldGround look={look} area={LAND} y={-0.03} />
@@ -179,22 +273,39 @@ export function ShopScene({ session, cast, surface, scene: look }: ShopSceneProp
       {/* Regály z knihovny po stranách police: místo je poznat jako obchod. */}
       {[-1, 1].map((side) => (
         <group key={side} position={[side * (SHELF_W / 2 + 1.3), 0, SHELF_Z]} rotation={[0, Math.PI, 0]}>
-          <FittedModel id={decor} w={2.0} h={2.2} d={1.0} fallback={color['cream-deep']} />
+          <FittedModel id={decor} w={2.0} h={decorH} d={1.0} fallback={color['cream-deep']} />
         </group>
       ))}
-      {/* Pult s pokladnou: model z knihovny, věci se kladou na jeho horní hranu; pruh na čele bliká při odmítnutí. */}
-      <group position={[0, 0, COUNTER_Z]} rotation={[0, Math.PI, 0]}>
-        <FittedModel id="gen3d-checkout-counter" w={COUNTER.w} h={COUNTER.h} d={COUNTER.d} fallback={color['sky-deep']} />
-      </group>
-      <mesh position={[0, COUNTER.h - 0.12, COUNTER_Z - COUNTER.d / 2 - 0.02]}>
-        <boxGeometry args={[COUNTER.w * 0.9, 0.1, 0.03]} />
-        <meshStandardMaterial
-          ref={(material) => {
-            counterTop.current = material;
-          }}
-          color={color['sky-deep']}
-        />
-      </mesh>
+      {/* Pult s pokladnou: model z knihovny, věci se kladou na jeho horní hranu. Nádoba z věty (mísa, tác, košík,
+          váha) stojí na stole místo pultu, vozík na zemi. Pruh na čele bliká při odmítnutí. */}
+      {spotLook === null ? (
+        <group position={[0, 0, COUNTER_Z]} rotation={[0, Math.PI, 0]}>
+          <FittedModel id="gen3d-checkout-counter" w={COUNTER.w} h={COUNTER.h} d={COUNTER.d} fallback={color['sky-deep']} />
+        </group>
+      ) : (
+        <>
+          {game.spot === 'cart' ? null : (
+            <mesh position={[0, COUNTER.h / 2, COUNTER_Z]} castShadow receiveShadow>
+              <boxGeometry args={[COUNTER.w, COUNTER.h, COUNTER.d]} />
+              <meshStandardMaterial color={color['cream-deep']} roughness={0.8} />
+            </mesh>
+          )}
+          <group position={[0, game.spot === 'cart' ? 0 : COUNTER.h, COUNTER_Z]} rotation={[0, Math.PI, 0]} userData={{ item: `shop-${String(game.spot)}` }}>
+            {spotLook.model === null ? <Tray w={spotLook.w} d={spotLook.d} /> : <FittedModel id={spotLook.model} w={spotLook.w} h={spotLook.h} d={spotLook.d} fallback={color['sky-deep']} />}
+          </group>
+        </>
+      )}
+      {game.spot === 'cart' ? null : (
+        <mesh position={[0, COUNTER.h - 0.12, COUNTER_Z - COUNTER.d / 2 - 0.02]}>
+          <boxGeometry args={[COUNTER.w * 0.9, 0.1, 0.03]} />
+          <meshStandardMaterial
+            ref={(material) => {
+              counterTop.current = material;
+            }}
+            color={color['sky-deep']}
+          />
+        </mesh>
+      )}
       <group ref={cursor} visible={false}>
         <mesh rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[ITEM * 0.55, ITEM * 0.7, 28]} />
@@ -213,6 +324,8 @@ export function ShopScene({ session, cast, surface, scene: look }: ShopSceneProp
             <group rotation={[0, Math.PI, 0]}>
               <FittedModel id={itemModel} w={ITEM} h={ITEM} d={ITEM} fallback={color.sun} />
             </group>
+          ) : game.name !== undefined ? (
+            <NamedBox name={game.name} />
           ) : (
             <mesh position={[0, ITEM * 0.4, 0]} castShadow>
               <boxGeometry args={[ITEM * 0.8, ITEM * 0.8, ITEM * 0.8]} />

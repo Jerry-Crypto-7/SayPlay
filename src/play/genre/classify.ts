@@ -113,7 +113,9 @@ const TALLY = pair('shop', 'default');
 /** Kam se věci kladou a kde se sčítá (P83E): pult, pokladna, váha, kotel. Koše ne – ty chytají (`catch`). */
 const TALLY_PLACE = String.raw`(?:counters?|checkouts?|tills?|(?:cash )?registers?|scales?|(?:conveyor )?belts?|cauldrons?|pots?|bowls?|trays?|carts?)`;
 /** Součet věty: celkem, sečíst, kolik to stojí, účet; cíl součtu („exactly 12 dollars“, „adds up to 20“). Ne skóre ani čas. */
-const TALLY_SUM = String.raw`(?:\btotals?\b(?! (?:score|time|darkness|chaos|destruction|war|control)\b)|\badd(?:s|ing)? (?:it |them |everything )?up\b|\bsum\b|\bhow much (?:they|it|everything|all) costs?\b|\bwhat (?:i|you|we) (?:have|need) to pay\b|\bbill\b|\breceipt\b|\bexactly \$?\d+|\buntil it (?:shows|reads|says) (?:exactly )?\$?\d+)`;
+const TALLY_SUM = String.raw`(?:\btotals?\b(?! (?:score|time|darkness|chaos|destruction|war|control)\b)|\badd(?:s|ing)? (?:it |them |everything )?up\b|\bsum\b|\bhow much (?:they|it|everything|all) costs?\b|\bwhat (?:i|you|we) (?:have|need) to pay\b|\bbill\b|\breceipt\b|\bexactly \$?\d+|\buntil it (?:shows|reads|says) (?:exactly )?\$?\d+|\b(?:see|sees|show|shows|check|checks|read|reads) (?:the |their |its )?(?:total |final )?(?:price|cost)s?\b)`;
+/** Košík se součtem jen s penězi (P83E T7, „vegetables in the basket, add up the cost“) – košík bez ceny chytá (`catch`). */
+const TALLY_BASKET = String.raw`\bbaskets?\b[^.;!?]*?(?:\bcosts?\b|\bprices?\b|\bpay\b|\$)|(?:\bcosts?\b|\bprices?\b|\bpay\b|\$)[^.;!?]*?\bbaskets?\b`;
 
 interface Verb {
   /** Základní tvar – ten se vrací jako `verb` a čte ho kontrola věrnosti. */
@@ -578,7 +580,7 @@ const VERBS: readonly Verb[] = [
   // P83E T4: věci na pult a součet v jedné větě („put them on the counter and see the total price“, „pumpkins on a scale
   // until it shows exactly 30 kilos“). Jen místo položení i součet spolu – samotný obchod je stavba (`buildshift`),
   // samotný součet nic neříká.
-  v('tally', 'sign', TALLY, new RegExp(String.raw`\b${TALLY_PLACE}\b[^.;!?]*?${TALLY_SUM}|${TALLY_SUM}[^.;!?]*?\b${TALLY_PLACE}\b`)),
+  v('tally', 'sign', TALLY, new RegExp(String.raw`\b${TALLY_PLACE}\b[^.;!?]*?${TALLY_SUM}|${TALLY_SUM}[^.;!?]*?\b${TALLY_PLACE}\b|${TALLY_BASKET}`)),
 ];
 
 /** Buňky, které hraje znak žánru (P66 T12): když je hlavním slovesem věty, jmenuje celou hru (`chain/decide.ts`). */

@@ -44,6 +44,12 @@ export const SHOP = {
 export const SHOP_UNITS = ['price', 'weight', 'plain'] as const;
 export type ShopUnit = (typeof SHOP_UNITS)[number];
 
+/** Kam věci padají (P83E T7, z věty): pult, mísa, tác, košík, váha, vozík. Jen obraz – jádro má jedno místo. */
+export const SHOP_SPOTS = ['counter', 'bowl', 'tray', 'basket', 'scale', 'cart'] as const;
+export type ShopSpot = (typeof SHOP_SPOTS)[number];
+/** Jméno věci ze scény bez modelu (jmenovka na neutrálním tvaru): nejvýš tolik znaků. */
+export const SHOP_NAME_MAX = 24;
+
 /** Nejvyšší cenovka jednotky (v jednotkách hry). */
 export const tagMax = (unit: ShopUnit): number => (unit === 'price' ? 18 : 9);
 /** Jednotek hry na jednotku věty: cena je v půlkách dolaru. */
@@ -82,6 +88,12 @@ export const shopGameSchema = z
     unit: z.enum(SHOP_UNITS),
     /** Cílový součet v jednotkách hry; 0 = polož všechny věci police. */
     target: z.int().min(0).max(SHOP.target.max * 2),
+    /** Kam věci padají; chybí = pult. */
+    spot: z.enum(SHOP_SPOTS).optional(),
+    /** Jméno věci z věty (jmenovka, když katalog model nemá). */
+    name: z.string().min(1).max(SHOP_NAME_MAX).optional(),
+    /** Model kulisy po stranách police z kitu místa věty (lékárna, pošta); chybí = regál obchodu. */
+    decor: z.string().min(1).max(40).optional(),
   })
   .strict();
 export type ShopGame = z.infer<typeof shopGameSchema>;
@@ -93,6 +105,9 @@ export const shopParams = z
     unit: z.enum(SHOP_UNITS).default('price'),
     /** Cílový součet v jednotkách věty („exactly 12 dollars“ → 12); chybí = polož všechny. */
     target: z.int().min(SHOP.target.min).max(SHOP.target.max).optional(),
+    spot: z.enum(SHOP_SPOTS).optional(),
+    name: z.string().min(1).max(SHOP_NAME_MAX).optional(),
+    decor: z.string().min(1).max(40).optional(),
   })
   .strict();
 export type ShopParams = z.infer<typeof shopParams>;
@@ -320,7 +335,16 @@ export function generateShop(seed: number, params: ShopParams): ShopLevel {
   });
   const keeper = bodies.length;
   bodies.push({ role: 'thing', kind: 'player', x: 0, y: 0, z: 0, w: 1, h: 1, d: 1, solid: false, template: true });
-  const game: ShopGame = { first: 1, count: values.length, keeper, unit: params.unit, target };
+  const game: ShopGame = {
+    first: 1,
+    count: values.length,
+    keeper,
+    unit: params.unit,
+    target,
+    ...(params.spot === undefined || params.spot === 'counter' ? {} : { spot: params.spot }),
+    ...(params.name === undefined ? {} : { name: params.name }),
+    ...(params.decor === undefined ? {} : { decor: params.decor }),
+  };
   return { level: { bodies, length: 0 }, game, seconds: shopClock(values.length) };
 }
 
