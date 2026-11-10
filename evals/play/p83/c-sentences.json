@@ -1,5 +1,5 @@
 {
- "about": "P83C T1: explore-and-touch sentences for the new game type `orrery`, written 2026-11-10 before any orrery code. `dev` (20) may be used for tuning the reading and routing; `sealed` (10, other topics) is opened once in T5 and never tuned on; `not_orrery` (10) are ordinary games that use the words click, tap or planet and must route anywhere except orrery. `things` lists what the sentence names that should be visible in the scene; `answer` is the state change a tap should cause.",
+ "about": "P83C T1: explore-and-touch sentences for the new game type `orrery`, written 2026-11-10 before any orrery code. `dev` (20) may be used for tuning the reading and routing; `sealed` (10, other topics) is opened once in T5 and never tuned on; `not_orrery` (10) are ordinary games that use the words click, tap or planet and must route anywhere except orrery. `things` lists what the sentence names that should be visible in the scene; `answer` is the state change a tap should cause. `sealed2` (10, new topics) was written 2026-11-10 after gate 1 failed, by a separate agent the tuning session never saw; opened once in T8.",
  "design": [
   "Typ `orrery` = scéna k prozkoumání, ne hra se sbíráním: na scéně stojí N věcí z věty (2–9), pohybují se a reagují na klepnutí.",
   "Věci se berou z věty (podstatná jména výčtu), u známého celku (solar system, atom, clock, orchestra, rainbow…) z malé tabulky celků.",
@@ -45,6 +45,18 @@
   { "id": "c-seal-08", "text": "a volcano island where tapping the volcano, the palm trees or the lava rocks shows their names", "things": ["volcano", "palm tree", "lava rock"], "answer": "label" },
   { "id": "c-seal-09", "text": "a weather station with a sun, a cloud, a raindrop and a snowflake, click each one to see its name", "things": ["sun", "cloud", "raindrop", "snowflake"], "answer": "label" },
   { "id": "c-seal-10", "text": "a music box with a ballerina, a star and a moon going around, touch them to make them spin faster", "things": ["ballerina", "star", "moon"], "answer": "faster" }
+ ],
+ "sealed2": [
+  { "id": "c-seal2-01", "text": "show me the bones of a human skeleton and each bone shows its name when clicked", "things": ["skull", "spine", "rib", "pelvis", "femur"], "answer": "label" },
+  { "id": "c-seal2-02", "text": "a space station with an astronaut, a satellite dish, solar panels and a supply capsule, each one glows when you tap it", "things": ["astronaut", "satellite dish", "solar panel", "supply capsule"], "answer": "glow" },
+  { "id": "c-seal2-03", "text": "a giant computer keyboard, click any key and it grows bigger so you can read the letter", "things": ["key"], "answer": "bigger" },
+  { "id": "c-seal2-04", "text": "explore a pirate ship where the captain, the parrot, the treasure chest and the anchor show their names when you tap them", "things": ["captain", "parrot", "treasure chest", "anchor"], "answer": "label" },
+  { "id": "c-seal2-05", "text": "a bakery window with a croissant, a loaf of bread, a pretzel and a cake, touch one and it puffs up", "things": ["croissant", "bread", "pretzel", "cake"], "answer": "bigger" },
+  { "id": "c-seal2-06", "text": "a windy hill with windmills turning slowly, tap a windmill and its blades spin faster", "things": ["windmill"], "answer": "faster" },
+  { "id": "c-seal2-07", "text": "let me look inside a toolbox with a hammer, a wrench, a screwdriver and a saw, touch each tool to see its name", "things": ["hammer", "wrench", "screwdriver", "saw"], "answer": "label" },
+  { "id": "c-seal2-08", "text": "hot air balloons drifting over a valley, when you tap a balloon it inflates and grows", "things": ["hot air balloon"], "answer": "bigger" },
+  { "id": "c-seal2-09", "text": "a harbor at night with a lighthouse, a fishing boat and a sailboat, touch them and they shine", "things": ["lighthouse", "fishing boat", "sailboat"], "answer": "glow" },
+  { "id": "c-seal2-10", "text": "an airport with little planes circling the control tower, click a plane to make it fly faster", "things": ["plane", "control tower"], "answer": "faster" }
  ],
  "not_orrery": [
   { "id": "c-not-01", "text": "click to shoot the asteroids before they hit the planet" },
