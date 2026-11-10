@@ -28,7 +28,8 @@ import { ARCADE_HZ, type ArcadeWorld, COUNTER, HEADER, type InputEvent, NO_INPUT
 import { instantiate, loadProgram, outcomeOf, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { countedWaves } from '../pieces/arena';
-import { COUNTED_NEAR, countedTicks } from '../pieces/waves';
+import { COUNTED_NEAR, collectClock, countedTicks } from '../pieces/waves';
+import { FIRST_MINUTE } from '@/play/compose/compile';
 import { verifyArcade } from '../verify';
 
 const KEYS = 'A knight must collect three keys in a haunted castle';
@@ -175,12 +176,13 @@ describe('arena.collect: a sentence with a count', () => {
   });
 });
 
-describe('arena.collect: a sentence without a count is unchanged', () => {
+describe('arena.collect: a sentence without a count keeps its waves', () => {
+  // P83A T3: sprška `treasure_rush` dá sběru první minuty 8 věcí ve vlně, hodiny 10 věcí a vlny bez pronásledovatelů.
   it('keeps the waves, the score win and the plain "collected" goal', () => {
     const spec = draft(KEYS_PLAIN);
     expect(spec.genre).toMatchObject({ id: 'arena', mode: 'collect' });
-    expect(tuning(spec)).toEqual({ items: 10, waves: 3 });
-    expect(spec.tutorial.goalLine).toBe('Collect 10 keys per wave, 3 waves.');
+    expect(tuning(spec)).toEqual({ items: FIRST_MINUTE.items, waves: 3, clock: collectClock(10, 3), calm: true });
+    expect(spec.tutorial.goalLine).toBe(`Collect ${FIRST_MINUTE.items} keys per wave, 3 waves.`);
     const world = worldOf(spec, 1);
     expect(ruleIds(world)).toContain('grow_to');
     expect(ruleIds(world)).not.toContain('finish_collected');

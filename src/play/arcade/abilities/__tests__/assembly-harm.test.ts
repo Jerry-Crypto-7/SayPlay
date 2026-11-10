@@ -122,8 +122,9 @@ const PLAIN = [
   ['a car races rivals and grabs turbo', [138, 142, 133, 135]],
   // Po sloučení s P47A (`genre.v4`): o 7 těl víc přidá nápor arény, ne akce – na samotné P47A týž počet.
   // P66 T10 (`genre.v6`): +1 tělo – počítadlo háčků kol sběru; uchopení má jen létající skóre a tělo navíc nemá (T10a).
-  ['a kid collects shells', [28, 29, 27, 29]],
-  ['a kid grabs shells', [27, 28, 26, 28]],
+  // P83A T3: sběr první minuty (`FIRST_MINUTE`) – 8 věcí první vlny místo 10, o 2 těla méně.
+  ['a kid collects shells', [26, 27, 25, 27]],
+  ['a kid grabs shells', [25, 26, 24, 26]],
 ] as const;
 
 describe('P47B T5: a game without dash or shield gets no extra body', () => {

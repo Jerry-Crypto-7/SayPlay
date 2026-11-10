@@ -932,6 +932,10 @@ interface WaveSetup {
   readonly sizes?: readonly number[];
   /** Nejdřívější tik vln od druhé (věta s počtem, `countedTicks`): vlna věcí počká i na něj. */
   readonly at?: readonly number[];
+  /** Hodiny sběru (s) místo `collectClock` – sběr první minuty (P83A T3, `clock` v ladění). */
+  readonly clock?: number;
+  /** Další vlny bez pronásledovatelů (sběr první minuty, `calm`). */
+  readonly calm?: true;
   /** Věci věty s počtem blízko (`COUNTED_NEAR`): první vlna v `±first`, další v `±reach` dál než `hole` od středu. */
   readonly near?: { readonly first: number; readonly reach: number; readonly hole: number };
 }
@@ -974,13 +978,13 @@ function waveParts(seed: number, setup: WaveSetup, health: number | undefined): 
   const chase: ChaseParams = { speed, lead: setup.chaseLead ?? ESCAPE.lead, step: setup.pursuitCeiling === undefined ? waveSpeedStep(waves) : Math.min(40, Math.ceil((setup.pursuitCeiling - speed) / 2)), ...(setup.pursuitCeiling === undefined ? {} : { ceiling: setup.pursuitCeiling }), ...(setup.patrol === undefined ? {} : { patrol: setup.patrol }) };
   const later = Array.from({ length: waves - 1 }, (_, k) => ({
     ...(items > 0 ? { items: wavePositions(rng, setup.sizes?.[k + 1] ?? items, edge, ESCAPE.itemClearance.item, setup.near?.hole),...(setup.at?.[k] === undefined ? {} : { at: setup.at[k] }) } : { at: Math.round(((k + 1) * setup.seconds * ARCADE_HZ) / waves) }),
-    chasers: wavesChasers(chasers, k + 1) - wavesChasers(chasers, k),
+    chasers: setup.calm === true ? 0 : wavesChasers(chasers, k + 1) - wavesChasers(chasers, k),
   }));
   const rules: PieceRef[] = [
     { id: 'arena_eat', params: health === undefined ? { effect: 'lose', grace: ESCAPE.graceTicks } : { effect: 'damage', grace: ESCAPE.graceTicks, knockback: ESCAPE.knockback } },
     items > 0 ? { id: 'grow_to', params: { points: items * waves, ...(chasers > 0 ? { wake: true } : {}) } } : { id: 'survive_time', params: { seconds: setup.seconds, wake: true } },
   ];
-  if (chasers === 0) rules.push({ id: 'time_limit', params: { seconds: collectClock(items, waves) } });
+  if (chasers === 0) rules.push({ id: 'time_limit', params: { seconds: setup.clock ?? collectClock(items, waves) } });
   if (health !== undefined) rules.push({ id: 'out_of_health', params: {} });
   // Předlohy: první věc leží za pronásledovateli, pronásledovatel je první tělo za hráčem (u sběru mrtvá předloha na konci).
   const template = { item: 1 + chasers, chaser: chasers === 0 ? level.bodies.length - 1 : 1 };
@@ -1063,11 +1067,15 @@ const collectParams = z
     noun: nounSchema.optional(),
     /** Věci věty s počtem blízko a dřív (P83A T2, `COUNTED_NEAR`, píše žánr nových her), jen s `counted`. */
     near: z.literal(true).optional(),
+    /** Hodiny sběru ve vlnách (s): sběr první minuty (P83A T3, `FIRST_MINUTE`) má méně věcí, ale hodiny původní hry. */
+    clock: z.int().min(10).max(WAVE_PLAN.clockMax).optional(),
+    /** Vlny bez pronásledovatelů: sběr první minuty (P83A T3) – boss pak nepotká pronásledovatele, který přišel až po něm. */
+    calm: z.literal(true).optional(),
   })
   .strict();
 export type CollectParams = z.infer<typeof collectParams>;
 
-const collectSetup = (items: number, waves: number, params: Pick<CollectParams, 'pursuitCeiling' | 'itemSizePct'>): WaveSetup => ({ chasers: 0, speed: WAVE_PLAN.collectSpeed, items, seconds: 0, waves, ...(params.pursuitCeiling === undefined ? {} : { pursuitCeiling: params.pursuitCeiling }), ...(params.itemSizePct === undefined ? {} : { itemSizePct: params.itemSizePct }) });
+const collectSetup = (items: number, waves: number, params: Pick<CollectParams, 'pursuitCeiling' | 'itemSizePct' | 'clock' | 'calm'>): WaveSetup => ({ chasers: 0, speed: WAVE_PLAN.collectSpeed, items, seconds: 0, waves, ...(params.pursuitCeiling === undefined ? {} : { pursuitCeiling: params.pursuitCeiling }), ...(params.itemSizePct === undefined ? {} : { itemSizePct: params.itemSizePct }), ...(params.clock === undefined ? {} : { clock: params.clock }), ...(params.calm === undefined ? {} : { calm: params.calm }) });
 
 /** Věta s počtem rozdělí věci nejvýš do tolika vln: od druhé vbíhají pronásledovatelé jako ve sběru ve vlnách. */
 export const COUNTED_WAVES = 3;
