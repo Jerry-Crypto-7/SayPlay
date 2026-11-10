@@ -29,20 +29,48 @@ export function amountText(amount: number, unit: ShopUnit): string {
   return unit === 'weight' ? `${String(amount)} kg` : counted(amount, 'point');
 }
 
+/** Váha věty: kila, vážení. */
+const WEIGHT = /\b(?:weights?|weigh(?:s|ing|ed)?|kilos?|kilograms?|kgs?|pounds|lbs?|grams?)\b/;
+/** Peníze věty: cena, platba, pokladna, obchod. */
+const MONEY = /\$|\b(?:prices?|cost(?:s|ing)?|pay|paid|bill|receipt|till|register|checkout|cashier|money|dollars?|euros?|cents?|shop|store|supermarket|grocery|market|bakery)\b/;
+/** Cíl součtu: „exactly 12 dollars“, „adds up to 20“, „until it shows 30 kilos“, „must reach 15“. */
+const TARGET = /\b(?:exactly|precisely|adds? up to|reach(?:es)?|shows?|reads?|total of) \$?(\d+)\b/;
+
+/** Věc po slovesu nesení: „put cakes on“, „pick up four toys“, „drops potion ingredients“ (množné číslo, až dvě slova). */
+const CARRIED = /\b(?:put(?:s|ting)?|plac(?:e|es|ing)|carr(?:y|ies|ying)|bring(?:s|ing)?|tak(?:e|es|ing)|pick(?:s|ing)?(?: up)?|scan(?:s|ning)?|drop(?:s|ping)?|load(?:s|ing)?) (?:the |some |all |my |(?:\d+|two|three|four|five|six|seven|eight) )?((?:[a-z]+ )?[a-z]+s)\b/;
+/** Slova, která věc nejmenují – obchod pak dá svou výchozí. */
+const VAGUE = /\b(?:items?|things?|stuff|objects?|goods)$/;
+
+/** Věc z věty (P83E T4): bez čtení modelu sloveso „put“ předmět do obsazení nepředá, police by měla výchozí medvídky. */
+export function shopItemOf(sentence: string): string | undefined {
+  const said = CARRIED.exec(sentence.toLowerCase())?.[1];
+  return said === undefined || VAGUE.test(said) ? undefined : said;
+}
+
+/**
+ * Jednotka a cíl z věty (P83E T4): váha (kila, „weight“), jinak peníze (cena, pokladna, obchod), jinak váha podle
+ * „scale“, jinak prosté číslo („the recipe adds up to 20“, „total pages“). Cíl jen s číslicí po „exactly“ a spol.
+ */
+export function readShop(sentence: string): { readonly unit: number; readonly target?: number } {
+  const text = sentence.toLowerCase();
+  const unit = WEIGHT.test(text) ? 1 : MONEY.test(text) ? 0 : /\bscales?\b/.test(text) ? 1 : 2;
+  const said = TARGET.exec(text)?.[1];
+  if (said === undefined) return { unit };
+  return { unit, target: Math.min(SHOP.target.max, Math.max(SHOP.target.min, Number(said))) };
+}
+
 export const shopGenre: GenreModule<'shop'> = {
   id: 'shop',
   modes: ['default'],
-  // P83E T4 doplní narážky a znak žánru; do té doby sem vede jen ruční spec.
-  cues: [],
+  // Znak žánru (věci na pult a součet) je v `classify.ts`; narážky jen slova, která jinde nehrají („till“ je i „do“).
+  cues: ['checkout', 'cashier', 'receipt'],
   heroClasses: ['humanoid', 'animal', 'robot', 'monster'],
   paramBounds: {
     items: { min: SHOP.items.min, max: SHOP.items.max },
     unit: { min: 0, max: SHOP_UNITS.length - 1 },
     target: { min: SHOP.target.min, max: SHOP.target.max },
   },
-  // T3: kostra – hraje jen ruční spec (e2e), klasifikátor ani režisér ji nevidí; T4 ji zapne (`ready`, buňka `shop.default`
-  // z `STAGED_PRESETS` do `PRESETS`, vzorek kontraktu, řádek oblékání a obtížnosti P41).
-  availability: () => 'staged',
+  availability: () => 'ready',
   compile: (spec) => {
     const items = spec.params?.items ?? SHOP.items.default;
     const unit = shopUnitOf(spec.params?.unit);
@@ -76,10 +104,14 @@ export const shopGenre: GenreModule<'shop'> = {
   draftFill: (sentence, reading) => {
     const { hero, setting, cast } = draftRoles(sentence, reading);
     // Obchod nepřítele nemá: věci police jsou sbírané věci a kulisy věty.
-    const roles = (cast ?? []).filter((entry) => entry.does === 'collect' || entry.does === 'scenery');
+    const kept = (cast ?? []).filter((entry) => entry.does === 'collect' || entry.does === 'scenery');
+    const item = shopItemOf(sentence);
+    const roles = item === undefined || kept.some((entry) => entry.does === 'collect') ? kept : [{ label: item, does: 'collect' as const }, ...kept];
+    const { unit, target } = readShop(sentence);
     return {
       genre: 'shop',
       mode: 'default',
+      ...(unit === 0 && target === undefined ? {} : { params: { unit, ...(target === undefined ? {} : { target }) } }),
       ...(hero === undefined ? {} : { hero }),
       ...(setting === undefined ? {} : { setting }),
       ...(roles.length === 0 ? {} : { cast: roles }),
