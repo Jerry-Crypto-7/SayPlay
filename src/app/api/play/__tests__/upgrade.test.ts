@@ -84,8 +84,7 @@ const { GET: readUpgrade } = await import('../games/[id]/upgrade/route');
 const { __resetUpgrades, directUpgrade, readingDiffers } = await import('../_upgrade');
 const { derivedSeeds, publishReadSpec, seedFrom } = await import('../_publish');
 
-const { DIRECTOR_BUDGET_MS } = await import('../_director');
-const { UPGRADE_DEADLINE_SLACK_MS } = await import('../_upgrade');
+const { UPGRADE_CEILING_MS, UPGRADE_WINDOW } = await import('../_upgrade');
 const PENDING = { status: 'pending', deadlineAt: expect.stringMatching(/^\d{4}-\d\d-\d\dT/) };
 
 const SENTENCE = 'A hamster escapes a supermarket while a giant Roomba hunts it.';
@@ -189,15 +188,18 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect(await upgrade(created.body.versionId)).toEqual(PENDING);
   });
 
-  it('pending nese deadlineAt: start práce + rozpočet režie + 15 s rezerva (P27C T1)', async () => {
+  it('pending nese deadlineAt: start práce + strop AI verze 45 s (P27C T1, P83B T3)', async () => {
     holdDirector();
     const before = Date.now();
     const created = await publish({ sentence: SENTENCE });
     const after = Date.now();
     const pending = await upgrade(created.body.versionId);
     const deadline = Date.parse(pending.deadlineAt);
-    expect(deadline).toBeGreaterThanOrEqual(before + DIRECTOR_BUDGET_MS + UPGRADE_DEADLINE_SLACK_MS);
-    expect(deadline).toBeLessThanOrEqual(after + DIRECTOR_BUDGET_MS + UPGRADE_DEADLINE_SLACK_MS);
+    expect(UPGRADE_CEILING_MS).toBe(45_000);
+    expect(deadline).toBeGreaterThanOrEqual(before + UPGRADE_CEILING_MS);
+    expect(deadline).toBeLessThanOrEqual(after + UPGRADE_CEILING_MS);
+    // Režie končí před stropem, aby kontrola robotem a zápis (naměřeno do 2,1 s) doběhly, než se klient přestane ptát.
+    expect(UPGRADE_WINDOW.budgetMs).toBeLessThanOrEqual(UPGRADE_CEILING_MS - 2_100);
     // Druhý dotaz lhůtu neposune: patří práci, ne dotazu.
     expect((await upgrade(created.body.versionId)).deadlineAt).toBe(pending.deadlineAt);
   });
