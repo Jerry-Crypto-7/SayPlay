@@ -55,6 +55,8 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
   'drawsave.default': { move: 'stationary', actions: ['drawwall'], objective: 'survive', threats: ['hazard'] },
   // P68 T10: the first-person rail shooter is live – its cell moved here from `STAGED_PRESETS`.
   'railfps.default': { move: 'stationary', actions: ['railshoot'], objective: 'defeat', threats: ['chaser'] },
+  // P83C T4: the tap-to-explore scene is live – its cell moved here from `STAGED_PRESETS`.
+  'orrery.default': { move: 'stationary', actions: ['explore'], objective: 'score', threats: [] },
 };
 
 /**

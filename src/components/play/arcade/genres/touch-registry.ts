@@ -17,4 +17,5 @@ export interface GenreTouchProps {
 export const GENRE_TOUCH: Readonly<Record<string, ComponentType<GenreTouchProps>>> = {
   railfps: lazy(() => import('./railfps/RailfpsTouch').then((module) => ({ default: module.RailfpsTouch }))),
   drawsave: lazy(() => import('./drawsave/DrawsaveTouch').then((module) => ({ default: module.DrawsaveTouch }))),
+  orrery: lazy(() => import('./orrery/OrreryTouch').then((module) => ({ default: module.OrreryTouch }))),
 };

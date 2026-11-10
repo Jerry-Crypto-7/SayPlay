@@ -38,6 +38,8 @@ export const STAGES = {
   railfps: { scene: 'railfps', input: 'genre' },
   buildshift: { scene: 'buildshift', input: 'lanes' },
   drawsave: { scene: 'drawsave', input: 'genre' },
+  // P83C: klikací simulace – dotykový adaptér `genres/orrery/OrreryTouch` najde věc pod prstem.
+  orrery: { scene: 'orrery', input: 'genre' },
 } as const;
 export type Stage = (typeof STAGES)[keyof typeof STAGES];
 export function stageOf(control: string): Stage | null {

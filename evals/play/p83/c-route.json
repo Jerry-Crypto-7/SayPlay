@@ -1,0 +1,332 @@
+{
+ "schema": "p83c-route.v1",
+ "measuredAt": "2026-11-10T16:20:40.133Z",
+ "about": "P83C T4: quick game without a model. classify = classifyGenre(sentence, null).ranked[0]; draft = draftGameSpecWithMeta(sentence, 1).genre. t200 = evals/play/p30/test-200.json against the branch before T4 (8d4f0552).",
+ "dev": {
+  "orreryClassify": 20,
+  "orreryDraft": 20,
+  "of": 20
+ },
+ "notOrrery": {
+  "orreryClassify": 0,
+  "orreryDraft": 0,
+  "of": 10
+ },
+ "t200": {
+  "moved": 0,
+  "of": 200,
+  "rows": []
+ },
+ "devRows": [
+  {
+   "id": "c-dev-01",
+   "draft": "orrery",
+   "things": [
+    "flower"
+   ],
+   "params": {
+    "things": 5,
+    "layout": 3,
+    "answer": 2,
+    "hub": 0,
+    "whole": 0
+   }
+  },
+  {
+   "id": "c-dev-02",
+   "draft": "orrery",
+   "things": [
+    "cow",
+    "pig",
+    "sheep",
+    "horse"
+   ],
+   "params": {
+    "things": 4,
+    "layout": 3,
+    "answer": 0,
+    "hub": 0,
+    "whole": 0
+   }
+  },
+  {
+   "id": "c-dev-03",
+   "draft": "orrery",
+   "things": [
+    "red",
+    "orange",
+    "yellow",
+    "green",
+    "blue",
+    "indigo",
+    "violet"
+   ],
+   "params": {
+    "things": 7,
+    "layout": 2,
+    "answer": 0,
+    "hub": 0,
+    "whole": 5
+   }
+  },
+  {
+   "id": "c-dev-04",
+   "draft": "orrery",
+   "things": [
+    "toaster",
+    "kettle",
+    "blender",
+    "fridge"
+   ],
+   "params": {
+    "things": 4,
+    "layout": 3,
+    "answer": 0,
+    "hub": 0,
+    "whole": 0
+   }
+  },
+  {
+   "id": "c-dev-05",
+   "draft": "orrery",
+   "things": [
+    "parrot",
+    "monkey",
+    "tiger"
+   ],
+   "params": {
+    "things": 3,
+    "layout": 3,
+    "answer": 1,
+    "hub": 0,
+    "whole": 0
+   }
+  },
+  {
+   "id": "c-dev-06",
+   "draft": "orrery",
+   "things": [
+    "robot",
+    "teddy bear",
+    "rocket"
+   ],
+   "params": {
+    "things": 3,
+    "layout": 2,
+    "answer": 1,
+    "hub": 0,
+    "whole": 0
+   }
+  },
+  {
+   "id": "c-dev-07",
+   "draft": "orrery",
+   "things": [
+    "dinosaur"
+   ],
+   "params": {
+    "things": 5,
+    "layout": 3,
+    "answer": 2,
+    "hub": 0,
+    "whole": 0
+   }
+  },
+  {
+   "id": "c-dev-08",
+   "draft": "orrery",
+   "things": [
+    "frog",
+    "lily pad"
+   ],
+   "params": {
+    "things": 2,
+    "layout": 3,
+    "answer": 0,
+    "hub": 0,
+    "whole": 0
+   }
+  },
+  {
+   "id": "c-dev-09",
+   "draft": "orrery",
+   "things": [
+    "horse"
+   ],
+   "params": {
+    "things": 5,
+    "layout": 0,
+    "answer": 1,
+    "hub": 0,
+    "whole": 0
+   }
+  },
+  {
+   "id": "c-dev-10",
+   "draft": "orrery",
+   "things": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "params": {
+    "things": 4,
+    "layout": 1,
+    "answer": 0,
+    "hub": 0,
+    "whole": 6
+   }
+  },
+  {
+   "id": "c-dev-11",
+   "draft": "orrery",
+   "things": [
+    "apple",
+    "banana",
+    "pear"
+   ],
+   "params": {
+    "things": 3,
+    "layout": 3,
+    "answer": 0,
+    "hub": 0,
+    "whole": 0
+   }
+  },
+  {
+   "id": "c-dev-12",
+   "draft": "orrery",
+   "things": [
+    "beehive",
+    "bee"
+   ],
+   "params": {
+    "things": 5,
+    "layout": 0,
+    "answer": 1,
+    "hub": 1,
+    "whole": 0
+   }
+  },
+  {
+   "id": "c-dev-13",
+   "draft": "orrery",
+   "things": [
+    "lollipop",
+    "cupcake",
+    "donut"
+   ],
+   "params": {
+    "things": 3,
+    "layout": 3,
+    "answer": 0,
+    "hub": 0,
+    "whole": 0
+   }
+  },
+  {
+   "id": "c-dev-14",
+   "draft": "orrery",
+   "things": [
+    "wagon"
+   ],
+   "params": {
+    "things": 5,
+    "layout": 0,
+    "answer": 0,
+    "hub": 0,
+    "whole": 0
+   }
+  },
+  {
+   "id": "c-dev-15",
+   "draft": "orrery",
+   "things": [
+    "bell"
+   ],
+   "params": {
+    "things": 5,
+    "layout": 2,
+    "answer": 0,
+    "hub": 0,
+    "whole": 0
+   }
+  },
+  {
+   "id": "c-dev-16",
+   "draft": "orrery",
+   "things": [
+    "swing",
+    "slide",
+    "seesaw"
+   ],
+   "params": {
+    "things": 3,
+    "layout": 3,
+    "answer": 1,
+    "hub": 0,
+    "whole": 0
+   }
+  },
+  {
+   "id": "c-dev-17",
+   "draft": "orrery",
+   "things": [
+    "mushroom",
+    "olive",
+    "pepper"
+   ],
+   "params": {
+    "things": 3,
+    "layout": 3,
+    "answer": 0,
+    "hub": 0,
+    "whole": 0
+   }
+  },
+  {
+   "id": "c-dev-18",
+   "draft": "orrery",
+   "things": [
+    "lamp",
+    "firefly"
+   ],
+   "params": {
+    "things": 5,
+    "layout": 0,
+    "answer": 0,
+    "hub": 1,
+    "whole": 0
+   }
+  },
+  {
+   "id": "c-dev-19",
+   "draft": "orrery",
+   "things": [
+    "machine"
+   ],
+   "params": {
+    "things": 3,
+    "layout": 3,
+    "answer": 1,
+    "hub": 0,
+    "whole": 0
+   }
+  },
+  {
+   "id": "c-dev-20",
+   "draft": "orrery",
+   "things": [
+    "house"
+   ],
+   "params": {
+    "things": 5,
+    "layout": 3,
+    "answer": 0,
+    "hub": 0,
+    "whole": 0
+   }
+  }
+ ]
+}

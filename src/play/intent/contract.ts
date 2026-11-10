@@ -39,7 +39,7 @@ export type ObjectiveId = (typeof OBJECTIVES)[number];
 export const GENRE_MOVES = ['lanes', 'hop', 'crowd', 'drop'] as const;
 // P68 T1: akce pěti koster P68 ze stejného důvodu – `stunt` = triky a trosky na trati, `putt` = odpal míčku do jamky,
 // `railshoot` = střelba z očí na kolejích, `shopbuild` = stavba stanic obchodu, `drawwall` = kreslená zeď, která chrání.
-export const GENRE_ACTIONS = ['whack', 'slice', 'merge', 'push', 'autofire', 'swallow', 'steal', 'sort', 'unblock', 'stunt', 'putt', 'railshoot', 'shopbuild', 'drawwall'] as const;
+export const GENRE_ACTIONS = ['whack', 'slice', 'merge', 'push', 'autofire', 'swallow', 'steal', 'sort', 'unblock', 'stunt', 'putt', 'railshoot', 'shopbuild', 'drawwall', 'explore'] as const;
 export const GENRE_OBJECTIVES = ['defend'] as const;
 
 /** Co jde proti hrdinovi. `guard` = hlídka, která chytí, když vidí; `rival` = soupeř, který závodí nebo hraje proti. */

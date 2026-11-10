@@ -1,0 +1,113 @@
+{
+  "schema": "gamespec.v1",
+  "control": "orrery",
+  "controlParams": {
+    "generator": "orrery_scene",
+    "tuning": {
+      "things": 9,
+      "layout": "orbit",
+      "answer": "faster",
+      "hub": true
+    }
+  },
+  "genre": {
+    "id": "orrery",
+    "mode": "default",
+    "compilerVersion": "genre.v8"
+  },
+  "title": "Solar System",
+  "archetype": "collect_exit",
+  "targetDurationSec": 60,
+  "theme": {
+    "setting": "solar system",
+    "mood": "curious"
+  },
+  "objective": {
+    "kind": "collect",
+    "description": "Tap the sun, mercury and venus to see their names and make them spin faster: wake all 9.",
+    "count": 9,
+    "role": "orrery0"
+  },
+  "mechanics": [],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "explorer",
+      "count": 1
+    },
+    {
+      "count": 1,
+      "id": "orrery0",
+      "kind": "target",
+      "label": "sun"
+    },
+    {
+      "count": 1,
+      "id": "orrery1",
+      "kind": "target",
+      "label": "mercury"
+    },
+    {
+      "count": 1,
+      "id": "orrery2",
+      "kind": "target",
+      "label": "venus"
+    },
+    {
+      "count": 1,
+      "id": "orrery3",
+      "kind": "target",
+      "label": "earth"
+    },
+    {
+      "count": 1,
+      "id": "orrery4",
+      "kind": "target",
+      "label": "mars"
+    },
+    {
+      "count": 1,
+      "id": "orrery5",
+      "kind": "target",
+      "label": "jupiter"
+    },
+    {
+      "count": 1,
+      "id": "orrery6",
+      "kind": "target",
+      "label": "saturn"
+    },
+    {
+      "count": 1,
+      "id": "orrery7",
+      "kind": "target",
+      "label": "uranus"
+    },
+    {
+      "count": 1,
+      "id": "orrery8",
+      "kind": "target",
+      "label": "neptune"
+    }
+  ],
+  "scoring": {},
+  "tutorial": {
+    "goalLine": "Tap the sun, mercury and venus!",
+    "controlsHint": "Tap a thing to wake it, tap again for more. Arrows and Space work too."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}

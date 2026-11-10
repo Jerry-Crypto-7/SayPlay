@@ -79,7 +79,9 @@ const toJson = (schema: z.ZodType): Json => z.toJSONSchema(schema, { io: 'input'
  * s novým nahráním P46E; R9 stejně `railfps` (zapojený v T10), R12 `minigolf` (znovu zapojený po P68-L T3),
  * P68R T5 `buildshift` (R5, zapojený po P68R T3).
  */
-export const DIRECTOR_PENDING: ReadonlySet<string> = new Set<string>(['stunt']);
+// P83C T4: `orrery` jen do rychlé hry (jako `buildshift` v T11) – nabídka režisérovi pohne schématem odpovědi a otiskem
+// nahraných odpovědí P46E, nové nahrání je placené; dostane ho P83B.
+export const DIRECTOR_PENDING: ReadonlySet<string> = new Set<string>(['stunt', 'orrery']);
 
 /** Režimy žánru, které hrají, co slibují – jen ty režisér nabízí (P32B T4); žánr z `DIRECTOR_PENDING` žádný. */
 export const readyModes = (module: GenreModule): string[] => (DIRECTOR_PENDING.has(module.id) ? [] : module.modes.filter((mode) => module.availability(mode) === 'ready'));

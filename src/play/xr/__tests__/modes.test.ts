@@ -19,6 +19,7 @@ import { compileRecipe } from '@/play/compose/compile';
 import { stageOf } from '@/play/compose/stage-registry';
 import { ROUTE_PENDING } from '@/play/genre/classify';
 import { GENRES } from '@/play/genre/contract';
+import { GENRE_MODULES } from '@/play/genre/modules';
 import { readGameSpec } from '@/play/spec';
 
 import { playAreaOf } from '../diorama-scale';
@@ -80,7 +81,9 @@ describe('the mode comes from the world itself', () => {
     // Kostra P68 v bráně aktivace živou buňku nemá; zapojení hry ji odsud pustí a test pak buňku chce. Hra vrácená
     // za bránu po branách hry (T11 `buildshift`, T8 `stunt`) buňku v `PRESETS` drží pro nový pokus – smí ji mít.
     const seen = new Set(cells.map((cell) => genreOfWorld(cell.world)));
-    for (const genre of GENRES.filter((id) => !ROUTE_PENDING.has(id))) expect(seen.has(genre), genre).toBe(true);
+    // Kostra (`staged`, P83C `orrery` do T4) živou buňku nemá stejně jako hra v bráně; svět si hlídá test modulu.
+    const live = GENRES.filter((id) => !ROUTE_PENDING.has(id) && GENRE_MODULES[id].modes.some((mode) => GENRE_MODULES[id].availability(mode as never) !== 'staged'));
+    for (const genre of live) expect(seen.has(genre), genre).toBe(true);
     for (const genre of seen) expect(genre === null || GENRES.includes(genre), String(genre)).toBe(true);
     expect(seen.has(null)).toBe(true);
   });

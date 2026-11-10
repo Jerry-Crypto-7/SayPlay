@@ -31,6 +31,8 @@ const CLASS_OF_CONTROL: Readonly<Record<ControlId, VerbClass>> = {
   survivor: 'move_free', hole: 'move_free', steal: 'move_free', sort: 'manipulate', arrows: 'manipulate',
   // P68 T1: kostry pěti her P68 – jízda náklonem, odpal jako hod, míření a střelba, stavba a kreslení rukou.
   stunt: 'steer', minigolf: 'throw', railfps: 'aim_shoot', buildshift: 'manipulate', drawsave: 'manipulate',
+  // P83C T2: klikací simulace – klepnutí na věc.
+  orrery: 'tap_go',
 };
 
 const roleOf = (spec: GameSpecV1, ...kinds: readonly GameSpecV1['roles'][number]['kind'][]): string | null =>

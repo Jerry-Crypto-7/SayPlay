@@ -1,0 +1,485 @@
+{
+ "schema": "p83c-gate.v1",
+ "measuredAt": "2026-11-10T16:58:37.319Z",
+ "about": "P83C T5: the 10 sealed sentences (evals/play/p83/c-sentences.json → sealed), read for the first time. Quick game without a model (draftGameSpecWithMeta(text, 1)), production build, next start :3213, desktop 1280x720 Chromium d3d11. Game started by one click on empty ground at the left edge, shot A after 5 s, then three clicks on things (orrery: on the things from data-orrery-things; other games: stage centre), shot B. Blind judge: codex exec -i sheet.png in an empty mkdtemp dir, contract task.md + output schema, one at a time, web search off, reasoning effort high.",
+ "routing": {
+  "orreryClassify": 8,
+  "orreryDraft": 8,
+  "of": 10,
+  "bar": 7
+ },
+ "judge": {
+  "yes": 6,
+  "showsSentence": 6,
+  "reactsToClicks": 9,
+  "of": 10,
+  "bar": 7
+ },
+ "rows": [
+  {
+   "id": "c-seal-01",
+   "text": "show me the solar system and let me tap each planet to learn its name",
+   "expected": {
+    "things": [
+     "sun",
+     "mercury",
+     "venus",
+     "earth",
+     "mars",
+     "jupiter",
+     "saturn",
+     "uranus",
+     "neptune"
+    ],
+    "answer": "label"
+   },
+   "route": {
+    "classify": "orrery.default",
+    "draft": "orrery",
+    "things": [
+     "sun",
+     "mercury",
+     "venus",
+     "earth",
+     "mars",
+     "jupiter",
+     "saturn",
+     "uranus"
+    ],
+    "params": {
+     "things": 9,
+     "layout": 0,
+     "answer": 0,
+     "hub": 1,
+     "whole": 1
+    },
+    "title": "Show Solar System Let"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": [
+     1,
+     4,
+     8
+    ],
+    "counterBefore": "0",
+    "counterAfter": "3",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "Panel A shows a central sun surrounded by eight colored planets arranged along orbital rings, with a tap instruction and a 0/9 counter.",
+    "shows_sentence": true,
+    "reacts_to_clicks": true,
+    "reason": "The sun and orbiting planets recognizably depict the solar system. Panel B adds planet name labels and yellow highlights, and the counter increases to 3/9.",
+    "yes": true,
+    "seconds": 17
+   }
+  },
+  {
+   "id": "c-seal-02",
+   "text": "an atom with electrons spinning around the nucleus, clicking an electron makes it glow",
+   "expected": {
+    "things": [
+     "nucleus",
+     "electron"
+    ],
+    "answer": "glow"
+   },
+   "route": {
+    "classify": "orrery.default",
+    "draft": "orrery",
+    "things": [
+     "nucleus",
+     "electron"
+    ],
+    "params": {
+     "things": 7,
+     "layout": 0,
+     "answer": 1,
+     "hub": 1,
+     "whole": 2
+    },
+    "title": "Atom Electrons Spinning"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": [
+     1,
+     3,
+     6
+    ],
+    "counterBefore": "0",
+    "counterAfter": "3",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "Panel A shows a central yellow nucleus surrounded by colored electrons on concentric orbital rings.",
+    "shows_sentence": true,
+    "reacts_to_clicks": true,
+    "reason": "The atom has electrons arranged around its nucleus. Panel B adds electron labels and yellow highlight rings, and the counter rises from 0/7 to 3/7.",
+    "yes": true,
+    "seconds": 23
+   }
+  },
+  {
+   "id": "c-seal-03",
+   "text": "a clockwork machine with gears that turn faster when you tap them",
+   "expected": {
+    "things": [
+     "gear"
+    ],
+    "answer": "faster"
+   },
+   "route": {
+    "classify": "arena.collect",
+    "draft": "arena",
+    "things": null,
+    "params": null,
+    "title": "Clockwork Machine Gears Turn"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": "stage centre ×3",
+    "counterBefore": "3",
+    "counterAfter": "3",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "A robot stands in an industrial yard with glowing collectibles, a “Machine” label, and a “Collect the machines!” objective; no recognizable gears.",
+    "shows_sentence": false,
+    "reacts_to_clicks": false,
+    "reason": "Panel A shows generic collection gameplay rather than a clockwork machine with gears. Panel B shows no clear click response beyond changes consistent with idle animation.",
+    "yes": false,
+    "seconds": 21
+   }
+  },
+  {
+   "id": "c-seal-04",
+   "text": "an aquarium with a clownfish, a turtle and a jellyfish, tap one to see what it is",
+   "expected": {
+    "things": [
+     "clownfish",
+     "turtle",
+     "jellyfish"
+    ],
+    "answer": "label"
+   },
+   "route": {
+    "classify": "orrery.default",
+    "draft": "orrery",
+    "things": [
+     "clownfish",
+     "turtle",
+     "jellyfish"
+    ],
+    "params": {
+     "things": 3,
+     "layout": 3,
+     "answer": 0,
+     "hub": 0,
+     "whole": 0
+    },
+    "title": "Aquarium Clownfish Turtle Jellyfish"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": [
+     0,
+     1,
+     2
+    ],
+    "counterBefore": "0",
+    "counterAfter": "3",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "Panel A shows a teal aquarium scene with a fish, turtle, and jellyfish, an instruction naming all three, and a 0/3 counter.",
+    "shows_sentence": true,
+    "reacts_to_clicks": true,
+    "reason": "The aquarium contains all three named creatures. Panel B visibly responds with a “You did it!” screen, 565 points, and confirmation that all three were collected.",
+    "yes": true,
+    "seconds": 20
+   }
+  },
+  {
+   "id": "c-seal-05",
+   "text": "an orchestra on a stage with a violin, a drum, a trumpet and a flute that each get brighter when clicked",
+   "expected": {
+    "things": [
+     "violin",
+     "drum",
+     "trumpet",
+     "flute"
+    ],
+    "answer": "glow"
+   },
+   "route": {
+    "classify": "rhythm.default",
+    "draft": "rhythm",
+    "things": null,
+    "params": null,
+    "title": "Orchestra Stage Violin Drum"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": "stage centre ×3",
+    "counterBefore": "2",
+    "counterAfter": "0",
+    "pageErrors": [
+     "Cannot set properties of undefined (setting 'NaN')"
+    ]
+   },
+   "judge": {
+    "seen": "Panel A shows a rhythm game with colored note lanes, a character, trees, windmills, and a foreground platform.",
+    "shows_sentence": false,
+    "reacts_to_clicks": true,
+    "reason": "The requested orchestra and four instruments are missing. After the clicks, lives drop from two to zero and a “Try again!” screen appears.",
+    "yes": false,
+    "seconds": 26
+   }
+  },
+  {
+   "id": "c-seal-06",
+   "text": "a map of a little city with a school, a hospital, a park and a station that light up when touched",
+   "expected": {
+    "things": [
+     "school",
+     "hospital",
+     "park",
+     "station"
+    ],
+    "answer": "glow"
+   },
+   "route": {
+    "classify": "orrery.default",
+    "draft": "orrery",
+    "things": [
+     "school",
+     "hospital",
+     "park",
+     "station"
+    ],
+    "params": {
+     "things": 4,
+     "layout": 3,
+     "answer": 0,
+     "hub": 0,
+     "whole": 0
+    },
+    "title": "Map Little City School"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": [
+     1,
+     2,
+     3
+    ],
+    "counterBefore": "0",
+    "counterAfter": "3",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "Four isolated objects on brown ground: a blocklike building, a bedlike object, and pink and green spheres, without landmark labels or streets.",
+    "shows_sentence": false,
+    "reacts_to_clicks": true,
+    "reason": "A does not clearly depict a little city with four recognizable landmarks. B adds landmark labels, glowing yellow rings, and increases the counter from 0/4 to 3/4.",
+    "yes": false,
+    "seconds": 34
+   }
+  },
+  {
+   "id": "c-seal-07",
+   "text": "the human heart with its four chambers, tap a chamber to learn its name",
+   "expected": {
+    "things": [
+     "left atrium",
+     "right atrium",
+     "left ventricle",
+     "right ventricle"
+    ],
+    "answer": "label"
+   },
+   "route": {
+    "classify": "orrery.default",
+    "draft": "orrery",
+    "things": [
+     "chamber"
+    ],
+    "params": {
+     "things": 4,
+     "layout": 3,
+     "answer": 0,
+     "hub": 0,
+     "whole": 0
+    },
+    "title": "Human Heart Four Chambers"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": [
+     1,
+     2,
+     3
+    ],
+    "counterBefore": "0",
+    "counterAfter": "3",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "Four separate colored spheres on a brown surface, with a “Tap the chambers!” prompt and a 0/4 counter.",
+    "shows_sentence": false,
+    "reacts_to_clicks": true,
+    "reason": "The spheres do not form a recognizable human heart or identify its four chambers. After clicks, three gain glowing rings and “Chamber” labels; the counter reaches 3/4.",
+    "yes": false,
+    "seconds": 23
+   }
+  },
+  {
+   "id": "c-seal-08",
+   "text": "a volcano island where tapping the volcano, the palm trees or the lava rocks shows their names",
+   "expected": {
+    "things": [
+     "volcano",
+     "palm tree",
+     "lava rock"
+    ],
+    "answer": "label"
+   },
+   "route": {
+    "classify": "orrery.default",
+    "draft": "orrery",
+    "things": [
+     "volcano",
+     "palm tree",
+     "lava rock"
+    ],
+    "params": {
+     "things": 3,
+     "layout": 3,
+     "answer": 0,
+     "hub": 0,
+     "whole": 0
+    },
+    "title": "Volcano Island Tapping Volcano"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": [
+     0,
+     1,
+     2
+    ],
+    "counterBefore": "0",
+    "counterAfter": "3",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "Panel A shows a volcano, a palm tree, and a lava rock on reddish terrain, with a 0/3 collection counter.",
+    "shows_sentence": true,
+    "reacts_to_clicks": true,
+    "reason": "The named objects are recognizable in panel A. Panel B visibly responds with an all-three-collected victory screen and 565 points.",
+    "yes": true,
+    "seconds": 27
+   }
+  },
+  {
+   "id": "c-seal-09",
+   "text": "a weather station with a sun, a cloud, a raindrop and a snowflake, click each one to see its name",
+   "expected": {
+    "things": [
+     "sun",
+     "cloud",
+     "raindrop",
+     "snowflake"
+    ],
+    "answer": "label"
+   },
+   "route": {
+    "classify": "orrery.default",
+    "draft": "orrery",
+    "things": [
+     "sun",
+     "cloud",
+     "raindrop",
+     "snowflake"
+    ],
+    "params": {
+     "things": 4,
+     "layout": 3,
+     "answer": 0,
+     "hub": 0,
+     "whole": 0
+    },
+    "title": "Weather Station Sun Cloud"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": [
+     1,
+     2,
+     3
+    ],
+    "counterBefore": "0",
+    "counterAfter": "3",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "Panel A shows a sun, cloud, raindrop and snowflake arranged together, with a 0/4 counter and an instruction to tap weather objects.",
+    "shows_sentence": true,
+    "reacts_to_clicks": true,
+    "reason": "All four requested weather objects are recognizable. Panel B adds name labels and yellow highlights to three objects, and the counter rises to 3/4.",
+    "yes": true,
+    "seconds": 19
+   }
+  },
+  {
+   "id": "c-seal-10",
+   "text": "a music box with a ballerina, a star and a moon going around, touch them to make them spin faster",
+   "expected": {
+    "things": [
+     "ballerina",
+     "star",
+     "moon"
+    ],
+    "answer": "faster"
+   },
+   "route": {
+    "classify": "orrery.default",
+    "draft": "orrery",
+    "things": [
+     "ballerina",
+     "star",
+     "moon"
+    ],
+    "params": {
+     "things": 3,
+     "layout": 0,
+     "answer": 1,
+     "hub": 0,
+     "whole": 0
+    },
+    "title": "Music Box Ballerina Star"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": [
+     0,
+     1,
+     2
+    ],
+    "counterBefore": "0",
+    "counterAfter": "3",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "Three objects appear on concentric circular tracks, including a star; text names the ballerina, star, and moon. The counter reads 0/3.",
+    "shows_sentence": true,
+    "reacts_to_clicks": true,
+    "reason": "The named objects appear in a circular arrangement. After clicks, a completion screen reports all three collected and awards 565 points, showing a clear response.",
+    "yes": true,
+    "seconds": 29
+   }
+  }
+ ]
+}

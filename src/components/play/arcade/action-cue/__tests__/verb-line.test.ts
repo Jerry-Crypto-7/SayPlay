@@ -20,6 +20,8 @@ describe('verbLine', () => {
     expect(verbLine(spec('move_free', { kind: 'collect', role: 'item' }, [{ id: 'item', kind: 'collectible', label: 'pearl' }]))).toBe('Grab the pearls!');
     // P68 T11: zákazníci v obchodě se obsluhují, ne sbírají.
     expect(verbLine(spec('buildshift', { kind: 'collect', role: 'customer' }, [{ id: 'customer', kind: 'collectible', label: 'robot' }]))).toBe('Serve the robots!');
+    // P83C T7: klikací simulace nic nesbírá – řádek řekne, co klepnutí udělá.
+    expect(verbLine({ ...spec('orrery', { kind: 'collect', role: 'orrery0' }, [{ id: 'orrery0', kind: 'target', label: 'gear' }]), controlParams: { tuning: { answer: 'faster' } } } as unknown as GameSpecV1)).toBe('Tap them to make them spin faster!');
     expect(verbLine(spec('throw', { kind: 'defeat_targets', role: 'target' }, [{ id: 'target', kind: 'target', label: 'passing ship' }]))).toBe('Throw at the passing ships!');
     expect(verbLine(spec('duel', { kind: 'reach', role: 'finish' }, [{ id: 'rival', kind: 'hazard', label: 'frost giants' }]))).toBe('Beat the frost giants!');
   });
