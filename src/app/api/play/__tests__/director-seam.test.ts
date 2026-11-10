@@ -400,7 +400,8 @@ describe('kontrola před placeným čtením počítá celou cenu režiséra (P71
     stubEnv(ASTRA);
     const worst = upstreamBranch(upstreamConfigFromEnv(process.env)!).worstCaseUsd({ prompt: '', request: buildCompactRequest('', null) });
     // Zbývá víc než výstupní část (8000 × 50 USD/Mtok = 0,40 USD), méně než celá cena.
-    expect(worst).toBeGreaterThan(0.8);
+    // Od P83B T2 (schéma jen s receptem) je vstup kratší: celá cena ~0,60 USD, dřív přes 0,80.
+    expect(worst).toBeGreaterThan(0.5);
     const spend = 60 - (0.4 + worst) / 2;
     const booked = await processSpendCap().reserve(spend);
     if (!booked.ok) throw new Error(`rezervace měla projít: ${booked.reason}`);
