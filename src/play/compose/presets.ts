@@ -63,7 +63,10 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
  * P54C T12 and P66 T12 made the last ones live; the table stays for a genre whose own task has to fall back.
  * P68 T1 stages its five games here; each P68-I activation task moves its own line to `PRESETS`.
  */
-export const STAGED_PRESETS: Readonly<Record<string, Recipe>> = {};
+export const STAGED_PRESETS: Readonly<Record<string, Recipe>> = {
+  // P83C T2: tap-to-explore scene; P83C T4 moves the cell to `PRESETS` when sentences route to it.
+  'orrery.default': { move: 'stationary', actions: ['explore'], objective: 'score', threats: [] },
+};
 
 /**
  * What the sentence asked for, passed by `assemble` (P45B T9): its words and the requested

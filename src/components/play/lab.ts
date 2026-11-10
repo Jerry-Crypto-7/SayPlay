@@ -155,6 +155,7 @@ const HOW_BY_GENRE: Readonly<Record<GenreId, readonly [string, string]>> = {
   railfps: ['You ride along a rail – turn to aim and tap to shoot.', 'An enemy that reaches you takes a life.'],
   buildshift: ['Spend your coins on ovens, counters and shelves, then open the shop.', 'Send your staff between them to serve each customer what they want.'],
   drawsave: ['Draw lines to shield your character.', 'Things fall from above and bounce off your lines.'],
+  orrery: ['Tap a thing to see its name and wake it.', 'Tap it again and it glows, spins or grows more.'],
 };
 
 const isGenre = (id: string | undefined): id is GenreId => (GENRES as readonly string[]).includes(id ?? '');
