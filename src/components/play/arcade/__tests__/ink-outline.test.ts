@@ -11,8 +11,11 @@ import {
   BackSide,
   Bone,
   BoxGeometry,
+  BufferGeometry,
   Float32BufferAttribute,
   Group,
+  InterleavedBuffer,
+  InterleavedBufferAttribute,
   Mesh,
   MeshStandardMaterial,
   PerspectiveCamera,
@@ -163,7 +166,7 @@ describe('ink outline on the hero and foes (P36C T6)', () => {
 });
 
 describe('scenery outline goes on visible models only (P81 T5)', () => {
-  const solid = (geometry = new BoxGeometry(1, 2, 1)) => new Mesh(geometry, new MeshStandardMaterial());
+  const solid = (geometry: BufferGeometry = new BoxGeometry(1, 2, 1)) => new Mesh(geometry, new MeshStandardMaterial());
 
   it('outlines a solid prop, once, with ink and no shadow', () => {
     const prop = solid();
@@ -200,6 +203,17 @@ describe('scenery outline goes on visible models only (P81 T5)', () => {
     const body = solid();
     foe.add(new Group().add(body));
     expect(outlinable(body)).toBe(false);
+  });
+
+  it('welds an interleaved model (one-buffer GLB) without throwing (P83E T3)', () => {
+    const plain = new BoxGeometry(1, 2, 1);
+    const position = plain.getAttribute('position');
+    const packed = new InterleavedBuffer(new Float32Array(position.count * 4), 4);
+    for (let index = 0; index < position.count; index += 1) packed.array.set([position.getX(index), position.getY(index), position.getZ(index)], index * 4);
+    const geometry = new BufferGeometry().setAttribute('position', new InterleavedBufferAttribute(packed, 3, 0)).setIndex(plain.index);
+    const prop = solid(geometry);
+    expect(inkMeshes(prop, 'scenery')).toBe(1);
+    expect(hullsOf(prop)[0]!.geometry.getAttribute('position').count).toBeGreaterThan(0);
   });
 
   it('outlines only the prop itself, not a nested see-through child', () => {
