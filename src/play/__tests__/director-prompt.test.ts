@@ -144,8 +144,8 @@ describe('director prompt', () => {
 
   // P54C T14: odpověď smí jmenovat živé žánry pruhů oběma tvary. T14b: i žánry fáze 3 – kostra už žádná nezbyla.
   it('accepts the eight new genres as a recipe and as a legacy GenreSpec', () => {
-    // Brána aktivace drží jen kostry P68 (T1) a klikací simulaci P83C (T4, režisér v P83B); jinou kostru režisér nemá.
-    expect([...DIRECTOR_PENDING].filter((genre) => ![...P68_GENRES, 'orrery'].includes(genre))).toEqual([]);
+    // Brána aktivace drží jen kostry P68 (T1), klikací simulaci P83C (T4, režisér v P83B) a obchod P83E; jinou kostru režisér nemá.
+    expect([...DIRECTOR_PENDING].filter((genre) => ![...P68_GENRES, 'orrery', 'shop'].includes(genre))).toEqual([]);
     const variants = (GENRE_ANSWER_SCHEMA.properties as Record<string, { anyOf: { properties: Record<string, { enum?: unknown[] }> }[] }>).spec.anyOf;
     const genres = variants.flatMap((variant) => variant.properties.genre?.enum ?? []);
     const content = { hero: 'fox', setting: 'forest', unmet: [] };

@@ -81,7 +81,8 @@ const toJson = (schema: z.ZodType): Json => z.toJSONSchema(schema, { io: 'input'
  */
 // P83C T4: `orrery` jen do rychlé hry (jako `buildshift` v T11) – nabídka režisérovi pohne schématem odpovědi a otiskem
 // nahraných odpovědí P46E, nové nahrání je placené; dostane ho P83B.
-export const DIRECTOR_PENDING: ReadonlySet<string> = new Set<string>(['stunt', 'orrery']);
+// P83E: `shop` ze stejného důvodu – s ním prompt režiséra přerostl své meze a otisk nahraných odpovědí neseděl.
+export const DIRECTOR_PENDING: ReadonlySet<string> = new Set<string>(['stunt', 'orrery', 'shop']);
 
 /** Režimy žánru, které hrají, co slibují – jen ty režisér nabízí (P32B T4); žánr z `DIRECTOR_PENDING` žádný. */
 export const readyModes = (module: GenreModule): string[] => (DIRECTOR_PENDING.has(module.id) ? [] : module.modes.filter((mode) => module.availability(mode) === 'ready'));
