@@ -204,17 +204,34 @@ export function isTransient(outcome: UpgradeOutcome): boolean {
   return outcome.status === 'draft-final' && !SENTENCE_VERDICTS.has(outcome.reason);
 }
 
+/**
+ * Zámek pokusu v úložišti (živě 10. 11.): mapa prací je jen v paměti procesu a Vercel pošle POST věty a dotaz
+ * na upgrade často na dvě instance – každá pak zaplatila vlastní režii a vzala volajícímu dvě denní volání.
+ * Hodnota leží pod klíčem verdiktu: `RUNNING` po dobu běhu (strop trvání routy). Přechodný konec zámek uvolní
+ * (důvod na `RELEASE_TTL_SECONDS`, nikdo ho nečte), takže další dotaz dostane vlastní pokus jako dřív (R8, R10, R13).
+ */
+export const UPGRADE_RUNNING = 'RUNNING';
+export const UPGRADE_RUNNING_TTL_SECONDS = 300;
+const RELEASE_TTL_SECONDS = 1;
+
+/** Pokus běží v jiné instanci: dotaz dostane `pending` a nic nezaplatí. Porovnává se identitou. */
+const RUNNING_ELSEWHERE: UpgradeOutcome = { status: 'draft-final', reason: 'FAILED' };
+
 async function runUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, onReading: (versionId: string, fresh: boolean) => void): Promise<UpgradeOutcome> {
   const draftId = draft.version.versionId;
   const existing = await publishedUpgrade(versions, draft, request.sentence);
   if (existing !== null) return { status: 'ready', versionId: existing };
-  // Čte se jen verdikt o větě: záznam z buildu před revizí R10 (nebo z jiného
-  // nasazení nad týmž prefixem) může nést přechodný důvod.
   const remembered = await versions.upgradeVerdict(draftId);
   if (remembered !== null && SENTENCE_VERDICTS.has(remembered as DraftFinalReason)) return { status: 'draft-final', reason: remembered as DraftFinalReason };
+  if (remembered === UPGRADE_RUNNING) return RUNNING_ELSEWHERE;
+  // Klíč s přechodným důvodem (uvolněný zámek, starší build) se přepíše – `claim` by na něm jinak selhal.
+  const claimed = remembered === null
+    ? await versions.claimUpgradeVerdict(draftId, UPGRADE_RUNNING, UPGRADE_RUNNING_TTL_SECONDS)
+    : (await versions.rememberUpgradeVerdict(draftId, UPGRADE_RUNNING, UPGRADE_RUNNING_TTL_SECONDS), true);
+  if (!claimed) return RUNNING_ELSEWHERE;
 
   const outcome = await directUpgrade(versions, draft, request, getDirector, onReading);
-  if (outcome.status === 'draft-final' && !isTransient(outcome)) await versions.rememberUpgradeVerdict(draftId, outcome.reason, DRAFT_FINAL_TTL_SECONDS);
+  if (outcome.status === 'draft-final') await versions.rememberUpgradeVerdict(draftId, outcome.reason, isTransient(outcome) ? RELEASE_TTL_SECONDS : DRAFT_FINAL_TTL_SECONDS);
   return outcome;
 }
 
@@ -707,7 +724,14 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
     console.warn(`[play] after() unavailable, upgrade of ${draftId} runs unguarded`);
     void remembered;
   }
-  return job.done;
+  return job.done.then((outcome) => (outcome === RUNNING_ELSEWHERE ? pendingElsewhere(versions, draftId, request.startedAt) : outcome));
+}
+
+/** `pending` pokusu z jiné instance; hru ze čtení, kterou ta už publikovala, přečte z úložiště. */
+async function pendingElsewhere(versions: VersionStore, draftId: string, startedAt: number): Promise<UpgradeStatus> {
+  const children = await Promise.all((await versions.childrenOf(draftId)).map((childId) => versions.get(childId)));
+  const reading = children.find((child) => child?.relation === 'reading' && child.version.parentId === draftId);
+  return reading === undefined || reading === null ? pendingSince(startedAt) : { ...pendingSince(startedAt), reading: { versionId: reading.version.versionId } };
 }
 
 /** Hra ze čtení návrhu (P58D T1), jak ji zná práce v procesu; `null` = není, nebo o ní proces neví. */
