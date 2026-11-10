@@ -770,6 +770,7 @@ function PromptSpot({ session, surface }: { readonly session: ArcadeSession; rea
       setStyleVar(host, '--_hero-left', `${(spot.left * 100).toFixed(1)}%`);
       setStyleVar(host, '--_hero-right', `${(spot.right * 100).toFixed(1)}%`);
       setStyleVar(host, '--_prompt-mid', `${(((bars.top + bars.bottom) / 2 / stage.height) * 100).toFixed(1)}%`);
+      setStyleVar(host, '--_prompt-band-top', `${(((bars.top + PROMPT_GAP_PX) / stage.height) * 100).toFixed(1)}%`);
       setStyleVar(host, '--_prompt-scale', scale === 1 ? '1' : scale.toFixed(3));
       if (host.dataset.promptAt !== at) host.dataset.promptAt = at;
     });
@@ -779,28 +780,34 @@ function PromptSpot({ session, surface }: { readonly session: ArcadeSession; rea
 
 /** Pod tímhle zmenšením se karta nad ani pod hrdinou nečte (desktop, rytíř přes půl výšky: 0,3 – P58C T6). */
 const MIN_PROMPT_SCALE = 0.8;
+/** Telefon na výšku (`max-width: 480px` v `play.css`): karta má nejmenší písmo 14 px a každé zmenšení ho srazí pod to. */
+const PHONE_STAGE_PX = 480;
 
 const fit = (size: number, room: number): number => (size > room ? Math.max(room, 0) / size : 1);
 
 /**
  * Kam s úvodní kartou (`PromptSpot`): nad, nebo pod hrdinu, kde je víc místa. Kde by se tam musela
  * zmenšit pod `MIN_PROMPT_SCALE`, jde vedle hrdiny na širší stranu, mezi lišty HUD – na širokém
- * desktopu je místa vedle dost, na telefonu ne a karta zůstane nad, nebo pod ním zmenšená.
- * Hrdina v podílech stage od levého horního rohu, lišty a karta v px.
+ * desktopu je místa vedle dost a karta zůstane nad, nebo pod ním zmenšená, je-li to větší.
+ * Na telefonu (P83A T5) se karta nezmenšuje: kde se nad ani pod hrdinu celá nevejde, sedne pod horní
+ * lištu HUD (`top`) a hrdinu shora překryje – rytíř na 390 px ji dřív stáhl na 0,21 a písmo na 2,7 px.
+ * Zmenší se jen tehdy, když se nevejde ani mezi lišty. Hrdina v podílech stage od levého horního rohu,
+ * lišty a karta v px.
  */
 export function promptPlacement(
   hero: { readonly top: number; readonly bottom: number; readonly left: number; readonly right: number },
   stage: { readonly width: number; readonly height: number },
   bars: { readonly top: number; readonly bottom: number },
   card: { readonly width: number; readonly height: number },
-): { readonly at: 'above' | 'below' | 'left' | 'right'; readonly scale: number } {
+): { readonly at: 'above' | 'below' | 'left' | 'right' | 'top'; readonly scale: number } {
   const above = hero.top * stage.height - bars.top - 2 * PROMPT_GAP_PX;
   const below = bars.bottom - hero.bottom * stage.height - 2 * PROMPT_GAP_PX;
   const vertical = { at: above >= below ? 'above' : 'below', scale: fit(card.height, Math.max(above, below)) } as const;
+  const band = bars.bottom - bars.top - 2 * PROMPT_GAP_PX;
+  if (stage.width <= PHONE_STAGE_PX) return vertical.scale === 1 ? vertical : { at: 'top', scale: fit(card.height, band) };
   if (vertical.scale >= MIN_PROMPT_SCALE) return vertical;
   const left = hero.left * stage.width - 2 * PROMPT_GAP_PX;
   const right = (1 - hero.right) * stage.width - 2 * PROMPT_GAP_PX;
-  const band = bars.bottom - bars.top - 2 * PROMPT_GAP_PX;
   const beside = { at: left >= right ? 'left' : 'right', scale: Math.min(fit(card.width, Math.max(left, right)), fit(card.height, band)) } as const;
   return beside.scale > vertical.scale ? beside : vertical;
 }
