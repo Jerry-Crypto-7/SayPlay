@@ -1,6 +1,6 @@
 {
  "schema": "p83e-sentences.v1",
- "note": "P83E T1: written before any shop code. `dev` tunes routing and reading; `sealed` is opened once by the T5 gate and nothing is tuned on it; `mustNot` must never route to shop (coin collecting, timed sorting, stealing, shop management stay in their own game types).",
+ "note": "P83E T1: written before any shop code. `dev` tunes routing and reading; `sealed` is opened once by the T5 gate and nothing is tuned on it; `mustNot` must never route to shop (coin collecting, timed sorting, stealing, shop management stay in their own game types). `sealed2` (P83E T8) was written by a separate agent before the T7 fixes and is opened once by the second gate; nothing is tuned on it.",
  "design": [
   "Shop = N things from the sentence on a shelf, one drop place (counter with a till, a scale, a pot or cauldron) and a running total.",
   "Every thing carries a number tag from the seed: a price in steps of 0.50 (shown as $), a weight 1-9 (kg) or a plain value 1-9 (points, pages, magic).",
@@ -46,6 +46,18 @@
   "a vegetable market where I put vegetables in the basket and add up how much they cost",
   "a dragon brings gems to the treasure scale and counts their total value",
   "a school canteen where I put food on a tray and the total cost is shown at the end"
+ ],
+ "sealed2": [
+  "a flower shop where I put five bunches of roses on the counter and see how much they cost",
+  "a fisherman carries four crabs from his boat to the harbour scale and adds up their weight",
+  "I fill a toolbox at the hardware store with hammers, nails and paint until the bill is exactly 18 dollars",
+  "at the airport I lift six suitcases onto the baggage belt and the screen shows how heavy they are all together",
+  "I grab three pieces of sports gear from the shelf, take them to the cash desk and pay the total",
+  "a garden centre where I drop seed packets into the wheelbarrow and count how many seeds I have altogether",
+  "a crab carries seashells into a bucket on the beach and every shell adds its points to the total",
+  "a stationery shop where the till adds up the price of each notebook, pen and ruler I put down",
+  "a camping game where I carry logs to the campfire until the warmth adds up to exactly 40",
+  "an astronaut brings seven moon rocks back to the rover and the display shows their total weight"
  ],
  "mustNot": [
   "collect all the gold coins in a maze before time runs out",
