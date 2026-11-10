@@ -133,6 +133,9 @@ test('shop: the bot carries three items to the counter and the HUD total equals 
   await expect(page.getByTestId('play-postrun')).toContainText('You did it!');
   // Karta výsledku ukáže součet všech tří cenovek.
   await expect(page.getByTestId('play-postrun')).toContainText(tagText(allTags, 'price'));
+  // Řádek statistik vyjíždí animací (`play-stat-in`) – snímek až po ní, jinak součet na kartě chybí.
+  const totalStat = page.locator('.play-result-stats > .sp-stat', { hasText: 'total' });
+  await expect.poll(() => totalStat.evaluate((stat) => getComputedStyle(stat).opacity), { timeout: 5_000 }).toBe('1');
   await shot('result');
   expect(errors, errors.join('\n')).toEqual([]);
 });
@@ -174,6 +177,8 @@ test('shop: the live game runs smoothly while items are carried (FPS, P83E T3)',
     if (finger !== null) await finger.tap(Math.round(spot.x), Math.round(spot.y + 20));
     else await page.mouse.click(spot.x, spot.y + 20);
     await page.waitForTimeout(1_200);
+    // Živá hra (ne ruční tiky, kde scéna kreslí minulý tik) před poslední věcí: položené věci leží na pultu.
+    if (slot === 1) await page.screenshot({ path: join(SHOTS, `${info.project.name}-live.png`) });
   }
   const gaps = (await measuring).slice(1).sort((a, b) => a - b);
   const median = 1000 / (gaps[Math.floor(gaps.length / 2)] as number);

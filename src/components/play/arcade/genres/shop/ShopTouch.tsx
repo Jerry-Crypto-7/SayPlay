@@ -108,11 +108,27 @@ export function ShopTouch({ session }: GenreTouchProps) {
         tag.style.top = `${(y * 100).toFixed(2)}%`;
         tag.style.visibility = 'visible';
         tag.style.background = state === SHOP_STATE.placed ? color['mint-deep'] : color.paper;
+        tag.style.transform = TAG.transform as string;
         tag.dataset.state = String(state);
         const was = before[slot];
         if (was !== undefined && was !== SHOP_STATE.placed && state === SHOP_STATE.placed) fly(slot, x, y);
       });
       before = spots.map((spot) => spot[2]);
+      // Věci na pultu leží hustěji, než je cenovka široká (telefon): cenovky položených věcí jdou do řad nad sebou,
+      // každá do nejnižší řady, kde nepřekryje souseda.
+      const width = surface.clientWidth;
+      const rows: number[] = [];
+      spots
+        .map((spot, slot) => ({ x: spot[0] * width, placed: spot[2] === SHOP_STATE.placed, tag: tags.current[slot] }))
+        .filter((entry) => entry.placed && entry.tag != null)
+        .sort((a, b) => a.x - b.x)
+        .forEach(({ x, tag }) => {
+          const half = tag!.offsetWidth / 2 + 2;
+          let row = rows.findIndex((right) => right <= x - half);
+          if (row < 0) row = rows.push(0) - 1;
+          rows[row] = x + half;
+          if (row > 0) tag!.style.transform = `translate(-50%, calc(${String(-100 * (row + 1))}% - ${String(row * 3)}px))`;
+        });
     };
     frame = requestAnimationFrame(paint);
 
