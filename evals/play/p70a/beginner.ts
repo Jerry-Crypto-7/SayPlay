@@ -57,9 +57,15 @@ export interface GenreSummary {
   readonly perfectWinRate: number | null;
 }
 
+/**
+ * Žánry P83 (klikací simulace, obchod se součtem) přišly až po měření P70A: `before.json` ani `after.json` je nemají
+ * a začátečníka u nich měří jejich vlastní brány (`evals/play/p83/`). Měření P70A se kvůli nim nepřepisuje.
+ */
+const AFTER_P70A: ReadonlySet<GenreId> = new Set<GenreId>(['orrery', 'shop']);
+
 /** Žánry, které rychlá hra může dát: ne kostra (`staged` ve všech režimech) a ne brána aktivace. */
 export function playableGenres(): GenreId[] {
-  return GENRES.filter((genre) => !ROUTE_PENDING.has(genre) && (GENRE_MODES[genre] as readonly string[]).some((mode) => (GENRE_MODULES[genre] as GenreModule).availability(mode as never) !== 'staged'));
+  return GENRES.filter((genre) => !AFTER_P70A.has(genre) && !ROUTE_PENDING.has(genre) &&(GENRE_MODES[genre] as readonly string[]).some((mode) => (GENRE_MODULES[genre] as GenreModule).availability(mode as never) !== 'staged'));
 }
 
 interface Labelled { readonly text: string; readonly best: string; readonly sets: readonly { readonly set: string; readonly id: string }[] }
