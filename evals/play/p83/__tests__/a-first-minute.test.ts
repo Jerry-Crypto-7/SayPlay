@@ -19,7 +19,9 @@ import { FIRST_MINUTE } from '@/play/compose/compile';
 import { JUDGE_FIVE, WIN_WITHIN_S } from '../a-judge5';
 import { JUDGE_SENTENCES, SEEDS, quickWorld } from '../a-repro';
 
-const UNCOUNTED = [JUDGE_FIVE[2], JUDGE_FIVE[4]] as const;
+// Věta o sluneční soustavě (`JUDGE_FIVE[2]`) jde od P83C do klikací simulace, věta o obchodě od P83E do obchodu –
+// první minutu arény tu drží věty, které v aréně zůstaly.
+const UNCOUNTED = [JUDGE_FIVE[4]] as const;
 const RACCOON = 'A raccoon scrubs a mountain of dirty dishes in a busy diner kitchen.';
 
 const livesOf = (world: ArcadeWorld): number => instantiate(world)[HEADER.counters + COUNTER.health] as number;
@@ -72,7 +74,7 @@ describe.each(UNCOUNTED)('"%s"', (sentence) => {
 });
 
 it('a sentence with a count keeps 3 lives', () => {
-  expect(livesOf(quickWorld(JUDGE_SENTENCES[1]))).toBe(3);
+  expect(livesOf(quickWorld(JUDGE_SENTENCES[0]))).toBe(3);
 });
 
 // u34 sady P37A (`families.test.ts`): sprška přivedla bosse dřív než vlnu s pronásledovatelem, ten s bossem zůstal
