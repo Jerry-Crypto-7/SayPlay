@@ -20,7 +20,7 @@ import { compileRecipe } from '../compile';
 // pomalá ruka má prohrát (`railfps.test.ts`, herní brána `weak-loses`).
 // P83E T4: obchod taky 20/20 – „polož N“ je úloha počítání, ne reflexu (ťuk na věc, hrdina dojde sám); prohru drží
 // hodiny (nečinnost prohraje, `arcade/pieces/__tests__/shop.test.ts`) a u trefy do součtu životy.
-// P83C: klikací simulace taky 20/20 – ťuká se na věci, reflex nehraje; prohru drží hodiny při nečinnosti.
+// P83C: klikací simulace taky 20/20 – ťuká se na věci, reflex nehraje a prohrát v ní nejde.
 const OWN_DIFFICULTY: ReadonlySet<string> = new Set(['hole.default', 'steal.default', 'sort.default', 'arrows.default', 'buildshift.default', 'stunt.default', 'minigolf.default', 'drawsave.default', 'railfps.default', 'shop.default', 'orrery.default']);
 
 it('pins measured novice and intermediate bounds for every current live recipe', () => {
