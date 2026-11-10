@@ -1449,7 +1449,7 @@
         "objective": "collect",
         "threats": []
       },
-      "specHash": "eeeff00ae8074221a8ed13c27c864992906e3d88c06759b30758734333cef52e",
+      "specHash": "302c6f652bc8d0fdacd5ffe498793921963cea38cb326cd2add38d880638dfa5",
       "profiles": {
         "novice": {
           "runs": 20,
