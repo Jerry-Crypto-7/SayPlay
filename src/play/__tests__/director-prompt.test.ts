@@ -18,7 +18,7 @@ import { EMISSION_MODEL } from '@/model/prompt';
 import { goldenPrompts } from '../../../evals/play/golden';
 import runnerFixture from '../arcade/__fixtures__/runner.json';
 import shooterFixture from '../arcade/__fixtures__/shooter.json';
-import { DIRECTOR_PENDING, GENRE_ANSWER_SCHEMA, readyModes, recipeAnswerSchema } from '../director/answer-schema';
+import { DIRECTOR_PENDING, GENRE_ANSWER_SCHEMA, RECIPE_ANSWER_SCHEMA, readyModes, recipeAnswerSchema } from '../director/answer-schema';
 import { buildCompactRequest } from '../director/compact';
 import { COURSE_LINE, DIRECTOR_PROMPT_VERSION, GENRE_PITCH, GENRE_RULES, GENRE_SHAPE_LINE, buildDirectorRequest, checklistLines, compactSchema, directorSystemPrompt, renderRegistry } from '../director/prompt';
 import { readDirectorAnswer } from '../director/read';
@@ -41,7 +41,7 @@ describe('director prompt', () => {
     expect(request.model).toBe(EMISSION_MODEL);
     expect(request.system.startsWith(GENRE_RULES)).toBe(true);
     expect(request.system).toContain(GENRE_SHAPE_LINE);
-    expect(request.outputSchema).toBe(GENRE_ANSWER_SCHEMA);
+    expect(request.outputSchema).toBe(RECIPE_ANSWER_SCHEMA);
     expect(request.user).toContain('Starting point (a keyword guess, replace what it got wrong): {"genre":');
     // P37A T8: mezi větou a výchozím bodem stojí kontrolní seznam věty a hlavní sloveso – podle nich brána upgradu AI verzi pustí.
     const checklist = 'Checklist: hero "wizard"; role "candle"; setting "haunted castle".\nMain verb: "light" – genre quest, mode spatial.';

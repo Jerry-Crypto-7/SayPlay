@@ -125,10 +125,10 @@ describe('P70B T4a: codex gets the recipe-only schema', () => {
     expect(legacy.filter((genre) => !recipeGenres.has(genre))).toEqual([]);
   });
 
-  it('rides on both director requests while the other providers keep the full schema', () => {
+  // P83B: placená cesta (OpenAI API) dostane totéž – plné schéma stálo 22–27 s a 0,55 USD na volání.
+  it('rides on both director requests for every provider', () => {
     for (const request of [buildCompactRequest('a race car speeds around the track', null), buildDirectorRequest('a race car speeds around the track', null)]) {
-      expect(request.outputSchema).toBe(GENRE_ANSWER_SCHEMA);
-      expect(request.codexOutputSchema).toBe(RECIPE_ANSWER_SCHEMA);
+      expect(request.outputSchema).toBe(RECIPE_ANSWER_SCHEMA);
     }
   });
 });

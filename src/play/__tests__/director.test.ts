@@ -25,7 +25,7 @@ import { loadRapier } from '../arcade/physics/world';
 import { verifyArcade } from '../arcade/verify';
 import { GENRE_ANSWERS, answerFixture, genreAnswer } from '../director/__fixtures__';
 import { answered, failed, fakeBranch, type FakeBranch } from '../director/__fixtures__/branch';
-import { GENRE_ANSWER_SCHEMA } from '../director/answer-schema';
+import { RECIPE_ANSWER_SCHEMA } from '../director/answer-schema';
 import { directorCache, directorCacheFromEnv, directorKey } from '../director/cache';
 import { blockingIssues, critique } from '../director/critic';
 import { direct, type DirectedGame } from '../director/index';
@@ -203,7 +203,7 @@ describe('direct – the model answers', () => {
     const request = branch.calls[0]!.request;
     expect(request.user).toContain(SENTENCE);
     expect(request.user).toContain(`Starting point (a keyword guess, replace what it got wrong): ${JSON.stringify(draftGameSpecWithMeta(SENTENCE).genre)}`);
-    expect(request.outputSchema).toBe(GENRE_ANSWER_SCHEMA);
+    expect(request.outputSchema).toBe(RECIPE_ANSWER_SCHEMA);
     expect(game.ms).toBeGreaterThan(0);
   });
 
