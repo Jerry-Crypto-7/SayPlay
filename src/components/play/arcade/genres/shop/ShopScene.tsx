@@ -56,14 +56,16 @@ const lerp = (from: number, to: number, alpha: number): number => from + (to - f
 /**
  * Nádoba z věty (P83E T7) na stole místo pultu: model z knihovny (tác je z geometrie), jeho kvádr (m) a jak věci
  * na ní leží – `inner` polovina šíře, do které se položené věci stáhnou, `lift` výška dna nad deskou, `size` zmenšení
- * položené věci. Vozík stojí na zemi místo stolu, jeho koš je ve výšce pultu. Jen obraz – jádro má jedno místo.
+ * položené věci, `stagger` střídavý posun vpřed/vzad (hromádka místo řady). Vozík stojí na zemi místo stolu, jeho koš
+ * je ve výšce pultu. Jen obraz – jádro má jedno místo. Model se vejde do kvádru celý: mísu a košík omezuje výška
+ * (při `h` 0,7–0,8 vyšly ~0,6 m široké a věc ležela na okraji), váha má ~1 m – snímky T7 `D:/tmp/p83e/t7/sheets`.
  */
-const SPOT_LOOK: Readonly<Record<Exclude<ShopSpot, 'counter'>, { readonly model: string | null; readonly w: number; readonly h: number; readonly d: number; readonly inner: number; readonly lift: number; readonly size: number }>> = {
-  bowl: { model: 'gen3d-fruit-bowl', w: 2.2, h: 0.7, d: 1.1, inner: 0.45, lift: 0.08, size: 0.7 },
-  tray: { model: null, w: 2.6, h: 0.08, d: 1.0, inner: 1.05, lift: 0.06, size: 0.75 },
-  basket: { model: 'gen3d-shopping-basket', w: 2.2, h: 0.8, d: 1.1, inner: 0.45, lift: 0.08, size: 0.7 },
-  scale: { model: 'gen3d-deli-scale', w: 2.2, h: 1.0, d: 1.1, inner: 0.4, lift: 0.35, size: 0.7 },
-  cart: { model: 'shopping-cart', w: 2.6, h: 1.4, d: 1.4, inner: 0.45, lift: 0, size: 0.7 },
+const SPOT_LOOK: Readonly<Record<Exclude<ShopSpot, 'counter'>, { readonly model: string | null; readonly w: number; readonly h: number; readonly d: number; readonly inner: number; readonly lift: number; readonly size: number; readonly stagger: number }>> = {
+  bowl: { model: 'gen3d-fruit-bowl', w: 2.2, h: 1.0, d: 1.2, inner: 0.15, lift: 0.5, size: 0.4, stagger: 0.1 },
+  tray: { model: null, w: 2.6, h: 0.08, d: 1.0, inner: 1.05, lift: 0.06, size: 0.75, stagger: 0 },
+  basket: { model: 'gen3d-shopping-basket', w: 2.2, h: 1.1, d: 1.2, inner: 0.15, lift: 0.3, size: 0.4, stagger: 0.1 },
+  scale: { model: 'gen3d-deli-scale', w: 2.2, h: 1.0, d: 1.1, inner: 0.28, lift: 0.5, size: 0.45, stagger: 0.12 },
+  cart: { model: 'shopping-cart', w: 2.6, h: 1.4, d: 1.4, inner: 0.4, lift: 0, size: 0.55, stagger: 0.15 },
 };
 /** Půlka šíře řady položených věcí na pultu (m) pro `count` věcí (`counterSpot`). */
 const rowHalf = (count: number): number => m(((count - 1) * SHOP_LAYOUT.counterSlot) / 2);
@@ -197,7 +199,7 @@ export function ShopScene({ session, cast, surface, scene: look }: ShopSceneProp
       if (group === null || group === undefined) return;
       const inside = spotLook !== null && targetStateOf(state, body) === SHOP_STATE.placed;
       const x = -m(at(body, BODY.x)) * (inside ? squeeze : 1);
-      group.position.set(x, m(at(body, BODY.y)) + (inside ? spotLook.lift : 0), m(at(body, BODY.z)));
+      group.position.set(x, m(at(body, BODY.y)) + (inside ? spotLook.lift : 0), m(at(body, BODY.z)) + (inside ? (slot % 2 === 0 ? -1 : 1) * spotLook.stagger : 0));
       group.scale.setScalar(inside ? spotLook.size : 1);
     });
 
@@ -248,7 +250,7 @@ export function ShopScene({ session, cast, surface, scene: look }: ShopSceneProp
       .map((body, slot) => {
         const group = itemGroups.current[slot];
         if (group === null || group === undefined) return '0,0,0';
-        probe.copy(group.position).setY(group.position.y + ITEM + 0.12).project(camera);
+        probe.copy(group.position).setY(group.position.y + ITEM * group.scale.y + 0.12).project(camera);
         return `${((probe.x + 1) / 2).toFixed(4)},${((1 - probe.y) / 2).toFixed(4)},${String(targetStateOf(state, body))}`;
       })
       .join(';');
