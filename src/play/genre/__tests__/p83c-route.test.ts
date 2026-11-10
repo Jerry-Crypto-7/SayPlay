@@ -52,6 +52,28 @@ describe('P83C routing of explore-and-touch sentences', () => {
     expect(orreryGenre.draftFill('a toy train with five wagons circling a track, click a wagon to light it up', null).params).toMatchObject({ things: 5, layout: 0, answer: 0, hub: 0, whole: 0 });
   });
 
+  // T7 (první brána): hodinový stroj spadl do sbírání („turn faster when you tap them“), orchestr do rytmu („drum“).
+  it('a comparative answer before a tap on a pronoun is explore and beats another game’s cue word', () => {
+    expect(top('a clockwork machine with gears that turn faster when you tap them')).toBe('orrery');
+    expect(top('an orchestra on a stage with a violin, a drum, a trumpet and a flute that each get brighter when clicked')).toBe('orrery');
+    expect(top('a drum kit with a drum, a cymbal and a guitar that light up when you tap them')).toBe('orrery');
+    expect(top('a toy robot, click one and it spins faster')).toBe('orrery');
+    // Klepnutí na obrazovku věc nejmenuje: hra zůstává svému typu.
+    expect(top('a car that goes faster when you tap the screen')).not.toBe('orrery');
+  });
+
+  it('the heart names its four parts, a city keeps the buildings the sentence lists', () => {
+    const heart = orreryGenre.draftFill('the human heart with its four chambers, tap a chamber to learn its name', null);
+    const heartSpec = orreryGenre.compile({ genre: 'orrery', mode: 'default', hero: 'explorer', setting: 'body', ...(heart.params === undefined ? {} : { params: heart.params }) });
+    expect(heartSpec.roles.filter((role) => role.kind === 'target').map((role) => role.label)).toEqual(['left atrium', 'right atrium', 'left ventricle', 'right ventricle']);
+    const city = orreryGenre.draftFill('a map of a little city with a school, a hospital, a park and a station that light up when touched', null);
+    expect(city.cast?.map((item) => item.label)).toEqual(['school', 'hospital', 'park', 'station']);
+    expect(city.params).toMatchObject({ things: 4, layout: 3, whole: 0 });
+    // Celek bez vlastních věcí („the buildings“) bere věci z tabulky; orchestr s výčtem drží dirigenta ve středu.
+    expect(orreryGenre.draftFill('explore a little town, tap the buildings to see their names', null).params).toMatchObject({ things: 6, whole: 8 });
+    expect(orreryGenre.draftFill('an orchestra with a violin, a drum and a flute that glow when you tap them', null).cast?.map((item) => item.label)).toEqual(['conductor', 'violin', 'drum', 'flute']);
+  });
+
   it('the quick game builds the orrery scene the classifier picked', () => {
     const meta = draftGameSpecWithMeta('a solar system where clicking a planet shows its name and makes it orbit faster', 1);
     expect(meta.genre?.genre).toBe('orrery');

@@ -2,16 +2,19 @@
 
 /**
  * Scéna klikací simulace (P83C T3, `orrery`): věci z věty na drahách kolem středu, v kruhu, v řadě nebo rozházené.
- * Klepnutí věc probudí – nad ní se ukáže jmenovka (popisek role z věty) a pod ní slunečný kroužek; podle věty pak
- * svítí, zrychlí nebo vyroste. Zrychlení a růst píše jádro do stavu (`layoutThings`), scéna jen kreslí polohu, velikost
- * a vlastní točení těla; svit a puls po klepnutí jsou jen obraz.
+ * Jmenovka (popisek role z věty) je u každé věci od startu (T7: soudce první brány město ani srdce bez jmen nepoznal),
+ * `placeTags` ji položí nad, pod nebo vedle věci tak, aby nepřekryla jinou. Klepnutí věc probudí – jmenovka zezlátne,
+ * pod věcí se objeví slunečný kroužek a podle věty pak svítí, zrychlí nebo vyroste. Zrychlení a růst píše jádro do
+ * stavu (`layoutThings`), scéna jen kreslí polohu, velikost a vlastní točení těla; svit a puls po klepnutí jsou jen obraz.
  *
  * Kamera kouká shora pod strmým úhlem a x jádra se zrcadlí jako u třídění; na výšku je celá deska v pásu mezi HUD
- * a zónou palce (`fitTall`), na šířku `fitWide`. Věc kreslí model z knihovny, když ho její popisek má (`cast.things`),
- * jinak kouli v barvě palety se skvrnou, ať je vidět točení; střed (slunce, jádro) je slunečný a svítí.
+ * a zónou palce (`fitTall`), na šířku `fitWide`. Tvar dává `shapeOf`: budova kvádr se střechou (vždy), jinak model
+ * z knihovny, když ho popisek má (`cast.things`), zeleň korunu na kmeni, ostatní kouli v barvě palety se skvrnou, ať
+ * je vidět točení; střed (slunce, jádro) je slunečný a svítí.
  *
  * Plocha dostane `data-orrery-things` – pro prst (`OrreryTouch`) i e2e střed každé věci ve zlomku plátna a její
- * poloměr na plátně v px (`x,y,r;…`) – a `data-orrery-tick` (tik nakresleného snímku). Stav ani hash nemění.
+ * poloměr na plátně v px (`x,y,r;…`) –, `data-orrery-tags` (střed jmenovky ve zlomku plátna, šířka a výška v px)
+ * a `data-orrery-tick` (tik nakresleného snímku). Stav ani hash nemění.
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
@@ -28,6 +31,7 @@ import { FieldGround } from '../../look/FieldGround';
 import { FittedModel, type WorldProps } from '../../World';
 import { fitTall, tokenRect } from '../portrait-first';
 import { fitWide } from '../sort/SortScene';
+import { placeTags, shapeOf } from './orrery-look';
 
 const m = (units: number): number => units / UNIT;
 /** Barvy věcí z kitu (žádná fialová); střed má slunce. */
@@ -40,9 +44,8 @@ const HUB_COLOR = color.sun;
 const PITCH = { tall: 1.35, wide: 1.0 } as const;
 /** Jak vysoko věci plují nad zemí (m). */
 const FLOAT = 0.3;
-/** Jmenovka: výška karty na plátně a mezera nad věcí (px). */
+/** Jmenovka: výška karty na plátně (px); mezeru a místo kolem věci dává `placeTags`. */
 const TAG_PX = 28;
-const TAG_GAP_PX = 4;
 /** Plátno jmenovky (px textury). */
 const TAG_H = 96;
 const TAG_W = 640;
@@ -108,8 +111,55 @@ interface ThingParts {
 
 const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;
 
+interface ShapeProps {
+  readonly tint: string;
+  readonly onBody: (material: MeshStandardMaterial | null) => void;
+}
+
+/** Budova (P83C T7): krémové zdi, střecha v barvě palety, dveře a dvě okna na straně ke kameře (−z). */
+function ThingBuilding({ tint, onBody }: ShapeProps) {
+  return (
+    <>
+      <mesh position={[0, 0.3, 0]} castShadow>
+        <boxGeometry args={[0.9, 0.6, 0.9]} />
+        <meshStandardMaterial ref={onBody} color={color.cream} emissive={color.sun} emissiveIntensity={0} roughness={0.7} />
+      </mesh>
+      <mesh position={[0, 0.8, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+        <coneGeometry args={[0.68, 0.4, 4]} />
+        <meshStandardMaterial color={tint} roughness={0.6} />
+      </mesh>
+      <mesh position={[0, 0.15, -0.455]}>
+        <boxGeometry args={[0.18, 0.3, 0.02]} />
+        <meshStandardMaterial color={color.ink} roughness={0.8} />
+      </mesh>
+      {[-0.27, 0.27].map((x) => (
+        <mesh key={x} position={[x, 0.4, -0.455]}>
+          <boxGeometry args={[0.16, 0.14, 0.02]} />
+          <meshStandardMaterial color={color.sky} roughness={0.4} />
+        </mesh>
+      ))}
+    </>
+  );
+}
+
+/** Zeleň bez modelu (park, strom): koruna na kmeni. */
+function ThingTree({ onBody }: Omit<ShapeProps, 'tint'>) {
+  return (
+    <>
+      <mesh position={[0, 0.18, 0]} castShadow>
+        <cylinderGeometry args={[0.08, 0.11, 0.36, 10]} />
+        <meshStandardMaterial color={color['ink-soft']} roughness={0.9} />
+      </mesh>
+      <mesh position={[0, 0.66, 0]} castShadow>
+        <sphereGeometry args={[0.36, 20, 14]} />
+        <meshStandardMaterial ref={onBody} color={color['mint-deep']} emissive={color['mint-deep']} emissiveIntensity={0} roughness={0.7} />
+      </mesh>
+    </>
+  );
+}
+
 /** Věc bez modelu: koule v barvě palety a skvrna, na které je vidět točení. */
-function ThingBall({ tint, hub, onBody }: { readonly tint: string; readonly hub: boolean; readonly onBody: (material: MeshStandardMaterial | null) => void }) {
+function ThingBall({ tint, hub, onBody }: ShapeProps & { readonly hub: boolean }) {
   return (
     <>
       <mesh position={[0, 0.5, 0]} castShadow>
@@ -130,10 +180,17 @@ export function OrreryScene({ session, cast, surface, scene: look, names }: Orre
   const world = session.world;
   const game = world.control.params as unknown as OrreryGame;
   const models = useMemo(() => Array.from({ length: game.count }, (_, index) => cast.things?.[orreryKind(index)]), [cast, game]);
+  const shapes = useMemo(() => models.map((model, index) => shapeOf(names?.[orreryKind(index)], model !== undefined)), [models, names]);
   const tags = useMemo(() => Array.from({ length: game.count }, (_, index) => {
     const text = names?.[orreryKind(index)];
     return text === undefined ? null : makeTag(text);
   }), [names, game]);
+  // Jmenovky na plátně (T7): věci a rozměry jmenovek tohoto snímku, místo z minulého (`placeTags`).
+  const onScreen = useMemo(() => Array.from({ length: game.count }, () => ({ x: 0, y: 0, r: 0 })), [game]);
+  const tagSizes = useMemo(() => tags.map((tag) => ({ w: tag === null ? 0 : TAG_PX * tag.aspect, h: tag === null ? 0 : TAG_PX })), [tags]);
+  const perPxOf = useMemo(() => new Array<number>(game.count).fill(0), [game]);
+  const liftOf = useMemo(() => new Array<number>(game.count).fill(0), [game]);
+  const tagChoice = useRef<number[]>([]);
   useEffect(() => () => {
     for (const tag of tags) {
       tag?.texture.dispose();
@@ -209,7 +266,9 @@ export function OrreryScene({ session, cast, surface, scene: look, names }: Orre
       if (part.spinner !== null) {
         part.spinner.position.y = FLOAT;
         part.spinner.scale.setScalar(s * swell);
-        part.spinner.rotation.y = -((state[base + BODY.aux0] as number) / PHASE_FULL) * Math.PI * 2;
+        // Budova se netočí, jen když věta chce rychlejší (točení je pak odpověď na klepnutí).
+        const turns = shapes[index] !== 'building' || game.answer === 'faster';
+        part.spinner.rotation.y = turns ? -((state[base + BODY.aux0] as number) / PHASE_FULL) * Math.PI * 2 : 0;
       }
       const hub = game.hub && index === 0;
       if (part.body !== null) part.body.emissiveIntensity = (hub ? 0.55 : 0) + (game.answer === 'glow' ? GLOW * level : 0);
@@ -231,16 +290,15 @@ export function OrreryScene({ session, cast, surface, scene: look, names }: Orre
       edge.project(camera);
       const radius = Math.max(1, Math.hypot(((edge.x - probe.x) / 2) * size.width, ((edge.y - probe.y) / 2) * size.height));
       spots.push(`${((probe.x + 1) / 2).toFixed(4)},${((1 - probe.y) / 2).toFixed(4)},${radius.toFixed(1)}`);
-      const perPx = s / 2 / radius;
+      const seen = onScreen[index] as { x: number; y: number; r: number };
+      seen.x = ((probe.x + 1) / 2) * size.width;
+      seen.y = ((1 - probe.y) / 2) * size.height;
+      seen.r = radius * swell;
+      perPxOf[index] = s / 2 / radius;
+      liftOf[index] = s / 2;
+      // Jmenovka je vidět od startu (T7); probuzená věc ji má ve slunečné barvě.
       const tag = tags[index];
-      if (part.tag !== null && tag !== null && tag !== undefined) {
-        part.tag.visible = level > 0;
-        const h = TAG_PX * perPx;
-        // Nad věcí na plátně (osa „nahoru“ kamery), ne ve světě: shora by svislý posun jmenovku položil na věc.
-        part.tag.position.set(0, FLOAT + s / 2, 0).addScaledVector(up, (s * swell) / 2 + TAG_GAP_PX * perPx + h / 2);
-        part.tag.scale.set(h * tag.aspect, h, 1);
-        part.tag.quaternion.copy(camera.quaternion);
-      }
+      if (tag !== null && tag !== undefined) tag.material.color.set(level > 0 ? HUB_COLOR : color.paper);
       if (index === focus && cursor.current !== null) {
         cursor.current.visible = started;
         cursor.current.position.set(x, 0.03, z);
@@ -248,10 +306,31 @@ export function OrreryScene({ session, cast, surface, scene: look, names }: Orre
       }
     });
 
+    // Jmenovky všech věcí naráz: každá na místě, kde nepřekryje jinou jmenovku ani věc, v pásu mezi HUD a palcem.
+    const placedTags = placeTags(onScreen, tagSizes, tokenRect(size.width, size.height), tagChoice.current);
+    tagChoice.current = placedTags.choice;
+    const tagSpots: string[] = [];
+    placedTags.rects.forEach((rect, index) => {
+      const part = parts.current[index] as ThingParts;
+      const tag = tags[index];
+      if (part.tag === null || tag === null || tag === undefined) return;
+      const perPx = perPxOf[index] as number;
+      const seen = onScreen[index] as { x: number; y: number };
+      const h = TAG_PX * perPx;
+      // Posun na plátně (osy kamery), ne ve světě: shora by svislý posun jmenovku položil na věc.
+      part.tag.visible = true;
+      part.tag.position.set(0, FLOAT + (liftOf[index] as number), 0).addScaledVector(right, (rect.x - seen.x) * perPx).addScaledVector(up, (seen.y - rect.y) * perPx);
+      part.tag.scale.set(h * tag.aspect, h, 1);
+      part.tag.quaternion.copy(camera.quaternion);
+      tagSpots.push(`${(rect.x / size.width).toFixed(4)},${(rect.y / size.height).toFixed(4)},${rect.w.toFixed(1)},${rect.h.toFixed(1)}`);
+    });
+
     const host = surface.current;
     if (host === null) return;
     const placed = spots.join(';');
     if (host.dataset.orreryThings !== placed) host.dataset.orreryThings = placed;
+    const labelled = tagSpots.join(';');
+    if (host.dataset.orreryTags !== labelled) host.dataset.orreryTags = labelled;
     host.dataset.orreryTick = String(state[HEADER.tick]);
   });
 
@@ -278,7 +357,15 @@ export function OrreryScene({ session, cast, surface, scene: look, names }: Orre
         return (
           <group key={index} ref={(group) => void (part.group = group)} userData={{ item: orreryKind(index) }}>
             <group ref={(group) => void (part.spinner = group)}>
-              {model !== undefined ? <FittedModel id={model} w={1} h={1} d={1} fallback={tint} /> : <ThingBall tint={tint} hub={hub} onBody={(material) => void (part.body = material)} />}
+              {shapes[index] === 'model' ? (
+                <FittedModel id={model as string} w={1} h={1} d={1} fallback={tint} />
+              ) : shapes[index] === 'building' ? (
+                <ThingBuilding tint={tint} onBody={(material) => void (part.body = material)} />
+              ) : shapes[index] === 'tree' ? (
+                <ThingTree onBody={(material) => void (part.body = material)} />
+              ) : (
+                <ThingBall tint={tint} hub={hub} onBody={(material) => void (part.body = material)} />
+              )}
             </group>
             <mesh ref={(mesh) => void (part.halo = mesh)} visible={false}>
               <sphereGeometry args={[0.5, 24, 16]} />

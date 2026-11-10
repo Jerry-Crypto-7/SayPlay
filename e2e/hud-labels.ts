@@ -12,8 +12,9 @@ import { readCountedNouns } from '../src/play/draft/lexicon';
  * `rare` a `epic` jsou pilulka nálezu háčků „2 rare“ (P66 T4, `arcade/hooks/RarityToast.tsx`).
  * `m`, `hits`, `notes` a `rounds` nese postup v řádku cíle „42 m / 220 m“, „3 notes“ (P70C T2, `goalProgressOf`,
  * `data-testid="play-goal-progress"`); hlídá je `p70c-start-card.spec.ts`.
+ * `explored` je pilulka klikací simulace „explored 3/5“ (P83C T7, `finish_collected.noun` v `pieces/orrery.ts`).
  */
-export const HUD_COUNTER_LABELS: readonly string[] = ['collected', 'gate', 'placed', 'mistakes', 'tools', 'step', 'ammo', 'shots', 'lives', 'defeated', 'best', 'dare', 'powerup', 'combo', 'round', 'ghost', 'rare', 'epic', 'served', 'coins', 'smash', 'air', 'strokes', 'par', 'm', 'hits', 'notes', 'rounds'];
+export const HUD_COUNTER_LABELS: readonly string[] = ['collected', 'gate', 'placed', 'mistakes', 'tools', 'step', 'ammo', 'shots', 'lives', 'defeated', 'best', 'dare', 'powerup', 'combo', 'round', 'ghost', 'rare', 'epic', 'served', 'coins', 'smash', 'air', 'strokes', 'par', 'm', 'hits', 'notes', 'rounds', 'explored'];
 
 /**
  * Popisky, které smí ukázat hra z věty `sentence`: uzavřený seznam a podstatná jména, která věta počítá

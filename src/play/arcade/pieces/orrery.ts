@@ -411,7 +411,8 @@ export function orreryParts(seed: number, params: OrreryParams): ModeParts {
   const level: ArcadeLevel = { bodies: bodies.map((init, index) => (index >= first && index < first + things.length ? placed(init, game, index - first) : init)), length: 0 };
   const rules: PieceRef[] = [
     { id: 'orrery_tap', params: { ...game, points: ORRERY.points, levelPoints: ORRERY.levelPoints } },
-    { id: 'finish_collected', params: { need: game.count } },
+    // T7: pilulka i konec hry říkají „explored“, ne „collected“ – tady se nic nesbírá.
+    { id: 'finish_collected', params: { need: game.count, noun: 'explored' } },
     { id: 'score_bonus', params: { lives: 0, limit: ORRERY.parSeconds * ARCADE_HZ, target: 0 } },
   ];
   const bot: PieceRef = { id: 'orrery_bot', params: { ...game, pace: ORRERY_BOT_PACE } };

@@ -8,7 +8,9 @@ import { type APIRequestContext, type Browser, expect, type Page, test } from '@
  * soustava: slunce ve středu a osm planet na třech drahách, klepnutí zrychlí; typ je `staged`, věty ho zatím nevolí).
  *
  * - Stránka se načte, scéna zapíše `data-orrery-things` (střed věci ve zlomku plátna a poloměr v px, `OrreryScene`).
- * - Klepnutí na věc zvedne počítadlo HUD a ukáže jmenovku; dráhy se do 2 s od startu viditelně posunou.
+ * - Jmenovky všech věcí jsou vidět od startu (T7); klepnutí na věc zvedne počítadlo HUD; dráhy se do 2 s od startu
+ *   viditelně posunou.
+ * - T7: na telefonu se jmenovky (`data-orrery-tags`) nepřekrývají a neopustí plátno – na startu i během oběhu.
  * - Telefon 390 × 844: devět věcí se na plátně nepřekrývá ani jako cíle klepnutí (dosah ≥ 22 px od středu, cíl
  *   ≥ 44 px) – na startu i během oběhu.
  * - Snímky do `D:/tmp/p83c/` (`P83C_SHOTS` cestu přepíše). FPS (`@measure`): telefon 390 × 844, okna po 4 s
@@ -67,7 +69,39 @@ async function open(page: Page, url: string): Promise<void> {
 
 const counter = (page: Page) => page.locator('.play-hud-count[data-testid^="hud-counter-"]').first();
 const tick = async (page: Page): Promise<number> => Number(await page.getByTestId('arcade-stage').getAttribute('data-orrery-tick'));
-const tagShown = (page: Page) => page.evaluate(() => (window.__playFrame!().items['orrery-tag']?.count ?? 0) > 0);
+const tagCount = (page: Page) => page.evaluate(() => window.__playFrame!().items['orrery-tag']?.count ?? 0);
+
+interface Tag {
+  readonly x: number;
+  readonly y: number;
+  readonly w: number;
+  readonly h: number;
+}
+
+/** Jmenovky na stránce (px stránky) z `data-orrery-tags` (P83C T7): střed ve zlomku plátna, šířka a výška v px. */
+async function tags(page: Page): Promise<Tag[]> {
+  const stage = page.getByTestId('arcade-stage');
+  const raw = (await stage.getAttribute('data-orrery-tags')) ?? '';
+  const box = (await stage.boundingBox())!;
+  return raw === '' ? [] : raw.split(';').map((tag) => {
+    const [fx, fy, w, h] = tag.split(',').map(Number) as [number, number, number, number];
+    return { x: box.x + fx * box.width, y: box.y + fy * box.height, w, h };
+  });
+}
+
+/** Žádné dvě jmenovky se nepřekrývají o víc než 1 px a každá leží na plátně. */
+async function tagIssues(page: Page): Promise<string[]> {
+  const list = await tags(page);
+  const box = (await page.getByTestId('arcade-stage').boundingBox())!;
+  const issues: string[] = [];
+  list.forEach((a, i) => {
+    if (a.x - a.w / 2 < box.x - 1 || a.x + a.w / 2 > box.x + box.width + 1 || a.y - a.h / 2 < box.y - 1 || a.y + a.h / 2 > box.y + box.height + 1) issues.push(`tag ${i} leaves the canvas`);
+    list.slice(i + 1).forEach((b, k) => {
+      if (Math.abs(a.x - b.x) < (a.w + b.w) / 2 - 1 && Math.abs(a.y - b.y) < (a.h + b.h) / 2 - 1) issues.push(`tags ${i} and ${i + 1 + k} overlap`);
+    });
+  });
+  return issues;
+}
 
 /** Klepne na věc `index` tam, kde je teď (prst na telefonu, myš na desktopu). */
 async function tapThing(page: Page, index: number, touch: boolean): Promise<void> {
@@ -135,12 +169,12 @@ test.describe('orrery (P83C T3)', () => {
     const errors = watchErrors(page);
     await open(page, url);
     await expect(counter(page)).toHaveAttribute('data-count', '0');
-    expect(await tagShown(page), 'no name before a tap').toBe(false);
+    // T7: jména jsou vidět od startu, ne až po klepnutí.
+    await expect.poll(() => tagCount(page), { timeout: 5_000 }).toBe(THINGS);
     await page.screenshot({ path: join(SHOTS, 'desktop-start.png') });
 
     await tapThing(page, 4, false);
     await expect(counter(page)).toHaveAttribute('data-count', '1', { timeout: 5_000 });
-    await expect.poll(() => tagShown(page), { timeout: 5_000 }).toBe(true);
     const from = await spots(page);
     const fromTick = await tick(page);
     await page.waitForTimeout(2_000);
@@ -165,6 +199,8 @@ test.describe('orrery (P83C T3)', () => {
     const start = await spots(page);
     expect(start).toHaveLength(THINGS);
     expect(overlaps(start)).toEqual([]);
+    expect(await tags(page)).toHaveLength(THINGS);
+    expect(await tagIssues(page)).toEqual([]);
     await page.screenshot({ path: join(SHOTS, 'phone-start.png') });
 
     await tapThing(page, 2, true);
@@ -173,6 +209,7 @@ test.describe('orrery (P83C T3)', () => {
     for (let sample = 0; sample < 12; sample += 1) {
       await page.waitForTimeout(500);
       seen.push(...overlaps(await spots(page)).map((issue) => `t${String(sample)}: ${issue}`));
+      seen.push(...(await tagIssues(page)).map((issue) => `t${String(sample)}: ${issue}`));
     }
     expect(seen).toEqual([]);
     await tapThing(page, 5, true);

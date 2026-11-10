@@ -227,8 +227,16 @@ const NAMED = String.raw`(?:show|shows|showing|tell|tells|telling|say|says|sayin
 const WAKES = String.raw`(?:glow|shine|sparkle|twinkle|light up|bloom|grow|spin|turn on|switch on|come alive|come to life|start moving|[a-z]+ faster|[a-z]+ bigger|[a-z]+ brighter|faster|bigger|brighter)`;
 /** P83C T4: odpověď za klepnutím na věc: jméno, „make it …“, „light it up“, „switch its lights on“. */
 const ANSWERS = String.raw`(?:${NAMED}|(?:makes?|making|to make|and make|so) (?:it|them|each one|that one|one) (?:[a-z]+ ){0,2}?${WAKES}\b|(?:lights?|lighting|to light|turns?|to turn|switch(?:es)?|to switch|speeds?|to speed) (?:it|them|its [a-z]+|their [a-z]+) (?:up|on)\b)`;
-/** P83C T4: věc se probudí před klepnutím ve větě („light up when you click them“, „spin when clicked“). */
-const WAKES_UP = String.raw`(?:glows?|shines?|sparkles?|twinkles?|lights? up|blooms?|grows?|spins?|turns? on|switch(?:es)? on|comes? alive|starts? moving|speeds? up)`;
+/**
+ * P83C T4: věc se probudí před klepnutím ve větě („light up when you click them“, „spin when clicked“). T7 i změna
+ * se srovnáním („turn faster“, „get brighter“ – první brána: hodinový stroj spadl do sbírání, orchestr do rytmu).
+ */
+const WAKES_UP = String.raw`(?:glows?|shines?|sparkles?|twinkles?|lights? up|blooms?|grows?|spins?|turns? on|switch(?:es)? on|comes? alive|starts? moving|speeds? up|[a-z]+ (?:faster|bigger|brighter|larger))`;
+/**
+ * P83C T7: cíl klepnutí za „when you tap“ – věc nebo zájmeno („tap them“, „click it“), ne obrazovka; trpný tvar bez cíle.
+ * Klepnutí na „správnou“ věc je volba ve hře („press the correct bubbles as musical cues arrive“ – rytmus), ne prohlídka.
+ */
+const TAP_TARGET = String.raw`(?:(?:you |i |we )?${TOUCHED}(?! (?:on )?(?:the |your |a )?(?:screen|button|mouse|space ?bar|keys?)\b)(?! (?:on )?(?:the |a |an )?(?:correct|right|wrong|matching)\b) (?:on )?(?:them|it|one|each one|a|an|the|each|every|any|[a-z-]+s)\b|clicked|tapped|touched|poked|pressed)`;
 
 /**
  * Co sloveso dělá se svým předmětem (P39): režim slovesa to říká – střelba sestřelí, hod míří, rvačka a
@@ -423,7 +431,9 @@ const VERBS: readonly Verb[] = [
   // as they pop out“, „tap to make the rocket dodge meteors“) i „glowing orbs“ jako přívlastek zůstávají svým hrám.
   v('explore', 'sign', ORRERY, new RegExp([
     String.raw`\b${TOUCHED}(?! (?:on )?(?:the |your |a )?(?:screen|button|mouse|space ?bar|keys?)\b) (?:on )?(?:a|an|the|each|every|any|one|them|it|[a-z-]+s)\b[^.;!?]{0,80}?\b${ANSWERS}`,
-    String.raw`\b${WAKES_UP} (?:[a-z]+ ){0,3}?(?:when|whenever|each time|every time|if|once) (?:you |i |we )?(?:${TOUCHED}|clicked|tapped|touched)\b`,
+    String.raw`\b${WAKES_UP} (?:[a-z]+ ){0,3}?(?:when|whenever|each time|every time|if|once) ${TAP_TARGET}`,
+    // T7: odpoví zájmeno za klepnutím („click one and it spins faster“, „tap them so they glow“).
+    String.raw`\b${TOUCHED}(?! (?:on )?(?:the |your |a )?(?:screen|button|mouse|space ?bar|keys?)\b) (?:on )?(?:a|an|the|each|every|any|one|them|it|[a-z-]+s)\b[^.;!?]{0,60}? (?:and|so|then) (?:it|they|each one) (?:will )?${WAKES_UP}`,
   ].join('|'))),
   // Úkol v prostoru: předměty rozeseté po scéně.
   v('light', 'goal', SPATIAL, new RegExp(String.raw`\b(?:light(?:s|ing)?(?: up)?|ignit(?:e|es|ing)|kindl(?:e|es|ing)) ${OBJECT}|\blight(?:s|ing)?(?: up)?(?= (?:[a-z]+ )?(?:lanterns?|candles?|torches?|lamps?|beacons?|fireworks?|bonfires?|campfires?)\b)`)),
