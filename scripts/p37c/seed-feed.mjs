@@ -135,11 +135,17 @@ export const FEED_SENTENCES = [
 ];
 
 /**
+ * Žánry, které se hrají z věty, ale vestavěný feed je neukazuje: druhá zapečetěná brána jim nevyšla
+ * (`evals/play/p83/c-gate-2.md`, `e-gate-2.md`), výkladní skříň patří typům, které prošly.
+ */
+const OFF_FEED = new Set(['orrery', 'shop']);
+
+/**
  * Hratelné žánry registru: aspoň jeden režim, který není kostra (`staged`), a žánr mimo bránu aktivace
  * (`ROUTE_PENDING`) – jen ty klasifikátor rychlé cesty vůbec vybere.
  */
 export function playableGenres() {
-  return GENRES.filter((genre) => !ROUTE_PENDING.has(genre) && GENRE_MODES[genre].some((mode) => GENRE_MODULES[genre].availability(mode) !== 'staged'));
+  return GENRES.filter((genre) => !OFF_FEED.has(genre) && !ROUTE_PENDING.has(genre) && GENRE_MODES[genre].some((mode) => GENRE_MODULES[genre].availability(mode) !== 'staged'));
 }
 
 /** Pohyb pod centimetr (jednotky jádra jsou milimetry) je chvění, ne pohyb. */
