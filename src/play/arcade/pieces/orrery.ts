@@ -66,8 +66,11 @@ export const ORRERY_LAYOUT = {
   /** Věc a střed (slunce, jádro) na začátku. */
   thing: 1200,
   hub: 2000,
-  /** Poloměry drah oběhu; rozestup drží věci od sebe i na telefonu (≥ 44 px, T3). */
-  shellRadius: [2800, 5000, 7200],
+  /**
+   * Poloměry drah oběhu; rozestup 2,4 m drží věci sousedních drah od sebe i na telefonu 390 × 844 (≥ 44 px mezi
+   * středy, i když se při oběhu srovnají za sebou – `e2e/play-orrery.spec.ts`; 2,2 m dalo 39 px).
+   */
+  shellRadius: [2600, 5000, 7400],
   /** Poloměr kruhu (`ring`). */
   ringRadius: 4800,
   /** Rozestup věcí v řadě a řad za sebou; víc než `rowMost` věcí jde do dvou řad. */

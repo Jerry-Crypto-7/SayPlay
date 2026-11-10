@@ -55,6 +55,7 @@ import { MinigolfScene } from './genres/minigolf/MinigolfScene';
 import { RailfpsScene } from './genres/railfps/RailfpsScene';
 import { BuildshiftScene } from './genres/buildshift/BuildshiftScene';
 import { DrawsaveScene } from './genres/drawsave/DrawsaveScene';
+import { OrreryScene } from './genres/orrery/OrreryScene';
 import { GENRE_TOUCH } from './genres/touch-registry';
 import { HooksLayer } from './hooks/HooksLayer';
 import { PopAnchor } from './hooks/ScorePop';
@@ -1216,7 +1217,7 @@ const StageCanvas = memo(function StageCanvas({
   // P71C T3: komu načasování věc dopraví („feed the monster“) – stojí za cílem lišty.
   const goal = cast.props.finish;
   const goalModel: BodyModel | undefined = goal === undefined ? undefined : (w, h, d) => <FittedModel id={goal} w={w} h={h} d={d} fallback={brand['tomato-deep']} character rim />;
-  const world = { session, cast, surface, scene: look, enabled, heroAction, ghost };
+  const world = { session, cast, surface, scene: look, enabled, heroAction, ghost, names };
   return (
     // Stíny slunce rigu (P32A T1); PCF s poloměrem – měkký PCFSoft three 0.185 odmítá.
     <HostedCanvas host={host} frameloop={live ? 'always' : 'demand'}>
@@ -1280,6 +1281,8 @@ const StageCanvas = memo(function StageCanvas({
             <BuildshiftScene {...world} />
           ) : stage.scene === 'drawsave' ? (
             <DrawsaveScene {...world} />
+          ) : stage.scene === 'orrery' ? (
+            <OrreryScene {...world} />
           ) : (
             <World {...world} control={control} />
           )}
