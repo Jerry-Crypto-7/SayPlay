@@ -103,6 +103,9 @@ import {
   toolsOf,
   withArticle,
   withoutPossessor,
+  buildingIn,
+  buildingPerson,
+  framedBuilding,
 } from './lexicon';
 
 const TEMPLATES: Readonly<Record<ArchetypeId, unknown>> = {
@@ -153,10 +156,10 @@ const GENERIC_HERO = /^(?:player|you|me|i|character|hero|protagonist|user|person
 /** Role čtení, které jsou ve hře protivníkem, když věta jiného nejmenuje (P56A T6). */
 const READ_FOE_KINDS: ReadonlySet<Reading['roles'][number]['kind']> = new Set(['threat', 'chaser', 'target', 'hazard', 'obstacle']);
 
-/** Hrdina čtení – podmět věty; `null`, když ho věta nejmenuje („you“, „my farm“, P56A T6). */
+/** Hrdina čtení – podmět věty; `null`, když ho věta nejmenuje („you“, „my farm“, P56A T6) nebo je to budova („small shop“, P83A T4). */
 export function readingHero(reading: Reading): string | null {
   const hero = bare(reading.hero);
-  return hero !== null && !GENERIC_HERO.test(hero) ? hero : null;
+  return hero !== null && !GENERIC_HERO.test(hero) && buildingIn(hero) === null ? hero : null;
 }
 
 /** Protivník čtení bez členu (P58A T6); `null`, když ho čtení nemá nebo je to hrdina čtení. */
@@ -173,6 +176,7 @@ export function readingFoe(reading: Reading): string | null {
 export function heroFitsReading(label: string, reading: Reading, sentence: string): boolean {
   const head = (phrase: string): string => singular(phrase).split(' ').at(-1) ?? phrase;
   const phrase = bare(label) ?? label;
+  if (buildingIn(phrase) !== null) return false;
   const word = head(phrase);
   const hero = readingHero(reading);
   if (hero !== null && head(hero) === word) return true;
@@ -1275,7 +1279,10 @@ function draftGenre(
       // Ve sporu je blízký soupeř („argue with my wife“), ne hrdina.
       (fight ? null : (twist?.hero ?? null)));
   // Nesmyslná věta („the the the“) dala přenosu hrdinu „the“ – člen hrdinou není, hraje hrdina světa.
-  const wordsHero = heroWord === null || DETERMINER.test(heroWord) ? null : heroWord;
+  // P83A T4: budova hrdinou není – „A small shop where I …“ hraje postava obchodu, ne krabice s nápisem.
+  // Věta, která budovou začíná a hrdinu neřekne, hraje postava budovy – ne myš supermarketu.
+  const saidBuilding = [heroWord, reading === null ? null : bare(reading.hero)].find((phrase) => phrase != null && buildingIn(phrase) !== null) ?? framedBuilding(sentence);
+  const wordsHero = heroWord === null || DETERMINER.test(heroWord) || buildingIn(heroWord) !== null ? null : heroWord;
   // P56A T6: hrdina slov, kterého čtení má za protivníka, věc nebo místo, ustoupí podmětu čtení; bez něj hrdina světa.
   const heroSaid = reading === null || wordsHero === null || heroFitsReading(wordsHero, reading, sentence) ? wordsHero : readingHero(reading);
   const catcher = CATCH_BEFORE.exec(text)?.[1];
@@ -1353,7 +1360,7 @@ function draftGenre(
   const sentenceWorld = saidPlace === null && world === null && VERB_SETTING[verb] === undefined ? sentenceLook(text) : null;
   const setting = saidPlace ?? world?.replace(/_/g, ' ') ?? VERB_SETTING[verb] ?? sentenceWorld?.replace(/_/g, ' ') ?? GENRE_SETTING[choice.genre];
   const place = world ?? (lookFor(setting) === null ? sentenceLook(text) : null);
-  const hero = heroSaid ?? defaultHero(setting, choice.genre, sentence, reading !== null);
+  const hero = heroSaid ?? (saidBuilding === null ? null : buildingPerson(saidBuilding)) ?? defaultHero(setting, choice.genre, sentence, reading !== null);
   // Nepřítel a sbíraná věc, které věta neříká, jsou z prostředí (P32B T3) – jen když nezdvojí roli, kterou hra už má.
   const spare = (label: string, taken: readonly (string | null)[]): string | null => (named.has(label) || taken.includes(label) ? null : label);
   // Les dá vlka, jen když věta žádného protivníka nejmenuje. Skákačka a poletování mají vlastní překážku

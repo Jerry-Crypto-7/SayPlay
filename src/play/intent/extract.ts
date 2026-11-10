@@ -21,7 +21,7 @@
 import { familyOf } from '../genre/families';
 import { heroClass } from '../genre/hero-class';
 import { vocabVerb } from '../vocab';
-import { NUMBER_WORDS, negationScopes, nounPhrase, readCountedNouns, readLives, RED_LIGHT, RIGGED_ANIMALS, ROAD, singular, toolsOf, withoutPossessor } from '../draft/lexicon';
+import { framedBuilding, NUMBER_WORDS, negationScopes, nounPhrase, readCountedNouns, readLives, RED_LIGHT, RIGGED_ANIMALS, ROAD, singular, toolsOf, withoutPossessor } from '../draft/lexicon';
 
 import { type ActionId, HERO, type Intent, type IntentAction, type IntentAxis, type MoveId, type ObjectiveId, type ThreatId } from './contract';
 
@@ -1070,6 +1070,10 @@ function unique(items: readonly Draft[]): Draft[] {
 }
 
 function settingOf(text: string): string | null {
+  // P83A T4: věta, která začíná budovou („a small shop where I …“), se hraje v ní – „on the counter“ je kus obchodu.
+  // Budova, kterou zná slovník míst, zůstane v jeho sadě (shop → supermarket), ať se vzhled scény nepohne.
+  const building = framedBuilding(text);
+  if (building !== null) return SETTINGS.find(([, pattern]) => pattern.test(building))?.[0] ?? building;
   // Direct escape arguments name places too; preserve their noun rather than
   // the rendering category (island -> beach, laboratory -> factory).
   const escaped = /\bescap(?:e|es|ed|ing)\s+((?:a|an|the)\s+[a-z][a-z -]*)/.exec(text);

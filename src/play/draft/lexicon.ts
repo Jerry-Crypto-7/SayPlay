@@ -723,3 +723,41 @@ export function goalNoun(label: string): string | null {
 export function withArticle(noun: string): string {
   return `${/^[aeiou]/i.test(noun) ? 'an' : 'a'} ${noun}`;
 }
+
+/**
+ * Budova, kam se chodí (P83A T4): hrdinou není nikdy. Slepý soud 10. 11.: rychlé čtení vzalo za hrdinu „Small shop“
+ * a na louce stála krabice s nápisem. Věž (obrana věží) ani loď v seznamu nejsou – ty hrát jdou.
+ * simplified: ruční seznam hlav; rozšířit, až čtení dá hrdinou další budovu.
+ */
+const BUILDINGS =
+  /^(?:shop|store|market|supermarket|mall|boutique|castle|palace|fortress|fort|dungeon|library|school|classroom|hospital|clinic|bakery|restaurant|cafe|diner|pizzeria|kitchen|farm|barn|museum|zoo|aquarium|hotel|airport|station|stadium|cinema|theater|theatre|gym|bank|office|church|temple|prison|jail|house|mansion|cabin|cottage|hut|factory|warehouse|garage|lab|laboratory|city|town|village)$/;
+
+/** Kdo do budovy patří a model ho má: obchod – zákazník, hrad – rytíř. Budova bez řádku dá hrdinu prostředí. */
+const BUILDING_PEOPLE: readonly (readonly [RegExp, string])[] = [
+  [/^(?:shop|store|market|supermarket|mall|boutique)$/, 'customer'],
+  [/^(?:castle|palace|fortress|fort|dungeon)$/, 'knight'],
+  [/^(?:library|school|classroom)$/, 'student'],
+  [/^(?:hospital|clinic)$/, 'doctor'],
+  [/^bakery$/, 'baker'],
+  [/^(?:restaurant|cafe|diner|pizzeria|kitchen)$/, 'chef'],
+  [/^(?:farm|barn)$/, 'farmer'],
+  [/^(?:museum|zoo|aquarium|hotel|airport|stadium|cinema|theater|theatre)$/, 'tourist'],
+];
+
+/** Hlava fráze, když jmenuje budovu („small shop“ → „shop“); jinak `null`. */
+export function buildingIn(phrase: string): string | null {
+  const head = singular(phrase.toLowerCase().trim()).split(' ').at(-1) ?? '';
+  return BUILDINGS.test(head) ? head : null;
+}
+
+/** Budova, kterou věta začíná („A small shop where I …“) – místo hry; jinak `null`. */
+export function framedBuilding(sentence: string): string | null {
+  const framed = /^(?:a|an|the)\s+((?:[a-z]+\s+){0,2}?[a-z]+)\s+where\b/.exec(sentence.toLowerCase().trim())?.[1];
+  return framed === undefined ? null : buildingIn(framed);
+}
+
+/** Postava budovy pro hrdinu, kterého čtení řeklo budovou; `null` = budova bez vlastní postavy nebo nejde o budovu. */
+export function buildingPerson(phrase: string): string | null {
+  const head = buildingIn(phrase);
+  return head === null ? null : (BUILDING_PEOPLE.find(([words]) => words.test(head))?.[1] ?? null);
+}
