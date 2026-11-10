@@ -55,6 +55,12 @@ const P66_GENRES: readonly string[] = ['survivor', 'hole', 'steal', 'sort', 'arr
 const P68_FIXTURE = (key: string): string => join(process.cwd(), `e2e/fixtures/p68-${key}-spec.json`);
 const P68_CELLS: readonly P64Cell[] = P68_GENRES.filter((genre) => existsSync(P68_FIXTURE(genre))).map((genre) => ({ key: genre, id: 'p68-fixture', spec: JSON.parse(readFileSync(P68_FIXTURE(genre), 'utf8')) as unknown }));
 
-export const P64_CELLS: readonly P64Cell[] = [...GENRES.filter((genre) => !P66_GENRES.includes(genre) && !(P68_GENRES as readonly string[]).includes(genre)), 'control:steer', 'control:walker', 'control:ball'].map(cellOf);
+/**
+ * Žánry P83 (klikací simulace, obchod se součtem) přišly po T1 jako P66 a P68: rámují se svou scénou a hlídají je
+ * vlastní testy (`orrery.test.ts`, `shop.test.ts`), stráže P64 (šířka, hash) ne – otisk `hash-baseline.json` je nemá.
+ */
+const P83_GENRES: readonly string[] = ['orrery', 'shop'];
+
+export const P64_CELLS: readonly P64Cell[] = [...GENRES.filter((genre) => !P66_GENRES.includes(genre) && !(P68_GENRES as readonly string[]).includes(genre) && !P83_GENRES.includes(genre)),'control:steer', 'control:walker', 'control:ball'].map(cellOf);
 
 export const P64_AUDIT_CELLS: readonly P64Cell[] = [...P64_CELLS, ...P66_GENRES.map(cellOf), ...P68_CELLS];

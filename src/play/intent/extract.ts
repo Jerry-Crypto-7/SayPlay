@@ -21,7 +21,7 @@
 import { familyOf } from '../genre/families';
 import { heroClass } from '../genre/hero-class';
 import { vocabVerb } from '../vocab';
-import { NUMBER_WORDS, negationScopes, nounPhrase, readCountedNouns, readLives, RED_LIGHT, RIGGED_ANIMALS, ROAD, singular, toolsOf, withoutPossessor } from '../draft/lexicon';
+import { framedBuilding, NUMBER_WORDS, negationScopes, nounPhrase, readCountedNouns, readLives, RED_LIGHT, RIGGED_ANIMALS, ROAD, singular, toolsOf, withoutPossessor } from '../draft/lexicon';
 
 import { type ActionId, HERO, type Intent, type IntentAction, type IntentAxis, type MoveId, type ObjectiveId, type ThreatId } from './contract';
 
@@ -328,7 +328,7 @@ const NOT_AN_ACTOR = new Set([
 const NOT_A_THING = new Set([
   'time', 'clock', 'score', 'point', 'stuff', 'thing', 'everything', 'anything', 'something', 'nothing', 'everyone', 'everybody', 'all', 'way',
   'other', 'second', 'minute', 'hour', 'day', 'game', 'level', 'fun', 'lot', 'one', 'round', 'match', 'win', 'royale', 'noon', 'dawn', 'dusk',
-  'wave', 'till', 'sunset', 'sunrise', 'midnight', 'lol', 'lmao', 'haha', 'pls', 'plz', 'vibe', 'style', 'mode',
+  'wave', 'till', 'sunset', 'sunrise', 'midnight', 'lol', 'lmao', 'haha', 'pls', 'plz', 'vibe', 'style', 'mode', 'total', 'sum', 'price', 'cost',
 ]);
 /** Pomocná slovesa za podmětem („a dog tries to catch…“); na nich jméno aktéra končí. */
 const AUXILIARIES = new Set(['must', 'can', 'will', 'should', 'has', 'have', 'is', 'are', 'was', 'were', 'gets', 'wants', 'tries', 'needs', 'likes', 'loves', 'keeps', 'starts', 'begins', 'learns', 'decides', 'having', 'just', 'want', 'need', 'try', 'like', 'love', 'get', 'keep']);
@@ -1069,7 +1069,17 @@ function unique(items: readonly Draft[]): Draft[] {
   return [...merged.values()];
 }
 
+/**
+ * Nádoba nebo plocha, na kterou se věci kladou (P83E T7): pult, tác, mísa, košík, váha, vozík. Pás („conveyor belt“)
+ * ne – zmrazený záměr P44C (`vocab-extract.test.ts`) ho jako místo čte a obchod ho nepotřebuje.
+ */
+const RECEPTACLE = /^(?:counter|checkout|register|tray|plate|bowl|basket|scale|cart|trolley)$/;
+
 function settingOf(text: string): string | null {
+  // P83A T4: věta, která začíná budovou („a small shop where I …“), se hraje v ní – „on the counter“ je kus obchodu.
+  // Budova, kterou zná slovník míst, zůstane v jeho sadě (shop → supermarket), ať se vzhled scény nepohne.
+  const building = framedBuilding(text);
+  if (building !== null) return SETTINGS.find(([, pattern]) => pattern.test(building))?.[0] ?? building;
   // Direct escape arguments name places too; preserve their noun rather than
   // the rendering category (island -> beach, laboratory -> factory).
   const escaped = /\bescap(?:e|es|ed|ing)\s+((?:a|an|the)\s+[a-z][a-z -]*)/.exec(text);
@@ -1089,7 +1099,8 @@ function settingOf(text: string): string | null {
     // Articles make an unknown bounded noun phrase a location candidate;
     // goals, weapons and amounts are not inferred as scenery.
     const head = headOf(phrase);
-    if (!location && !NOT_A_THING.has(head) && !NOT_AN_ACTOR.has(head) && !toolsOf(text).includes(head)
+    // P83E T7: kam se věci kladou („on the scale“, „into the bowl“), není místo hry – to jmenuje věta jinde.
+    if (!location && !NOT_A_THING.has(head) && !NOT_AN_ACTOR.has(head) && !toolsOf(text).includes(head) && !RECEPTACLE.test(head)
       && !/\b(?:right|perfect|exact|same)\b/.test(phrase) && !/ing$/.test(head)
       && !/^(?:horse|car|boat|bike|plane|bus|truck|coin|gem|key|ball|enemy|robot|dragon)$/.test(head)) return head;
   }

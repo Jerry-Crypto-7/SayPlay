@@ -54,7 +54,11 @@ const OBJECT_KINDS: Partial<Record<CueVerb, readonly GameRole['kind'][]>> = {
 
 const many = (label: string): string => (/[^s]s$/.test(label) ? label : plural(label, 2));
 
-export function verbLine(spec: Pick<GameSpecV1, 'control' | 'addons' | 'objective' | 'heroAction' | 'roles'>): string | null {
+/** P83C T7: klikací simulace se neprochází ani nesbírá – řádek řekne, co klepnutí udělá (odpověď z věty). */
+const ORRERY_LINE: Readonly<Record<string, string>> = { glow: 'Tap them to make them glow!', faster: 'Tap them to make them spin faster!', bigger: 'Tap them to make them grow!' };
+
+export function verbLine(spec: Pick<GameSpecV1, 'control' | 'controlParams' | 'addons' | 'objective' | 'heroAction' | 'roles'>): string | null {
+  if (spec.control === 'orrery') return ORRERY_LINE[String((spec.controlParams?.tuning as { readonly answer?: string } | undefined)?.answer)] ?? ORRERY_LINE.glow!;
   const verb = verbsOfSpec(spec).find((candidate) => SAY[candidate] !== undefined);
   if (verb === undefined) return null;
   const roles = spec.roles ?? [];

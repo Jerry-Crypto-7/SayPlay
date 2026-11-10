@@ -234,22 +234,28 @@ export function chainSwitchOf(move: ReadingMove | null, matchedOf: string | null
 }
 
 /**
- * Proč AI verze nevyšla – jedna věta pro hráče na každý důvod serveru. Bez
- * obviňování (P33 T5): hráč slyší, co zůstává, ne čí je to chyba.
+ * Konec AI verze bez hry, ať se pokazilo cokoli (P83B T3): porotce viděl „came back garbled“ u hry, která se dala
+ * hrát. Hráč slyší, co zůstává a co dělat, ne co se pokazilo – důvod nese log serveru.
+ */
+export const QUIET_END = 'The quick version is the one to play.';
+
+/**
+ * Co hráč uslyší na každý důvod serveru: jen hra, ke které AI verze z principu není (`NOT_FROM_SENTENCE`, `CHAIN`),
+ * řekne proč – nic se nepokazilo a opakování to nezmění. Ostatní mají `QUIET_END`.
  */
 export const FINAL_REASON_TEXT: Readonly<Record<DraftFinalReason, string>> = {
-  MODEL_UNAVAILABLE: "Couldn't make the full-detail version right now. Keep playing the quick one.",
-  MALFORMED: 'The full-detail version came back garbled. The quick one stays.',
-  UNREPAIRED: "The full-detail version didn't pass our checks. The quick one stays.",
-  VERB_UNPROVED: "The full-detail version's new move never worked in a test run. The quick one stays.",
-  ACTION_LOST: "The full-detail version lost a move from your sentence. The quick one stays.",
-  UNCHANGED: "The full-detail version didn't add more. Keep playing the quick one.",
-  NOT_PLAYABLE: "The full-detail version wasn't playable in a test run. The quick one stays.",
-  STORE_UNAVAILABLE: "Couldn't save the full-detail version. The quick one stays.",
+  MODEL_UNAVAILABLE: QUIET_END,
+  MALFORMED: QUIET_END,
+  UNREPAIRED: QUIET_END,
+  VERB_UNPROVED: QUIET_END,
+  ACTION_LOST: QUIET_END,
+  UNCHANGED: QUIET_END,
+  NOT_PLAYABLE: QUIET_END,
+  STORE_UNAVAILABLE: QUIET_END,
   NOT_FROM_SENTENCE: "This game wasn't made from an idea, so there's no full-detail version.",
-  BLOCKED: "We can't show the full-detail version. The quick one stays.",
+  BLOCKED: QUIET_END,
   CHAIN: "This game is a run of rounds, so there's no full-detail version.",
-  FAILED: "Couldn't finish the full-detail version. The quick one stays.",
+  FAILED: QUIET_END,
 };
 
 /**
@@ -283,8 +289,10 @@ export function noticeOf(view: UpgradeView, title: string | null = null): Upgrad
     case 'final':
       return { text: FINAL_REASON_TEXT[view.reason], action: RETRYABLE.has(view.reason) ? { kind: 'retry', label: 'Try again' } : null };
     case 'offline':
-    case 'lost':
       return { text: 'We lost track of the full-detail version.', action: { kind: 'retry', label: 'Check again' } };
+    case 'lost':
+      // Po stropu (P83B T3) řádek postupu zmizí: AI verze nedorazila včas a rychlá hra běží dál bez výčitky.
+      return null;
   }
 }
 

@@ -9,8 +9,9 @@
  * takže hráč dostane návrh, ne chybu. Placená záloha (P30A T3) platí z vlastního
  * stropu `processFallbackSpendCap()`.
  *
- * Produkce (P30A): primár gpt-oss-20b přes sdílené API (`openai:`), záloha astra
- * přes placené API. `codex-cli` (předplatné) zůstává jen pro vývoj.
+ * Produkce (rozhodnutí majitele 5. 11. 2026): gpt-6-astra přes placené OpenAI API
+ * (`openai:`), bez zálohy – `WORLDSMITH_FALLBACK_*` prázdné (`scripts/cloud/env.production.example`,
+ * `DISCLOSURE.md`). gpt-oss-20b byl jen měřený kandidát (P30A). `codex-cli` (předplatné) zůstává jen pro vývoj.
  *
  * Objednávka se čte jako v `/api/generate` (`WORLDSMITH_BRANCH === 'live'`)
  * a vypínač `upstream` ji ruší – klíč zděděný z jiného projektu tak placenou
@@ -82,6 +83,18 @@ export function minCallMs(config: UpstreamConfig): number {
   if (config.pricing.usdPerMTokOut === 0) return 0;
   return config.model.toLowerCase().includes(DIRECTOR_PRIMARY_MODEL) ? OSS_MIN_CALL_MS : MIN_CALL_MS;
 }
+
+/**
+ * Okno jedné režie od `startedAt`: jak dlouho smí běžet a kolik z něj musí zbývat, aby placené volání odešlo
+ * (`minCallMs: null` = mez poskytovatele `minCallMs()`). Výchozí je celý rozpočet trasy; AI verze po „Make it!“
+ * má od P83B T3 vlastní, kratší (`UPGRADE_WINDOW` v `_upgrade.ts`).
+ */
+export interface DirectorWindow {
+  readonly budgetMs: number;
+  readonly minCallMs: number | null;
+}
+
+const ROUTE_WINDOW: DirectorWindow = { budgetMs: DIRECTOR_BUDGET_MS, minCallMs: null };
 
 /**
  * Kolik placených volání režiséra smí jeden volající za den (R8). Věta stojí
@@ -195,8 +208,8 @@ async function callerAllows(caller: string, env: Record<string, string | undefin
  * ho volající zaplatil i za režii, která model nezavolá (revize T4, nález 1). Souběžná věta může poslední
  * volání dne nebo zbytek stropu vzít mezi otázkou a voláním; pak je čtení zaplacené naprázdno, jednou.
  */
-async function directorWouldCall(env: Record<string, string | undefined>, config: UpstreamConfig, deadline: number, caller: string): Promise<boolean> {
-  if (deadline - Date.now() < minCallMs(config) + (readerConfigFromEnv(env)?.timeoutMs ?? 0)) return false;
+async function directorWouldCall(env: Record<string, string | undefined>, config: UpstreamConfig, deadline: number, caller: string, floorMs = minCallMs(config)): Promise<boolean> {
+  if (deadline - Date.now() < floorMs + (readerConfigFromEnv(env)?.timeoutMs ?? 0)) return false;
   return directorWouldPay(env, config, caller);
 }
 
@@ -262,12 +275,13 @@ async function billed(reservation: Reserved, config: UpstreamConfig, run: () => 
   }
 }
 
-/** Živá větev obalená stropem; `null` = model se volat nebude. */
+/** Živá větev obalená stropem; `null` = model se volat nebude. `floorMs` = mez volání okna, chybí = mez poskytovatele. */
 async function cappedBranch(
   env: Record<string, string | undefined>,
   deadline: number,
   caller: string,
   onCallerLimit: () => void,
+  floorMs?: number,
 ): Promise<GenerationBranch | null> {
   if (env.WORLDSMITH_BRANCH !== 'live') return null;
   if ((await killState(env)).upstream) return null;
@@ -281,7 +295,7 @@ async function cappedBranch(
     worstCaseUsd: (call) => branch.worstCaseUsd(call),
     async generate(call) {
       const left = deadline - Date.now();
-      if (left < minCallMs(config)) {
+      if (left < (floorMs ?? minCallMs(config))) {
         console.warn(`[play] director call skipped: ${String(Math.round(left / 1000))} s left of the route budget`);
         return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'too little time left in the route', usage: null };
       }
@@ -317,7 +331,7 @@ async function cappedBranch(
           ? null
           : async (signal) => {
               const rest = deadline - Date.now();
-              if (rest < minCallMs(backup)) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'too little time left for the fallback', usage: null };
+              if (rest < (floorMs ?? minCallMs(backup))) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'too little time left for the fallback', usage: null };
               // Vypínač znovu až tady (revize T3): záloha startuje až po `hedgeMs`
               // a vypínač přepnutý mezitím by jinak placené volání nezastavil.
               if ((await killState(env)).upstream) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'the upstream kill switch is on', usage: null };
@@ -536,16 +550,18 @@ export function recordDirectorStep(queueId: string, step: DirectorStep): void {
  *
  * `startedAt` je příchod požadavku (`Date.now()`), jehož `maxDuration` režii drží.
  * `onDraft` (P58D T1): návrh, který `direct()` postaví ze čtení, dřív než zavolá model.
+ * `window` (P83B T3): do kdy režie smí volat model a kdy začít opravné kolo; výchozí je rozpočet trasy.
  */
-export function getDirector(startedAt: number, caller: string, check?: DirectorDeps['check'], nudge?: string, queueId?: string, waitForSlot = true, onDraft?: DirectorDeps['onDraft']): Director {
+export function getDirector(startedAt: number, caller: string, check?: DirectorDeps['check'], nudge?: string, queueId?: string, waitForSlot = true, onDraft?: DirectorDeps['onDraft'], window: DirectorWindow = ROUTE_WINDOW): Director {
   return async (sentence) => {
-    const deadline = startedAt + DIRECTOR_BUDGET_MS;
+    const deadline = startedAt + window.budgetMs;
+    const floorMs = window.minCallMs ?? undefined;
     const cache = directorCacheFromEnv(process.env);
     let callerLimited = false;
     const config = upstreamConfigFromEnv(process.env);
     const branch = await cappedBranch(process.env, deadline, caller, () => {
       callerLimited = true;
-    });
+    }, floorMs);
     const onStep = (step: DirectorStep): void => {
       if (queueId !== undefined) recordDirectorStep(queueId, step);
     };
@@ -578,8 +594,8 @@ export function getDirector(startedAt: number, caller: string, check?: DirectorD
       const examples = process.env.PLAY_DIRECTOR_EXAMPLES === 'on';
       // Čtení se platí jen, když by režisér model zavolal (revize T4, nález 1), a až se slotem v ruce (T4b): plná fronta,
       // termín ani souběžná věta, která slot vezme během 3–15 s čtení, ho pak nezaplatí naprázdno. Daň: slot je obsazený i po dobu čtení.
-      const reader = readerForAiVersion() ? { caller, mayPayRead: async () => (await takeSeat()) === null && (await directorWouldCall(process.env, config, deadline, caller)) } : {};
-      return { ...(await direct(sentence, { branch: queued, cache, now: Date.now, check, compact, examples, ...reader, ...drafted, ...(nudge === undefined ? {} : { nudge }) })), callerLimited };
+      const reader = readerForAiVersion() ? { caller, mayPayRead: async () => (await takeSeat()) === null && (await directorWouldCall(process.env, config, deadline, caller, floorMs)) } : {};
+      return { ...(await direct(sentence, { branch: queued, cache, now: Date.now, deadline, check, compact, examples, ...reader, ...drafted, ...(nudge === undefined ? {} : { nudge }) })), callerLimited };
     } finally {
       // `seat` přiřazuje `generate` výš; TypeScript to po `await` nevidí.
       (seat as { readonly release: () => void } | null)?.release();

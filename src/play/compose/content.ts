@@ -9,7 +9,8 @@ export function withAuthoredContent(game: GameSpecV1, content: GenreSpec): GameS
   return {
     ...game,
     ...(extra.length === 0 ? {} : { roles: [...game.roles, ...extra] }),
-    ...(content.rules?.length ? { rules: content.rules } : {}),
+    // Rules name the phases, timers and vars their logic block declares (P83B T2).
+    ...(content.rules?.length ? { rules: content.rules, ...(content.logic === undefined ? {} : { logic: content.logic }) } : {}),
     ...(content.things?.length ? { things: content.things } : {}),
     ...(content.heroAction === undefined ? {} : { heroAction: content.heroAction }),
   };

@@ -203,8 +203,9 @@ describe('arena perf wiring (P36C T9)', () => {
     for (const effect of hooks.effects) effect();
     const search = vi.spyOn(world, 'traverseVisible');
     for (let frame = 0; frame < 4; frame += 1) hooks.after[0]!();
-    // Šest proměnných karty (hrdina ze čtyř stran, střed mezi lištami, zmenšení – P58C T6), každá jednou za čtyři snímky.
-    expect(setProperty).toHaveBeenCalledTimes(6);
+    // Sedm proměnných karty (hrdina ze čtyř stran, střed mezi lištami, zmenšení – P58C T6, horní hrana pásu – P83A T5),
+    // každá jednou za čtyři snímky.
+    expect(setProperty).toHaveBeenCalledTimes(7);
     expect(search).toHaveBeenCalledTimes(1);
 
     // Hrdina se schová (výměna modelu) → hledá se znovu, a když není, karta místo pustí.

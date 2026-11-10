@@ -40,7 +40,8 @@ describe('upgrade preserves played actions from the stored quick version', () =>
     expect(lostActions(extractIntent(sentence), before, after).map(action => action.verb)).toEqual(expect.arrayContaining(['race', 'shoot']));
     expect(await upgradeOf(store, quick, request())).toEqual({ status: 'draft-final', reason: 'ACTION_LOST' });
     expect(await store.childrenOf(quick.version.versionId)).toEqual([]);
-    expect(await store.upgradeVerdict(quick.version.versionId)).toBe('ACTION_LOST');
+    // Verdikt nese čas vzniku (P83B T4): opakování po skončení návštěvy dostane jeden nový pokus.
+    expect(await store.upgradeVerdict(quick.version.versionId)).toMatch(/^ACTION_LOST@\d+$/);
     __resetUpgrades();
     expect(await upgradeOf(store, quick, request())).toEqual({ status: 'draft-final', reason: 'ACTION_LOST' });
     expect(director.calls).toBe(1);

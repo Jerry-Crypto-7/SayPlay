@@ -151,7 +151,10 @@ export interface UpstreamRequest {
  */
 export const EMISSION_MODEL = 'gpt-6-astra';
 
-/** Primár režiséra `/play` (P30A): gpt-oss-20b u hostovaného poskytovatele nebo lokálně. */
+/**
+ * Kandidát režiséra `/play` z P30A (gpt-oss-20b u hostovaného poskytovatele nebo lokálně); `_director.ts` mu dává delší
+ * nejkratší čas volání. Nasazené demo ho nevolá – režisér je od 5. 11. 2026 gpt-6-astra (`DISCLOSURE.md`).
+ */
 export const DIRECTOR_PRIMARY_MODEL = 'gpt-oss-20b';
 
 /**

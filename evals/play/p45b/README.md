@@ -186,6 +186,7 @@ Stejný příkaz a soud jako T11. `director-logic.json` nese nový soud (`raw`, 
 | 5 | + řádek `Course:` popisuje celé zapojení a zakazuje výhru/prohru na časovači a fázi | 24/25 | **1/25** (s008) | **1/25** |
 | 5, přesouzeno 15. 10. | stejné odpovědi nad P46 (tratě P46D, obtížnost P46H) | 24/25 | 1/25 | 2/25 |
 | 5, přesouzeno 5. 11. | stejné odpovědi nad férovým startem P70A T3 (`genre.v8`) | 24/25 | 2/25 | 3/25 |
+| 5, přesouzeno 10. 11. | P83B T2: nepodporovaný `counts.*` vypadne místo odmítnutí, pravidla nesou svůj blok `logic` | 24/25 | 2/25 | 4/25 |
 
 **15. 10.:** po demu 12. 10. bylo 2/3; s008 teď prohraje (robot v 557. metru delší a těžší trati P46D/H), takže 1/2. Majitel rozhodl přijmout a obtížnost neměnit.
 

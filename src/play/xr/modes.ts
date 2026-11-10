@@ -67,6 +67,8 @@ export const XR_MODES: Readonly<Record<GenreId, XrModeEntry>> = {
   railfps: { mode: 'desk', pose: 'table' },
   buildshift: { mode: 'desk', pose: 'table' },
   drawsave: { mode: 'desk', pose: 'table' },
+  orrery: { mode: 'desk', pose: 'table' },
+  shop: { mode: 'desk', pose: 'table' },
 };
 
 /**
@@ -75,7 +77,9 @@ export const XR_MODES: Readonly<Record<GenreId, XrModeEntry>> = {
  * P68 T10: railfps míří kvantovaným sektorem osy, otočení hlavy na sektor `xr/input-map.ts` zatím nepřevádí
  * (`prvni-osoba/integration.md` → VR: „do řezu VR hru nenabízet“).
  */
-export const XR_UNOFFERED: ReadonlySet<string> = new Set<string>(['drawsave', 'railfps']);
+// P83C: klikací simulace míří prstem na věc (`OrreryTouch`), paprsek ovladače na věc zatím nemíří.
+// P83E: obchod se ťuká na cenovky v DOM (`ShopTouch`), paprsek ovladače na ně nemíří – VR se zatím nenabízí.
+export const XR_UNOFFERED: ReadonlySet<string> = new Set<string>(['drawsave', 'railfps', 'orrery', 'shop']);
 
 /** Žánr, který tabulka nezná (starý spec bez žánru, nový žánr před svou úlohou VR), hraje na stole. */
 export const DESK_MODE: XrModeEntry = { mode: 'desk', pose: 'table' };
@@ -117,6 +121,8 @@ const GENRE_OF_BOT: Readonly<Record<string, GenreId>> = {
   railfps_bot: 'railfps',
   buildshift_bot: 'buildshift',
   drawsave_bot: 'drawsave',
+  orrery_bot: 'orrery',
+  shop_bot: 'shop',
 };
 
 /** Žánr hratelného světa; `null` = svět bez žánru (starší ovládání `glide`, `walker`, `ball`). */

@@ -108,6 +108,16 @@ const MINIGOLF = pair('minigolf', 'default');
 const DRAWSAVE = pair('drawsave', 'default');
 // P68 T10: střelnice z vlastních očí na kolejích.
 const RAILFPS = pair('railfps', 'default');
+// P83C T4: klikací simulace – věci z věty, které na klepnutí odpoví.
+const ORRERY = pair('orrery', 'default');
+// P83E T4: obchod se součtem – věci na pult a součet cenovek (`SHOP` je už slovo podniku).
+const TALLY = pair('shop', 'default');
+/** Kam se věci kladou a kde se sčítá (P83E): pult, pokladna, váha, kotel. Koše ne – ty chytají (`catch`). */
+const TALLY_PLACE = String.raw`(?:counters?|checkouts?|tills?|(?:cash )?registers?|scales?|(?:conveyor )?belts?|cauldrons?|pots?|bowls?|trays?|carts?)`;
+/** Součet věty: celkem, sečíst, kolik to stojí, účet; cíl součtu („exactly 12 dollars“, „adds up to 20“). Ne skóre ani čas. */
+const TALLY_SUM = String.raw`(?:\btotals?\b(?! (?:score|time|darkness|chaos|destruction|war|control)\b)|\badd(?:s|ing)? (?:it |them |everything )?up\b|\bsum\b|\bhow much (?:they|it|everything|all) costs?\b|\bwhat (?:i|you|we) (?:have|need) to pay\b|\bbill\b|\breceipt\b|\bexactly \$?\d+|\buntil it (?:shows|reads|says) (?:exactly )?\$?\d+|\b(?:see|sees|show|shows|check|checks|read|reads) (?:the |their |its )?(?:total |final )?(?:price|cost)s?\b)`;
+/** Košík se součtem jen s penězi (P83E T7, „vegetables in the basket, add up the cost“) – košík bez ceny chytá (`catch`). */
+const TALLY_BASKET = String.raw`\bbaskets?\b[^.;!?]*?(?:\bcosts?\b|\bprices?\b|\bpay\b|\$)|(?:\bcosts?\b|\bprices?\b|\bpay\b|\$)[^.;!?]*?\bbaskets?\b`;
 
 interface Verb {
   /** Základní tvar – ten se vrací jako `verb` a čte ho kontrola věrnosti. */
@@ -217,6 +227,24 @@ const RAIL_MOVING = String.raw`(?:\b${RAIL_VEHICLE} (?:speeds?|rolls?|rumbles?|c
 const VEHICLE = String.raw`(?:cars?|trucks?|vans?|bus(?:es)?|buggy|buggies|scooters?|motorbikes?|motorcycles?|dirt ?bikes?|tractors?|go-?karts?|karts?|taxis?|ambulances?|jeeps?|quads?|snowmobiles?|bulldozers?|lorr(?:y|ies)|pickups?)`;
 /** Determinant před obchodem: „a“, „my“, „your own“. */
 const OWNER = String.raw`(?:a|an|my|your|the|his|her|their|our)(?: own)?`;
+/** P83C T4: klepnutí prstem nebo myší. */
+const TOUCHED = String.raw`(?:tap|click|touch|press|poke|pat)(?:s|es|ed|ped|ing|ping)?`;
+/** P83C T4: věc po klepnutí řekne, co je („shows its name“, „tells you which season“). */
+const NAMED = String.raw`(?:show|shows|showing|tell|tells|telling|say|says|saying|see|hear|learn|reveal|reveals|display|displays)(?: you| me| us)? (?:its|their|his|her|which|what|who|the names?)\b`;
+/** P83C T4: věc se probudí – svítí, zrychlí, vyroste („makes it glow“, „make it buzz faster“, „bloom bigger“). */
+const WAKES = String.raw`(?:glow|shine|sparkle|twinkle|light up|bloom|grow|spin|turn on|switch on|come alive|come to life|start moving|[a-z]+ faster|[a-z]+ bigger|[a-z]+ brighter|faster|bigger|brighter)`;
+/** P83C T4: odpověď za klepnutím na věc: jméno, „make it …“, „light it up“, „switch its lights on“. */
+const ANSWERS = String.raw`(?:${NAMED}|(?:makes?|making|to make|and make|so) (?:it|them|each one|that one|one) (?:[a-z]+ ){0,2}?${WAKES}\b|(?:lights?|lighting|to light|turns?|to turn|switch(?:es)?|to switch|speeds?|to speed) (?:it|them|its [a-z]+|their [a-z]+) (?:up|on)\b)`;
+/**
+ * P83C T4: věc se probudí před klepnutím ve větě („light up when you click them“, „spin when clicked“). T7 i změna
+ * se srovnáním („turn faster“, „get brighter“ – první brána: hodinový stroj spadl do sbírání, orchestr do rytmu).
+ */
+const WAKES_UP = String.raw`(?:glows?|shines?|sparkles?|twinkles?|lights? up|blooms?|grows?|spins?|turns? on|switch(?:es)? on|comes? alive|starts? moving|speeds? up|[a-z]+ (?:faster|bigger|brighter|larger))`;
+/**
+ * P83C T7: cíl klepnutí za „when you tap“ – věc nebo zájmeno („tap them“, „click it“), ne obrazovka; trpný tvar bez cíle.
+ * Klepnutí na „správnou“ věc je volba ve hře („press the correct bubbles as musical cues arrive“ – rytmus), ne prohlídka.
+ */
+const TAP_TARGET = String.raw`(?:(?:you |i |we )?${TOUCHED}(?! (?:on )?(?:the |your |a )?(?:screen|button|mouse|space ?bar|keys?)\b)(?! (?:on )?(?:the |a |an )?(?:correct|right|wrong|matching)\b) (?:on )?(?:them|it|one|each one|a|an|the|each|every|any|[a-z-]+s)\b|clicked|tapped|touched|poked|pressed)`;
 
 /**
  * Co sloveso dělá se svým předmětem (P39): režim slovesa to říká – střelba sestřelí, hod míří, rvačka a
@@ -405,6 +433,16 @@ const VERBS: readonly Verb[] = [
     String.raw`\bserv(?:e|es|ing) (?:\d+|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|all (?:the )?|every|the) (?:[a-z'-]+ ){0,2}?[a-z'-]*[a-rt-z]s their\b`,
     String.raw`\bserv(?:e|es|ing)\b(?= (?:[a-z'-]+ ){0,4}?${PATRONS}\b)|\bserv(?:e|es|ing)\b[^.;!?]*?\b(?:until|till|before) (?:sunset|sundown|closing(?: time)?|close|dark|midnight|the (?:end of the )?(?:day|night)|the (?:lunch|dinner|breakfast|morning|evening) rush (?:ends|is over))\b`,
   ].join('|'))),
+  // P83C T4: klikací simulace – klepnutí na věc, která odpoví jménem nebo změnou („clicking a planet shows its name and
+  // makes it orbit faster“, „a row of bells that glow when you tap them“). Klepnutí míří na věc (člen, „each“, „one“,
+  // množné číslo), ne na obrazovku; odpověď je jméno, světlo, rychlost nebo růst. Klepnutí bez odpovědi („click the moles
+  // as they pop out“, „tap to make the rocket dodge meteors“) i „glowing orbs“ jako přívlastek zůstávají svým hrám.
+  v('explore', 'sign', ORRERY, new RegExp([
+    String.raw`\b${TOUCHED}(?! (?:on )?(?:the |your |a )?(?:screen|button|mouse|space ?bar|keys?)\b) (?:on )?(?:a|an|the|each|every|any|one|them|it|[a-z-]+s)\b[^.;!?]{0,80}?\b${ANSWERS}`,
+    String.raw`\b${WAKES_UP} (?:[a-z]+ ){0,3}?(?:when|whenever|each time|every time|if|once) ${TAP_TARGET}`,
+    // T7: odpoví zájmeno za klepnutím („click one and it spins faster“, „tap them so they glow“).
+    String.raw`\b${TOUCHED}(?! (?:on )?(?:the |your |a )?(?:screen|button|mouse|space ?bar|keys?)\b) (?:on )?(?:a|an|the|each|every|any|one|them|it|[a-z-]+s)\b[^.;!?]{0,60}? (?:and|so|then) (?:it|they|each one) (?:will )?${WAKES_UP}`,
+  ].join('|'))),
   // Úkol v prostoru: předměty rozeseté po scéně.
   v('light', 'goal', SPATIAL, new RegExp(String.raw`\b(?:light(?:s|ing)?(?: up)?|ignit(?:e|es|ing)|kindl(?:e|es|ing)) ${OBJECT}|\blight(?:s|ing)?(?: up)?(?= (?:[a-z]+ )?(?:lanterns?|candles?|torches?|lamps?|beacons?|fireworks?|bonfires?|campfires?)\b)`)),
   v('extinguish', 'goal', SPATIAL, /\bextinguish(?:es|ing)?\b|\bput(?:s|ting)? out (?:the )?(?:fires?|flames?|blaze)\b|\bdous(?:e|es|ing)\b|\bspray(?:s|ing)? water\b|\bhos(?:e|es|ing) down\b/),
@@ -569,6 +607,10 @@ const VERBS: readonly Verb[] = [
   v('sneak', 'chase', ESCAPE, /\bsneak(?:s|ing)?\b|\btipto(?:e|es|eing)\b/),
   v('ignore', 'chase', ESCAPE, /\bignor(?:e|es|ing)\b/),
   v('refuse', 'chase', ESCAPE, /\brefus(?:e|es|ing)\b/),
+  // P83E T4: věci na pult a součet v jedné větě („put them on the counter and see the total price“, „pumpkins on a scale
+  // until it shows exactly 30 kilos“). Jen místo položení i součet spolu – samotný obchod je stavba (`buildshift`),
+  // samotný součet nic neříká.
+  v('tally', 'sign', TALLY, new RegExp(String.raw`\b${TALLY_PLACE}\b[^.;!?]*?${TALLY_SUM}|${TALLY_SUM}[^.;!?]*?\b${TALLY_PLACE}\b|${TALLY_BASKET}`)),
 ];
 
 /** Buňky, které hraje znak žánru (P66 T12): když je hlavním slovesem věty, jmenuje celou hru (`chain/decide.ts`). */

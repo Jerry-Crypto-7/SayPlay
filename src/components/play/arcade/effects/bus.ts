@@ -139,6 +139,9 @@ function visualEventsOf(effects: readonly ArcadeEffect[], tick: number, state: I
     if (body !== player) add('ability', body);
   }
   const striking = abilityStriking(rules, prev, state);
+  // „+1“ jen za věc, která něco přinesla (P83A T2): jiskra tepu (`isSpark`) i věc odvolaná tepem zmizí bez bodu
+  // i bez počtu, a „+1“ u nich ukazovalo růst, který počítadlo cíle nemělo („keys 0/3“).
+  const gained = effects.some((effect) => (effect.kind === 'score' || effect.kind === 'count') && effect.amount > 0);
   let spawns = 0;
   for (const effect of effects) {
     if (effect.kind === 'spawn') spawns += 1;
@@ -146,7 +149,7 @@ function visualEventsOf(effects: readonly ArcadeEffect[], tick: number, state: I
     // Jen tělo, které tímhle tikem opravdu zmizelo – despawn mrtvého těla stav nemění.
     else if (effect.kind === 'despawn' && inWorld(effect.body) && aliveIn(prev, effect.body) && !aliveIn(state, effect.body)) {
       const role = state[bodyBase(effect.body) + BODY.role];
-      add(role === ROLE.collectible ? 'pickup' : role === ROLE.powerup ? 'powerup' : 'death', effect.body);
+      if (role !== ROLE.collectible || gained) add(role === ROLE.collectible ? 'pickup' : role === ROLE.powerup ? 'powerup' : 'death', effect.body);
       if (striking && (role === ROLE.enemy || role === ROLE.chaser)) add('ability', effect.body);
       if (role !== ROLE.collectible && role !== ROLE.powerup && wasBoss(rules, prev, effect.body)) add('bossDefeat', effect.body);
     } else if (effect.kind === 'stateChange' && inWorld(effect.body) && targetStateOf(state, effect.body) !== targetStateOf(prev, effect.body)) {

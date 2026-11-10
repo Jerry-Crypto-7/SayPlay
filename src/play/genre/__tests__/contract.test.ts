@@ -78,6 +78,14 @@ const SAMPLES: readonly GenreSpec[] = [
   ...(GENRE_MODULES.buildshift.availability('default') === 'ready'
     ? [{ genre: 'buildshift', mode: 'default', hero: 'chef', cast: [{ label: 'robot', does: 'collect' }, { label: 'pizza', does: 'scenery' }], setting: 'diner' } as GenreSpec]
     : []),
+  // P83C T4: orrery, stejná podmínka.
+  ...(GENRE_MODULES.orrery.availability('default') === 'ready'
+    ? [{ genre: 'orrery', mode: 'default', hero: 'explorer', cast: [{ label: 'cow', does: 'scenery' }, { label: 'pig', does: 'scenery' }, { label: 'sheep', does: 'scenery' }], setting: 'farm' } as GenreSpec]
+    : []),
+  // P83E T4: obchod se součtem, stejná podmínka.
+  ...(GENRE_MODULES.shop.availability('default') === 'ready'
+    ? [{ genre: 'shop', mode: 'default', hero: 'fox', cast: [{ label: 'teddy bear', does: 'collect' }], setting: 'toy shop' } as GenreSpec]
+    : []),
 ];
 
 /** První semínko, na kterém se hra zkompiluje – dveře publikace dělají totéž. */

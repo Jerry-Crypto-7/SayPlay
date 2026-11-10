@@ -42,7 +42,7 @@ import { instantiate } from '@/play/arcade/kernel';
 import type { Look } from '@/play/arcade/look';
 import { riggedCharacter } from '@/play/arcade/models';
 import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
-import { DIRECTIONS, arenaAxis, graceLeft } from '@/play/arcade/pieces/arena';
+import { DIRECTIONS, ESCAPE, arenaAxis, graceLeft } from '@/play/arcade/pieces/arena';
 import { FIGHT, FIGHT_PHASE, type FightControlParams, attackCooldownOf, facingOf, phaseOf, phaseTicksLeft, strikeDirectionOf } from '@/play/arcade/pieces/fight';
 import { type ToyPose, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
 import type { HeroAction } from '@/play/spec';
@@ -354,7 +354,11 @@ export function modelOf(part: Part, cast: Cast, kind?: string): string | undefin
 const FALLBACK: Readonly<Record<Part, string>> = { hero: brand['sky-deep'], chaser: brand.alarm, enemy: brand['tomato-deep'], foe: brand.alarm, item: brand.sun, block: FENCE_COLOR };
 
 export function drawnOf(view: BodyView, part: Part): Size {
-  if (part === 'item') return { w: ITEM_DRAWN_M, h: ITEM_DRAWN_M, d: ITEM_DRAWN_M };
+  if (part === 'item') {
+    // Zvětšená věc (`itemSizePct`, věta s počtem blízko P83A T2) se kreslí úměrně; běžná (0,5 m) i jiskra jako dřív.
+    const drawn = ITEM_DRAWN_M * Math.max(1, view.w / (ESCAPE.itemSize / UNIT));
+    return { w: drawn, h: drawn, d: drawn };
+  }
   if (part === 'hero' && view.h < HERO_DRAWN_M) return { w: Math.max(view.w, HERO_DRAWN_M), h: HERO_DRAWN_M, d: Math.max(view.d, HERO_DRAWN_M) };
   return { w: view.w, h: view.h, d: view.d };
 }

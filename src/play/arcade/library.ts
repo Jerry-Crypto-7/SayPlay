@@ -42,6 +42,8 @@ import { STEAL_RULES, stealBases, stealControl } from './pieces/steal';
 import { stealBot } from './pieces/steal-bot';
 import { SORT_RULES, sortBins, sortControl } from './pieces/sort';
 import { sortBot } from './pieces/sort-bot';
+import { SHOP_RULES, shopControl, shopCounter } from './pieces/shop';
+import { shopBot } from './pieces/shop-bot';
 import { ARROWS_RULES, arrowsControl, arrowsGrid } from './pieces/arrows';
 import { arrowsBot } from './pieces/arrows-bot';
 import { STUNT_RULES, stuntControl, stuntTrack } from './pieces/stunt';
@@ -54,6 +56,8 @@ import { BUILDSHIFT_RULES, buildshiftControl, buildshiftShop } from './pieces/bu
 import { buildshiftBot } from './pieces/buildshift-bot';
 import { DRAWSAVE_RULES, drawsaveControl, drawsaveLevel } from './pieces/drawsave';
 import { drawsaveBot } from './pieces/drawsave-bot';
+import { ORRERY_RULES, orreryControl, orreryScene } from './pieces/orrery';
+import { orreryBot } from './pieces/orrery-bot';
 import { fightBot } from './pieces/fight-bot';
 import { flapControl, flapTrack } from './pieces/flap';
 import { flapBot } from './pieces/flap-bot';
@@ -123,6 +127,7 @@ const BASE_BOTS = {
   hole_bot: holeBot,
   steal_bot: stealBot,
   sort_bot: sortBot,
+  shop_bot: shopBot,
   arrows_bot: arrowsBot,
   // P68 T1: roboti pěti koster P68; tělo napíše kategorie pod týmž jménem.
   stunt_bot: stuntBot,
@@ -130,6 +135,8 @@ const BASE_BOTS = {
   railfps_bot: railfpsBot,
   buildshift_bot: buildshiftBot,
   drawsave_bot: drawsaveBot,
+  // P83C T2: klikací simulace.
+  orrery_bot: orreryBot,
 } as const;
 
 /**
@@ -169,6 +176,8 @@ export const MODE_GENERATORS: Readonly<Record<string, ModeGeneratorPiece>> = {
   hole_swallow: holeSwallow,
   steal_bases: stealBases,
   sort_bins: sortBins,
+  // P83E T2: obchod se součtem – věci s cenovkou na pult.
+  shop_counter: shopCounter,
   arrows_grid: arrowsGrid,
   // P68 T1: kostry pěti her P68 – svět nepostaví (`modeStub`), dokud je kategorie nenaplní.
   stunt_track: stuntTrack,
@@ -176,6 +185,8 @@ export const MODE_GENERATORS: Readonly<Record<string, ModeGeneratorPiece>> = {
   railfps_rail: railfpsRail,
   buildshift_shop: buildshiftShop,
   drawsave_level: drawsaveLevel,
+  // P83C T2: klikací simulace – věci z věty na drahách, klepnutí je probudí.
+  orrery_scene: orreryScene,
 };
 
 const BASE_CONTROLS = {
@@ -207,6 +218,7 @@ const BASE_CONTROLS = {
   hole: holeControl,
   steal: stealControl,
   sort: sortControl,
+  shop: shopControl,
   arrows: arrowsControl,
   // P68 T1: ovládání pěti koster P68 (scény `genres/<žánr>/` podle `STAGES`); hýbat začnou s kategorií.
   stunt: stuntControl,
@@ -214,6 +226,8 @@ const BASE_CONTROLS = {
   railfps: railfpsControl,
   buildshift: buildshiftControl,
   drawsave: drawsaveControl,
+  // P83C T2: klikací simulace (klepnutí míří na věc, osa nese její číslo).
+  orrery: orreryControl,
 } as const;
 
 const PHASE_CONTROLS = { ...BASE_CONTROLS, phase_control: makePacedControl(BASE_CONTROLS) };
@@ -224,7 +238,7 @@ const PROGRESSION_CONTROLS = { ...FIGHT_CONTROLS, pacing_control: makePacingCont
 const PROGRESSION_BOTS = { ...PHASE_BOTS, pacing_bot: makePacingBot(PHASE_BOTS) as BotPiece };
 const NATIVE_LIBRARY: ArcadeLibrary = {
   controls: { ...PROGRESSION_CONTROLS, addon_control: makeAddonControl(PROGRESSION_CONTROLS) as ControlPiece },
-  rules: { pacing: pacingRule as RulePiece, boss_beat: bossBeat as RulePiece, boss_beat_hit: bossBeatHit as RulePiece, arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, objective_order: objectiveOrder, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, arena_wake: arenaWake as RulePiece, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, duel_dodge: duelDodgeRule, ...SPEC_RULES, ...FIGHT_RULES, ...ABILITY_RULES, ...CATCH_RULES, ...WHACK_RULES, ...DEFENSE_RULES, ...SLICE_RULES, ...HOP_RULES, ...CROWD_RULES, ...MERGE_RULES, ...PUSH_RULES, ...SURVIVOR_RULES, ...HOLE_RULES, ...STEAL_RULES, ...SORT_RULES, ...ARROWS_RULES, ...STUNT_RULES, ...MINIGOLF_RULES, ...RAILFPS_RULES, ...BUILDSHIFT_RULES, ...DRAWSAVE_RULES },
+  rules: { pacing: pacingRule as RulePiece, boss_beat: bossBeat as RulePiece, boss_beat_hit: bossBeatHit as RulePiece, arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, objective_order: objectiveOrder, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, arena_wake: arenaWake as RulePiece, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, duel_dodge: duelDodgeRule, ...SPEC_RULES, ...FIGHT_RULES, ...ABILITY_RULES, ...CATCH_RULES, ...WHACK_RULES, ...DEFENSE_RULES, ...SLICE_RULES, ...HOP_RULES, ...CROWD_RULES, ...MERGE_RULES, ...PUSH_RULES, ...SURVIVOR_RULES, ...HOLE_RULES, ...STEAL_RULES, ...SORT_RULES, ...ARROWS_RULES, ...STUNT_RULES, ...MINIGOLF_RULES, ...RAILFPS_RULES, ...BUILDSHIFT_RULES, ...DRAWSAVE_RULES, ...ORRERY_RULES, ...SHOP_RULES },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,

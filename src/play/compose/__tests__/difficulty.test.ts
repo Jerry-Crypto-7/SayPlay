@@ -18,7 +18,10 @@ import { compileRecipe } from '../compile';
 // prohraje ≥ 10 z 12) – profil začátečníka je žádost kategorii v `integration-log.md`.
 // P68 T10: railfps naopak – začátečník prohraje 20/20 (přepadení na začátku vln, P68-K T1), pokročilý vyhraje 20/20;
 // pomalá ruka má prohrát (`railfps.test.ts`, herní brána `weak-loses`).
-const OWN_DIFFICULTY: ReadonlySet<string> = new Set(['hole.default', 'steal.default', 'sort.default', 'arrows.default', 'buildshift.default', 'stunt.default', 'minigolf.default', 'drawsave.default', 'railfps.default']);
+// P83E T4: obchod taky 20/20 – „polož N“ je úloha počítání, ne reflexu (ťuk na věc, hrdina dojde sám); prohru drží
+// hodiny (nečinnost prohraje, `arcade/pieces/__tests__/shop.test.ts`) a u trefy do součtu životy.
+// P83C: klikací simulace taky 20/20 – ťuká se na věci, reflex nehraje a prohrát v ní nejde.
+const OWN_DIFFICULTY: ReadonlySet<string> = new Set(['hole.default', 'steal.default', 'sort.default', 'arrows.default', 'buildshift.default', 'stunt.default', 'minigolf.default', 'drawsave.default', 'railfps.default', 'shop.default', 'orrery.default']);
 
 it('pins measured novice and intermediate bounds for every current live recipe', () => {
   const report = JSON.parse(readFileSync('evals/play/p41/difficulty.json', 'utf8')) as {

@@ -175,6 +175,7 @@ describe('recorded gpt-oss-20b logic answers', () => {
     // T12a záznam 5: číslo pevně – nový záznam, který ho pohne, musí přepsat i README. Demo 12. 10.: 1/1 → 2/3.
     // P46D/H 15. 10.: delší a těžší trať, robot s008 prohraje v 557. metru → 1/2 (rozhodnutí majitele: přijmout).
     // P70A T3 5. 11.: férový start (ochrana 3 s, pronásledovatel až po ní) – robot s008 trať doběhne → 2/3.
-    expect([summary.raw.hit, summary.repaired.hit]).toEqual([2, 3]);
+    // P83B T2 10. 11.: d20 už čtení nezahodí kvůli counts.target u jízdy → 2/4.
+    expect([summary.raw.hit, summary.repaired.hit]).toEqual([2, 4]);
   }, 600_000);
 });

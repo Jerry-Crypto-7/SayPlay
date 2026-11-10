@@ -41,7 +41,7 @@ import { loadRapier } from '@/play/arcade/physics/world';
 import type { ActionWitness } from '@/play/arcade/witness';
 import { CHAIN_CUES } from '@/play/chain/decide';
 import type { DirectorSource } from '@/play/contracts';
-import { type DirectorDeps, type DirectorFailure, aiProvenance, withDraftRules } from '@/play/director';
+import { type DirectorDeps, type DirectorFailure, MIN_REPAIR_MS, aiProvenance, withDraftRules } from '@/play/director';
 import { draftGameSpecWithMeta } from '@/play/draft';
 import { singular } from '@/play/draft/lexicon';
 import { DEFAULT_LABELS } from '@/play/genre/roles';
@@ -54,7 +54,7 @@ import { extractIntent } from '@/play/intent/extract';
 import { type ScriptWriter, paidScriptWriter, scriptedLevel, scriptsEnabled } from '@/play/scripts/generate';
 import { type PublishedGame, type VersionStore, VersionStoreUnavailable } from '@/play/version';
 
-import { DIRECTOR_BUDGET_MS, MIN_CALL_MS, directorQueuePosition, directorSlotFree, getDirector, mayPayChainRead } from './_director';
+import { DIRECTOR_BUDGET_MS, type DirectorWindow, MIN_CALL_MS, directorQueuePosition, directorSlotFree, getDirector, mayPayChainRead } from './_director';
 import { derivedSeeds, playabilityIssues, publishReadSpec, seedFrom } from './_publish';
 
 export type DraftFinalReason =
@@ -97,14 +97,31 @@ export function upgradeQueueId(draftId: string): string {
 }
 
 /**
- * Rezerva nad rozpočtem režie: kompilace, zápis dítěte a zpoždění dotazu.
- * Klient se po `deadlineAt` bez výsledku přestane ptát a řekne, že AI ztratil.
+ * Rezerva remixu nad rozpočtem režie: kompilace, zápis dítěte a zpoždění dotazu. AI verze ji od P83B T3 nemá – čeká
+ * se na ni nejvýš `UPGRADE_CEILING_MS`.
  */
 export const UPGRADE_DEADLINE_SLACK_MS = 15_000;
 
+/**
+ * Strop AI verze (P83B T3): od „Make it!“ do hotové AI verze nejvýš 45 s. Klient se po něm přestane ptát, řádek
+ * postupu zmizí a rychlá verze běží dál bez hlášky – AI verzi, která by přišla později, už nikdo nečeká.
+ */
+export const UPGRADE_CEILING_MS = 45_000;
+
+/** Ze stropu kontrola robotem a zápis po režii: naměřeno 0–2,1 s (`evals/play/p83/b-repro.md`). */
+const UPGRADE_PUBLISH_MS = 3_000;
+
+/**
+ * Okno režie AI verze: strop bez zápisu. Mez volání je mez opravného kola – mez astry (75 s) by pod stropem nepustila
+ * nic a první volání odchází naměřeně do 7 s od věty, s 35 s zbytku na svých 22–27 s.
+ * simplified: po čekání ve frontě na slot může první volání odejít s menším zbytkem, než potřebuje, a termín ho utne
+ * zaplacené; nastane jen při plných slotech – až to živé měření ukáže, dát prvnímu volání vlastní mez.
+ */
+export const UPGRADE_WINDOW: DirectorWindow = { budgetMs: UPGRADE_CEILING_MS - UPGRADE_PUBLISH_MS, minCallMs: MIN_REPAIR_MS };
+
 /** `pending` práce, která začala `startedAt` (`Date.now()` příchodu požadavku). */
 export function pendingSince(startedAt: number): Extract<UpgradeStatus, { readonly status: 'pending' }> {
-  return { status: 'pending', deadlineAt: new Date(startedAt + DIRECTOR_BUDGET_MS + UPGRADE_DEADLINE_SLACK_MS).toISOString() };
+  return { status: 'pending', deadlineAt: new Date(startedAt + UPGRADE_CEILING_MS).toISOString() };
 }
 
 /** Co zná POST a dotaz na upgrade ne: věta, semínko volajícího a dva první časy vodopádu. */
@@ -217,21 +234,46 @@ const RELEASE_TTL_SECONDS = 1;
 /** Pokus běží v jiné instanci: dotaz dostane `pending` a nic nezaplatí. Porovnává se identitou. */
 const RUNNING_ELSEWHERE: UpgradeOutcome = { status: 'draft-final', reason: 'FAILED' };
 
+/**
+ * Verdikty, které závisí na tom, co model zrovna odpověděl (P83B T4): v soudu 10. 11. dostala opakovaná věta
+ * hned starou chybu. Opakování po skončení návštěvy (`UPGRADE_CEILING_MS` od verdiktu) dostane jeden nový pokus
+ * za `DRAFT_FINAL_TTL_SECONDS`; dotazy téže návštěvy dostanou verdikt bez placení (R10). Řetěz a obsah odmítnutý
+ * při publikaci se opakováním nezmění.
+ */
+const RETRIED_VERDICTS: ReadonlySet<DraftFinalReason> = new Set(['MALFORMED', 'UNREPAIRED', 'VERB_UNPROVED', 'ACTION_LOST', 'UNCHANGED', 'NOT_PLAYABLE']);
+
+/** Uložený verdikt nese čas vzniku (`MALFORMED@<ms>`); hodnota bez času (starší build) je stará. */
+function storedVerdict(remembered: string | null): { readonly reason: DraftFinalReason; readonly at: number } | null {
+  if (remembered === null) return null;
+  const [reason, at] = remembered.split('@') as [DraftFinalReason, string | undefined];
+  return SENTENCE_VERDICTS.has(reason) ? { reason, at: at === undefined ? 0 : Number(at) } : null;
+}
+
+/** Klíč jediného nového pokusu: `claim` ho vezme atomicky, takže z instancí zaplatí jen jedna (#118). */
+const retryKey = (draftId: string): string => `${draftId}:retry`;
+
 async function runUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, onReading: (versionId: string, fresh: boolean) => void): Promise<UpgradeOutcome> {
   const draftId = draft.version.versionId;
   const existing = await publishedUpgrade(versions, draft, request.sentence);
   if (existing !== null) return { status: 'ready', versionId: existing };
   const remembered = await versions.upgradeVerdict(draftId);
-  if (remembered !== null && SENTENCE_VERDICTS.has(remembered as DraftFinalReason)) return { status: 'draft-final', reason: remembered as DraftFinalReason };
-  if (remembered === UPGRADE_RUNNING) return RUNNING_ELSEWHERE;
-  // Klíč s přechodným důvodem (uvolněný zámek, starší build) se přepíše – `claim` by na něm jinak selhal.
-  const claimed = remembered === null
-    ? await versions.claimUpgradeVerdict(draftId, UPGRADE_RUNNING, UPGRADE_RUNNING_TTL_SECONDS)
-    : (await versions.rememberUpgradeVerdict(draftId, UPGRADE_RUNNING, UPGRADE_RUNNING_TTL_SECONDS), true);
-  if (!claimed) return RUNNING_ELSEWHERE;
+  const verdict = storedVerdict(remembered);
+  if (verdict !== null) {
+    const final: UpgradeOutcome = { status: 'draft-final', reason: verdict.reason };
+    if (!RETRIED_VERDICTS.has(verdict.reason) || Date.now() - verdict.at < UPGRADE_CEILING_MS) return final;
+    if (!(await versions.claimUpgradeVerdict(retryKey(draftId), UPGRADE_RUNNING, DRAFT_FINAL_TTL_SECONDS))) return (await versions.upgradeVerdict(draftId)) === UPGRADE_RUNNING ? RUNNING_ELSEWHERE : final;
+    await versions.rememberUpgradeVerdict(draftId, UPGRADE_RUNNING, UPGRADE_RUNNING_TTL_SECONDS);
+  } else {
+    if (remembered === UPGRADE_RUNNING) return RUNNING_ELSEWHERE;
+    // Klíč s přechodným důvodem (uvolněný zámek, starší build) se přepíše – `claim` by na něm jinak selhal.
+    const claimed = remembered === null
+      ? await versions.claimUpgradeVerdict(draftId, UPGRADE_RUNNING, UPGRADE_RUNNING_TTL_SECONDS)
+      : (await versions.rememberUpgradeVerdict(draftId, UPGRADE_RUNNING, UPGRADE_RUNNING_TTL_SECONDS), true);
+    if (!claimed) return RUNNING_ELSEWHERE;
+  }
 
   const outcome = await directUpgrade(versions, draft, request, getDirector, onReading);
-  if (outcome.status === 'draft-final') await versions.rememberUpgradeVerdict(draftId, outcome.reason, isTransient(outcome) ? RELEASE_TTL_SECONDS : DRAFT_FINAL_TTL_SECONDS);
+  if (outcome.status === 'draft-final') await versions.rememberUpgradeVerdict(draftId, isTransient(outcome) ? outcome.reason : `${outcome.reason}@${Date.now()}`, isTransient(outcome) ? RELEASE_TTL_SECONDS : DRAFT_FINAL_TTL_SECONDS);
   return outcome;
 }
 
@@ -476,7 +518,7 @@ async function directorUpgrade(versions: VersionStore, draft: PublishedGame, req
   const directorStarted = performance.now();
   // Neprošlý keypoint jde modelu k opravě dřív, než publikace hru odmítne (P26 T10a).
   const check = (spec: GameSpecV1) => playabilityIssues(spec, seeds);
-  const directed = await director(request.startedAt, request.caller, check, undefined, upgradeQueueId(draftId), true, onDraft)(request.sentence);
+  const directed = await director(request.startedAt, request.caller, check, undefined, upgradeQueueId(draftId), true, onDraft, UPGRADE_WINDOW)(request.sentence);
   // Hra režiséra, kterou kontrola odmítla (demo 15. 10., 4 z 10: běžec ani auto nehrají honičku a zóny), nese pořád
   // bosse, úseky a vzhled – zkusí se už jen roub na rychlou hru, sama hra režiséra ne.
   const rejected = directed.source === 'draft' ? rejectedSpecOf(directed.failure) : null;
@@ -512,7 +554,7 @@ async function directorUpgrade(versions: VersionStore, draft: PublishedGame, req
   const firstRunMs = performance.now() - directorStarted;
   if (quick !== null && adds?.length === 0 && directorSlotFree() && Date.now() - request.startedAt + firstRunMs <= AI_VERSION_TARGET_MS) {
     // `false`: slot se mezi kontrolou výš a voláním (čtení vypínače a cache po síti) mohl obsadit – pak se nečeká.
-    const nudged = await director(request.startedAt, request.caller, check, ADD_NUDGE, upgradeQueueId(draftId), false)(request.sentence);
+    const nudged = await director(request.startedAt, request.caller, check, ADD_NUDGE, upgradeQueueId(draftId), false, undefined, UPGRADE_WINDOW)(request.sentence);
     const again = nudged.source === 'draft' ? null : await upgradeCandidate(base, nudged.spec, seeds, intent, before);
     const added = again === null ? [] : upgradeAddsOf(quick, again.played);
     if (again !== null && added.length > 0 && nudged.source !== 'draft') [upgraded, preservingSeeds, adds, source, used] = [again.spec, again.seeds, added, nudged.source, nudged];
@@ -538,10 +580,10 @@ async function directorUpgrade(versions: VersionStore, draft: PublishedGame, req
 }
 
 /**
- * Do kdy od věty má AI verze dorazit (P70B T4a, cíl dema 120 s). Druhý běh s pokynem, který by ho podle délky prvního
- * přešvihl, se nespustí – hráč dostane AI verzi bez novinky dřív, než by čekal na novinku.
+ * Do kdy od věty má režie AI verze skončit (P70B T4a; od P83B T3 okno pod stropem, dřív 120 s). Druhý běh s pokynem,
+ * který by ho podle délky prvního přešvihl, se nespustí – hráč dostane AI verzi bez novinky dřív, než by čekal na novinku.
  */
-export const AI_VERSION_TARGET_MS = 120_000;
+export const AI_VERSION_TARGET_MS = UPGRADE_WINDOW.budgetMs;
 
 /** Pokyn druhého pokusu upgradu, který nic nepřidal (P46E T4). */
 export const ADD_NUDGE = 'YOUR VERSION ADDS NOTHING THE QUICK VERSION LACKS: add a boss or an ability – a boss the run ends with, or 1–2 hero abilities the sentence implies.';
@@ -703,7 +745,8 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
   const job: Job = { done: attempt, startedAt: request.startedAt, outcome: null, reading: null, readingArrived };
   const remembered = attempt.then((outcome) => {
     console.warn(upgradeAttemptLine(draftId, 'settled'));
-    if (isTransient(outcome) || outcome === CHAIN_REFUSED) {
+    // Verdikt, který opakování může změnit, drží jen úložiště (P83B T4) – z paměti procesu by ho dostal i další návštěvník.
+    if (isTransient(outcome) || outcome === CHAIN_REFUSED || (outcome.status === 'draft-final' && RETRIED_VERDICTS.has(outcome.reason))) {
       if (map.get(draftId) === job) map.delete(draftId);
       return;
     }

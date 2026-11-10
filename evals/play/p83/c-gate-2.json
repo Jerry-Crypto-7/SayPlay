@@ -1,0 +1,429 @@
+{
+ "schema": "p83c-gate.v1",
+ "measuredAt": "2026-11-10T19:01:38.299Z",
+ "about": "P83C T8: the 10 sentences of the second sealed set (evals/play/p83/c-sentences.json → sealed2, written by a separate agent before T7, read for the first time here, after the T7 fixes). Quick game without a model (draftGameSpecWithMeta(text, 1)), production build of 30bdfd2d, next start :3213, desktop 1280x720 Chromium d3d11. Game started by one click on empty ground at the left edge, shot A after 5 s, then three clicks on things (orrery: on the things from data-orrery-things; other games: stage centre), shot B. Blind judge: codex exec -i sheet.png in an empty mkdtemp dir, contract task.md + output schema, one at a time, web search off, reasoning effort high.",
+ "routing": {
+  "orreryClassify": 5,
+  "orreryDraft": 5,
+  "of": 10,
+  "bar": 7
+ },
+ "judge": {
+  "yes": 4,
+  "showsSentence": 4,
+  "reactsToClicks": 7,
+  "of": 10,
+  "bar": 7
+ },
+ "rows": [
+  {
+   "id": "c-seal2-01",
+   "text": "show me the bones of a human skeleton and each bone shows its name when clicked",
+   "expected": {
+    "things": [
+     "skull",
+     "spine",
+     "rib",
+     "pelvis",
+     "femur"
+    ],
+    "answer": "label"
+   },
+   "route": {
+    "classify": "arena.collect",
+    "draft": "arena",
+    "things": null,
+    "params": null,
+    "title": "Show Bones Human Skeleton"
+   },
+   "shots": {
+    "startedBy": "space",
+    "tapped": "stage centre ×3",
+    "counterBefore": "3",
+    "counterAfter": "3",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "A grassy collection game with scattered bone icons, a large upright bone, a timer, and the instruction “Collect the bones!”",
+    "shows_sentence": false,
+    "reacts_to_clicks": true,
+    "reason": "Panel A lacks a recognizable human skeleton or bone names. Panel B adds a visible glowing ring beneath a bone in the middle distance.",
+    "yes": false,
+    "seconds": 22
+   }
+  },
+  {
+   "id": "c-seal2-02",
+   "text": "a space station with an astronaut, a satellite dish, solar panels and a supply capsule, each one glows when you tap it",
+   "expected": {
+    "things": [
+     "astronaut",
+     "satellite dish",
+     "solar panel",
+     "supply capsule"
+    ],
+    "answer": "glow"
+   },
+   "route": {
+    "classify": "orrery.default",
+    "draft": "orrery",
+    "things": [
+     "astronaut",
+     "satellite dish",
+     "solar panel",
+     "supply capsule"
+    ],
+    "params": {
+     "things": 4,
+     "layout": 3,
+     "answer": 0,
+     "hub": 0,
+     "whole": 0
+    },
+    "title": "Space Station Astronaut Satellite"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": [
+     1,
+     2,
+     3
+    ],
+    "counterBefore": "0",
+    "counterAfter": "3",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "Panel A shows labeled astronaut, satellite dish, solar panel and supply capsule on reddish ground, with an explored counter at 0/4.",
+    "shows_sentence": true,
+    "reacts_to_clicks": true,
+    "reason": "All named objects are recognizable through shapes and labels. Panel B adds yellow glows around three objects and increases the explored counter to 3/4.",
+    "yes": true,
+    "seconds": 17
+   }
+  },
+  {
+   "id": "c-seal2-03",
+   "text": "a giant computer keyboard, click any key and it grows bigger so you can read the letter",
+   "expected": {
+    "things": [
+     "key"
+    ],
+    "answer": "bigger"
+   },
+   "route": {
+    "classify": "orrery.default",
+    "draft": "orrery",
+    "things": [
+     "key"
+    ],
+    "params": {
+     "things": 5,
+     "layout": 3,
+     "answer": 2,
+     "hub": 0,
+     "whole": 0
+    },
+    "title": "Giant Computer Keyboard Click"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": [
+     1,
+     2,
+     4
+    ],
+    "counterBefore": "0",
+    "counterAfter": "3",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "Five scattered physical keys labeled “Key” on a brown surface, with an explored counter; no computer keyboard or lettered keyboard keys.",
+    "shows_sentence": false,
+    "reacts_to_clicks": true,
+    "reason": "Panel A lacks the requested computer keyboard. Panel B highlights three keys with yellow rings and labels, and the explored counter increases from 0/5 to 3/5.",
+    "yes": false,
+    "seconds": 18
+   }
+  },
+  {
+   "id": "c-seal2-04",
+   "text": "explore a pirate ship where the captain, the parrot, the treasure chest and the anchor show their names when you tap them",
+   "expected": {
+    "things": [
+     "captain",
+     "parrot",
+     "treasure chest",
+     "anchor"
+    ],
+    "answer": "label"
+   },
+   "route": {
+    "classify": "arena.collect",
+    "draft": "arena",
+    "things": null,
+    "params": null,
+    "title": "Explore Pirate Ship Captain"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": "stage centre ×3",
+    "counterBefore": "3",
+    "counterAfter": "3",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "Panel A shows a boat in a sandy arena collecting coins, with a countdown and collection objective; the requested pirate characters and objects are missing.",
+    "shows_sentence": false,
+    "reacts_to_clicks": false,
+    "reason": "The scene is generic coin-collection gameplay. Panel B shows no clear click-triggered response; timer and coin changes could occur automatically.",
+    "yes": false,
+    "seconds": 40
+   }
+  },
+  {
+   "id": "c-seal2-05",
+   "text": "a bakery window with a croissant, a loaf of bread, a pretzel and a cake, touch one and it puffs up",
+   "expected": {
+    "things": [
+     "croissant",
+     "bread",
+     "pretzel",
+     "cake"
+    ],
+    "answer": "bigger"
+   },
+   "route": {
+    "classify": "arena.collect",
+    "draft": "arena",
+    "things": null,
+    "params": null,
+    "title": "Bakery Window Croissant Loaf"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": "stage centre ×3",
+    "counterBefore": "3",
+    "counterAfter": "3",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "A collection game on a large tiled floor, with a central brown character, scattered croissants, bakery counters, and a countdown timer.",
+    "shows_sentence": false,
+    "reacts_to_clicks": false,
+    "reason": "A lacks the requested bakery-window arrangement and most named baked goods. B shows no clear click response; the timer and minor scene changes could occur automatically.",
+    "yes": false,
+    "seconds": 18
+   }
+  },
+  {
+   "id": "c-seal2-06",
+   "text": "a windy hill with windmills turning slowly, tap a windmill and its blades spin faster",
+   "expected": {
+    "things": [
+     "windmill"
+    ],
+    "answer": "faster"
+   },
+   "route": {
+    "classify": "arena.collect",
+    "draft": "arena",
+    "things": null,
+    "params": null,
+    "title": "Windy Hill Windmills Turning"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": "stage centre ×3",
+    "counterBefore": "3",
+    "counterAfter": "3",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "A horse stands in a grassy orchard with scattered glowing collectibles, a “Windmill” label, and a “Collect the windmills!” objective.",
+    "shows_sentence": false,
+    "reacts_to_clicks": false,
+    "reason": "The scene shows generic collection gameplay rather than a windy hill with turning windmills. B shows no clear click-triggered response or evidence of faster blades.",
+    "yes": false,
+    "seconds": 20
+   }
+  },
+  {
+   "id": "c-seal2-07",
+   "text": "let me look inside a toolbox with a hammer, a wrench, a screwdriver and a saw, touch each tool to see its name",
+   "expected": {
+    "things": [
+     "hammer",
+     "wrench",
+     "screwdriver",
+     "saw"
+    ],
+    "answer": "label"
+   },
+   "route": {
+    "classify": "orrery.default",
+    "draft": "orrery",
+    "things": [
+     "hammer",
+     "wrench",
+     "screwdriver",
+     "saw",
+     "tool"
+    ],
+    "params": {
+     "things": 5,
+     "layout": 3,
+     "answer": 0,
+     "hub": 0,
+     "whole": 0
+    },
+    "title": "Let Look Inside Toolbox"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": [
+     1,
+     2,
+     4
+    ],
+    "counterBefore": "0",
+    "counterAfter": "3",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "Panel A shows labeled hammer, wrench, screwdriver, and saw on a blue surface, plus a yellow object and an explored 0/5 counter.",
+    "shows_sentence": true,
+    "reacts_to_clicks": true,
+    "reason": "All four requested tools are identifiable by their labels. Panel B adds yellow highlights and increases the explored counter from 0/5 to 3/5.",
+    "yes": true,
+    "seconds": 17
+   }
+  },
+  {
+   "id": "c-seal2-08",
+   "text": "hot air balloons drifting over a valley, when you tap a balloon it inflates and grows",
+   "expected": {
+    "things": [
+     "hot air balloon"
+    ],
+    "answer": "bigger"
+   },
+   "route": {
+    "classify": "quest.station",
+    "draft": "voyage",
+    "things": null,
+    "params": null,
+    "title": "Hot Air Balloons Drifting"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": "stage centre ×3",
+    "counterBefore": "1",
+    "counterAfter": "0",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "A runner character travels along a forest track with obstacles, collectibles, a timer, and a finish-line distance indicator.",
+    "shows_sentence": false,
+    "reacts_to_clicks": true,
+    "reason": "A shows a runner game, not balloons drifting over a valley. B visibly changes to a game-over dialog showing all three lives lost.",
+    "yes": false,
+    "seconds": 24
+   }
+  },
+  {
+   "id": "c-seal2-09",
+   "text": "a harbor at night with a lighthouse, a fishing boat and a sailboat, touch them and they shine",
+   "expected": {
+    "things": [
+     "lighthouse",
+     "fishing boat",
+     "sailboat"
+    ],
+    "answer": "glow"
+   },
+   "route": {
+    "classify": "orrery.default",
+    "draft": "orrery",
+    "things": [
+     "lighthouse",
+     "fishing boat",
+     "sailboat"
+    ],
+    "params": {
+     "things": 3,
+     "layout": 3,
+     "answer": 0,
+     "hub": 0,
+     "whole": 0
+    },
+    "title": "Harbor Night Lighthouse Fishing"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": [
+     0,
+     1,
+     2
+    ],
+    "counterBefore": "0",
+    "counterAfter": "3",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "A dark blue nighttime harbor scene with labeled lighthouse, fishing boat, and sailboat; the exploration counter reads 0/3.",
+    "shows_sentence": true,
+    "reacts_to_clicks": true,
+    "reason": "Panel A includes all three named objects in a nighttime water setting. Panel B visibly changes to a completion screen reporting all three explored and 565 points.",
+    "yes": true,
+    "seconds": 16
+   }
+  },
+  {
+   "id": "c-seal2-10",
+   "text": "an airport with little planes circling the control tower, click a plane to make it fly faster",
+   "expected": {
+    "things": [
+     "plane",
+     "control tower"
+    ],
+    "answer": "faster"
+   },
+   "route": {
+    "classify": "orrery.default",
+    "draft": "orrery",
+    "things": [
+     "control tower",
+     "plane"
+    ],
+    "params": {
+     "things": 5,
+     "layout": 0,
+     "answer": 1,
+     "hub": 1,
+     "whole": 0
+    },
+    "title": "Airport Little Planes Circling"
+   },
+   "shots": {
+    "startedBy": "click",
+    "tapped": [
+     1,
+     2,
+     4
+    ],
+    "counterBefore": "0",
+    "counterAfter": "3",
+    "pageErrors": []
+   },
+   "judge": {
+    "seen": "Four little planes surround a labeled control tower on concentric circular paths, with an explored counter at 0/5.",
+    "shows_sentence": true,
+    "reacts_to_clicks": true,
+    "reason": "The planes and central control tower match the requested arrangement. Panel B adds yellow highlights to three planes and increases the explored counter to 3/5.",
+    "yes": true,
+    "seconds": 18
+   }
+  }
+ ]
+}

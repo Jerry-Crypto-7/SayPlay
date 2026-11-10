@@ -40,7 +40,9 @@ const word = z.string().min(1).max(40);
  * ho dostanou spolu (R5 v plánu P68-I), řádek `MODE_HINTS` je připravený. R7 pustil `drawsave` (zapojený v T12),
  * R9 `railfps` (zapojený v T10), R12 `minigolf` (znovu zapojený po P68-L T3), P68R T5 `buildshift`.
  */
-export const READER_PENDING: ReadonlySet<string> = new Set<string>(['stunt']);
+// P83C T4: `orrery` jen do rychlé hry, čtečka a režisér ho dostanou spolu v P83B.
+// P83E: `shop` taky jen do rychlé hry – čtečka pro něj nemá řádek režimu ani místo v mezi příkladů.
+export const READER_PENDING: ReadonlySet<string> = new Set<string>(['stunt', 'orrery', 'shop']);
 
 /** Režimy, které hrají (`availability = 'ready'`), po žánrech – jen ty smí čtečka jmenovat (P56A T3). */
 export const READY_GENRE_MODES: readonly { readonly genre: GenreModule['id']; readonly modes: readonly [string, ...string[]] }[] = (Object.values(GENRE_MODULES) as GenreModule[])

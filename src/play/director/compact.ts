@@ -34,7 +34,7 @@ export function buildCompactRequest(sentence: string, draft: GenreSpec | null, e
     model: EMISSION_MODEL,
     system: compactSystemPrompt(),
     user: examples ? `${user}\n\n${examplesBlock(nearestExamples(sentence, draft?.genre ?? null))}` : user,
-    outputSchema: GENRE_ANSWER_SCHEMA,
-    codexOutputSchema: RECIPE_ANSWER_SCHEMA,
+    // Jen recept i pro OpenAI API (P83B), viz `buildDirectorRequest`.
+    outputSchema: RECIPE_ANSWER_SCHEMA,
   };
 }

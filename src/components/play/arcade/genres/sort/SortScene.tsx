@@ -70,7 +70,7 @@ const ease = (t: number): number => 1 - (1 - t) * (1 - t);
  * Vzdálenost kamery na šířku: každý roh krabice v záběru pod horním pásem HUD, s okrajem. Tatáž úvaha jako `fitTall`
  * (ten na šířku vrací vstupní pózu), jen pás je celé plátno pod HUD a posun se nepočítá.
  */
-function fitWide(camera: PerspectiveCamera, box: Box3, width: number, height: number): number {
+export function fitWide(camera: PerspectiveCamera, box: Box3, width: number, height: number): number {
   const at = box.getCenter(new Vector3());
   const basis = new Matrix4().lookAt(camera.position, at, camera.up);
   const right = new Vector3().setFromMatrixColumn(basis, 0);

@@ -1,4 +1,4 @@
-import { ARCADE_HZ, ARCADE_LIMITS, type AbilityId, type AddonId } from '../arcade/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type AbilityId, type AddonId, START_LIVES } from '../arcade/contract';
 import { CAPABILITIES, DUEL_HITS, duelHitOf } from '../capabilities';
 import type { GameSpecV1 } from '../spec';
 import { type CastRole, FOE_DOES, type GenreModule, type GenreSpec, type ParamBounds, withCounts } from '../genre/contract';
@@ -14,6 +14,7 @@ import { singular } from '../draft/lexicon';
 import { ABILITY_WORDS, type AbilityWord, abilitiesOfControl, abilityHint, abilityWordsOf } from '../draft/controls';
 import { RULE_TEMPLATES, type RuleTemplate, TEMPLATE_NAMES, type TemplateName, type TemplateSlot, says, templateParts, templatesFor } from '../arcade/rules/templates';
 import { FINALE_GENRE_VERSION, genreAtLeast } from '../arcade/pieces/pacing-parts';
+import { collectClock } from '../arcade/pieces/waves';
 
 /** Recipes select an assembly; existing piece builders retain their frozen output. */
 export function compileRecipe(assembly: RecipeAssembly): GameSpecV1 {
@@ -22,8 +23,36 @@ export function compileRecipe(assembly: RecipeAssembly): GameSpecV1 {
 
 /** `compileRecipe` and the rule template it attached (P45B T9); `null` = none. */
 export function compileTemplated(assembly: RecipeAssembly): { readonly spec: GameSpecV1; readonly template: TemplateName | null } {
-  const templated = withTemplate(compileRecipeSpec(assembly), assembly);
+  const templated = firstMinute(withTemplate(compileRecipeSpec(assembly), assembly), assembly);
   return { ...templated, spec: withDirectorExtras(withCatchBees(withAbilities(templated.spec, assembly), assembly.content), assembly.content) };
+}
+
+/**
+ * Sběr bez počtu se sprškou šablony `treasure_rush` (P83A T3, jen nové hry – uložený spec nese své `items` a životy):
+ * neobratný začátečník (10 semínek, limit 75 s) u „a solar system …“ vyhrál 7/10 a u „A penguin … dodges falling
+ * pianos“ 3/10. Životy mu po polovině věcí brali strážce a boss průběhu (piano 4 zásahy z 31) a 10 věcí ve 3 vlnách
+ * trvalo 57–82 s. Změřeno (slunce / tučňák): 5 životů 8 / 7, 8 věcí ve vlně 3 / 4, obojí 10 / 9 a robot 50 / 59 s;
+ * 12 věcí ve 2 vlnách 9 / 10, ale robot 30,7 s – na hraně pásma 30–90 s; přitažení věcí (`magnet` T2) 5 / 3.
+ * Pro každý sběr bez počtu to nejde: buňka `arena.collect` vyskočí nad pásmo nováčka (≤ 0,7). Počet věcí nebo
+ * životů z věty (`params.items`, „with 5 lives“) platí dál.
+ */
+export const FIRST_MINUTE = { items: 8, lives: 5 } as const;
+
+function firstMinute(templated: { readonly spec: GameSpecV1; readonly template: TemplateName | null }, assembly: RecipeAssembly): { readonly spec: GameSpecV1; readonly template: TemplateName | null } {
+  const { spec, template } = templated;
+  const params = assembly.content.params as { readonly items?: number } | undefined;
+  if (template !== 'treasure_rush' || spec.genre?.id !== 'arena' || spec.genre.mode !== 'collect' || params?.items !== undefined) return templated;
+  const before = (spec.controlParams as { readonly tuning?: { readonly items?: number; readonly waves?: number } } | undefined)?.tuning;
+  if (before?.items === undefined || before.waves === undefined) return templated;
+  const eased = withTemplate(compileRecipeSpec({ ...assembly, content: { ...assembly.content, params: { ...params, items: FIRST_MINUTE.items } } as GenreSpec }), assembly);
+  const mechanics = eased.spec.mechanics.map((mechanic) =>
+    mechanic.id === 'health' && (mechanic.params as { readonly max?: number }).max === START_LIVES ? { ...mechanic, params: { ...mechanic.params, max: FIRST_MINUTE.lives } } : mechanic);
+  // Hodiny původní hry: s hodinami osmi věcí (78 s místo 88 s) robot čisté věty u34 nestihl žádné semínko.
+  const control = eased.spec.controlParams as { readonly tuning: Readonly<Record<string, unknown>> };
+  // Bez pronásledovatelů vln: skóre spršky přivede bosse dřív, než vlna s pronásledovatelem, a ten s bossem zůstal
+  // (jeho odchod `clears` už proběhl) – robot u34 pak bosse neporazil na žádném semínku.
+  const controlParams = { ...control, tuning: { ...control.tuning, clock: collectClock(before.items, before.waves), calm: true } } as GameSpecV1['controlParams'];
+  return { ...eased, spec: { ...eased.spec, mechanics, controlParams } };
 }
 
 /**

@@ -1913,10 +1913,16 @@ button.play-version-switch__item:not(:disabled) {
   margin-top: 2px;
 }
 
-/* Telefon: výzva s užším okrajem, ať se povel vejde na řádek. */
+/* Telefon: výzva s užším okrajem, ať se povel vejde na řádek. Čtení věty a „Checked“ 14 px (P83A T5: 13 px
+ * nečetl ani porotce) a přes celou šířku karty, ať se zalomí co nejméně a karta zůstane nízká. */
 @media (max-width: 480px) {
   .play-first-prompt {
     padding-inline: var(--sp-space-4);
+  }
+
+  .play-start-read {
+    max-width: none;
+    font-size: var(--sp-text-body-s-size);
   }
 }
 
@@ -2007,6 +2013,13 @@ button.play-version-switch__item:not(:disabled) {
 
 .play-stage[data-prompt-at='right'] .play-first-prompt {
   left: calc((100% + var(--_hero-right)) / 2);
+}
+
+/* Telefon (P83A T5): nad ani pod hrdinu se karta celá nevejde – sedne pod horní lištu HUD v plné velikosti. */
+.play-stage[data-prompt-at='top'] .play-first-prompt {
+  top: var(--_prompt-band-top);
+  transform: translateX(-50%) scale(var(--_prompt-scale, 1));
+  transform-origin: top center;
 }
 
 /* Minigolf (P71C T2): dráha vede od míčku nahoru k jamce a karta nad míčkem ji zakryla. Karta sedí pod horní

@@ -1,0 +1,73 @@
+{
+ "about": "P83C T1: explore-and-touch sentences for the new game type `orrery`, written 2026-11-10 before any orrery code. `dev` (20) may be used for tuning the reading and routing; `sealed` (10, other topics) is opened once in T5 and never tuned on; `not_orrery` (10) are ordinary games that use the words click, tap or planet and must route anywhere except orrery. `things` lists what the sentence names that should be visible in the scene; `answer` is the state change a tap should cause. `sealed2` (10, new topics) was written 2026-11-10 after gate 1 failed, by a separate agent the tuning session never saw; opened once in T8.",
+ "design": [
+  "Typ `orrery` = scéna k prozkoumání, ne hra se sbíráním: na scéně stojí N věcí z věty (2–9), pohybují se a reagují na klepnutí.",
+  "Věci se berou z věty (podstatná jména výčtu), u známého celku (solar system, atom, clock, orchestra, rainbow…) z malé tabulky celků.",
+  "Uspořádání jedno ze čtyř: `orbit` (kroužení kolem středu, oběhy různě rychlé), `ring` (kruh kolem středu, otáčí se celý), `row` (řada, houpe se), `scatter` (rozházené, volně plují).",
+  "Uspořádání vybere věta: orbit/around/circle → orbit, row/line/shelf → row, celek se středem (slunce, jádro) → orbit, jinak scatter nebo ring podle počtu.",
+  "Klepnutí míří na věc, ne na místo: dotykový adaptér najde nejbližší věc pod prstem a pošle její číslo v ose záznamu.",
+  "Klepnutí na věc ukáže jmenovku (text z věty, anglicky) a změní její stav podle věty: rychlejší, větší nebo svítí (výchozí: svítí).",
+  "Druhé a třetí klepnutí na tutéž věc efekt stupňuje (stupeň 1–3), čtvrté už nic nepřidá.",
+  "Cíl: najdi a probuď všech N věcí (stupeň ≥ 1 u každé) → výhra. Prohra žádná, hra nekončí jinak než výhrou.",
+  "Časomíra běží jen jako skóre: čím rychleji probudíš všechny, tím víc bodů; ťuk do prázdna nic nestojí.",
+  "Stav je v simulovaném tiku (úhel oběhu = tik × rychlost), ne v hodinách; replay se stejnými ťuky dá stejný hash."
+ ],
+ "dev": [
+  { "id": "c-dev-01", "text": "a garden where tapping each flower makes it bloom bigger and shows its name", "things": ["flower"], "answer": "bigger" },
+  { "id": "c-dev-02", "text": "show me a farm with a cow, a pig, a sheep and a horse, and tapping one makes it jump and say its name", "things": ["cow", "pig", "sheep", "horse"], "answer": "label" },
+  { "id": "c-dev-03", "text": "a rainbow where clicking each color lights it up and tells you its name", "things": ["red", "orange", "yellow", "green", "blue"], "answer": "glow" },
+  { "id": "c-dev-04", "text": "a kitchen with a toaster, a kettle, a blender and a fridge that switch on when you tap them", "things": ["toaster", "kettle", "blender", "fridge"], "answer": "glow" },
+  { "id": "c-dev-05", "text": "let me explore a jungle where touching a parrot, a monkey or a tiger makes it move faster", "things": ["parrot", "monkey", "tiger"], "answer": "faster" },
+  { "id": "c-dev-06", "text": "a toy shelf with a robot, a teddy bear and a rocket that spin when clicked", "things": ["robot", "teddy bear", "rocket"], "answer": "faster" },
+  { "id": "c-dev-07", "text": "an interactive dinosaur museum: click a dinosaur to see its name and make it grow", "things": ["dinosaur"], "answer": "bigger" },
+  { "id": "c-dev-08", "text": "a pond with frogs and lily pads where tapping a frog makes it glow", "things": ["frog", "lily pad"], "answer": "glow" },
+  { "id": "c-dev-09", "text": "a carousel of horses going round and round, tap one to speed it up", "things": ["horse"], "answer": "faster" },
+  { "id": "c-dev-10", "text": "show the four seasons as four trees and clicking a tree shows which season it is", "things": ["tree"], "answer": "label" },
+  { "id": "c-dev-11", "text": "a fruit bowl where tapping an apple, a banana or a pear makes it bounce and shows its name", "things": ["apple", "banana", "pear"], "answer": "label" },
+  { "id": "c-dev-12", "text": "a beehive with bees flying around it, touch a bee to make it buzz faster", "things": ["beehive", "bee"], "answer": "faster" },
+  { "id": "c-dev-13", "text": "explore a candy shop where lollipops, cupcakes and donuts light up when you click them", "things": ["lollipop", "cupcake", "donut"], "answer": "glow" },
+  { "id": "c-dev-14", "text": "a toy train with five wagons circling a track, click a wagon to light it up", "things": ["train", "wagon"], "answer": "glow" },
+  { "id": "c-dev-15", "text": "a row of bells that ring and glow when you tap them", "things": ["bell"], "answer": "glow" },
+  { "id": "c-dev-16", "text": "a playground with a swing, a slide and a seesaw that start moving when you touch them", "things": ["swing", "slide", "seesaw"], "answer": "faster" },
+  { "id": "c-dev-17", "text": "a pizza with toppings, click the mushroom, the olive or the pepper to see its name", "things": ["mushroom", "olive", "pepper"], "answer": "label" },
+  { "id": "c-dev-18", "text": "fireflies circling a lamp at night, tap a firefly to make it shine brighter", "things": ["firefly", "lamp"], "answer": "glow" },
+  { "id": "c-dev-19", "text": "a robot factory with three machines that turn on and speed up each time you click them", "things": ["machine"], "answer": "faster" },
+  { "id": "c-dev-20", "text": "a snowy village with little houses, tap a house to switch its lights on", "things": ["house"], "answer": "glow" }
+ ],
+ "sealed": [
+  { "id": "c-seal-01", "text": "show me the solar system and let me tap each planet to learn its name", "things": ["sun", "mercury", "venus", "earth", "mars", "jupiter", "saturn", "uranus", "neptune"], "answer": "label" },
+  { "id": "c-seal-02", "text": "an atom with electrons spinning around the nucleus, clicking an electron makes it glow", "things": ["nucleus", "electron"], "answer": "glow" },
+  { "id": "c-seal-03", "text": "a clockwork machine with gears that turn faster when you tap them", "things": ["gear"], "answer": "faster" },
+  { "id": "c-seal-04", "text": "an aquarium with a clownfish, a turtle and a jellyfish, tap one to see what it is", "things": ["clownfish", "turtle", "jellyfish"], "answer": "label" },
+  { "id": "c-seal-05", "text": "an orchestra on a stage with a violin, a drum, a trumpet and a flute that each get brighter when clicked", "things": ["violin", "drum", "trumpet", "flute"], "answer": "glow" },
+  { "id": "c-seal-06", "text": "a map of a little city with a school, a hospital, a park and a station that light up when touched", "things": ["school", "hospital", "park", "station"], "answer": "glow" },
+  { "id": "c-seal-07", "text": "the human heart with its four chambers, tap a chamber to learn its name", "things": ["left atrium", "right atrium", "left ventricle", "right ventricle"], "answer": "label" },
+  { "id": "c-seal-08", "text": "a volcano island where tapping the volcano, the palm trees or the lava rocks shows their names", "things": ["volcano", "palm tree", "lava rock"], "answer": "label" },
+  { "id": "c-seal-09", "text": "a weather station with a sun, a cloud, a raindrop and a snowflake, click each one to see its name", "things": ["sun", "cloud", "raindrop", "snowflake"], "answer": "label" },
+  { "id": "c-seal-10", "text": "a music box with a ballerina, a star and a moon going around, touch them to make them spin faster", "things": ["ballerina", "star", "moon"], "answer": "faster" }
+ ],
+ "sealed2": [
+  { "id": "c-seal2-01", "text": "show me the bones of a human skeleton and each bone shows its name when clicked", "things": ["skull", "spine", "rib", "pelvis", "femur"], "answer": "label" },
+  { "id": "c-seal2-02", "text": "a space station with an astronaut, a satellite dish, solar panels and a supply capsule, each one glows when you tap it", "things": ["astronaut", "satellite dish", "solar panel", "supply capsule"], "answer": "glow" },
+  { "id": "c-seal2-03", "text": "a giant computer keyboard, click any key and it grows bigger so you can read the letter", "things": ["key"], "answer": "bigger" },
+  { "id": "c-seal2-04", "text": "explore a pirate ship where the captain, the parrot, the treasure chest and the anchor show their names when you tap them", "things": ["captain", "parrot", "treasure chest", "anchor"], "answer": "label" },
+  { "id": "c-seal2-05", "text": "a bakery window with a croissant, a loaf of bread, a pretzel and a cake, touch one and it puffs up", "things": ["croissant", "bread", "pretzel", "cake"], "answer": "bigger" },
+  { "id": "c-seal2-06", "text": "a windy hill with windmills turning slowly, tap a windmill and its blades spin faster", "things": ["windmill"], "answer": "faster" },
+  { "id": "c-seal2-07", "text": "let me look inside a toolbox with a hammer, a wrench, a screwdriver and a saw, touch each tool to see its name", "things": ["hammer", "wrench", "screwdriver", "saw"], "answer": "label" },
+  { "id": "c-seal2-08", "text": "hot air balloons drifting over a valley, when you tap a balloon it inflates and grows", "things": ["hot air balloon"], "answer": "bigger" },
+  { "id": "c-seal2-09", "text": "a harbor at night with a lighthouse, a fishing boat and a sailboat, touch them and they shine", "things": ["lighthouse", "fishing boat", "sailboat"], "answer": "glow" },
+  { "id": "c-seal2-10", "text": "an airport with little planes circling the control tower, click a plane to make it fly faster", "things": ["plane", "control tower"], "answer": "faster" }
+ ],
+ "not_orrery": [
+  { "id": "c-not-01", "text": "click to shoot the asteroids before they hit the planet" },
+  { "id": "c-not-02", "text": "an astronaut jumps from planet to planet collecting stars" },
+  { "id": "c-not-03", "text": "tap to make the rocket dodge meteors on the way to the next planet" },
+  { "id": "c-not-04", "text": "click the moles as they pop out of their holes" },
+  { "id": "c-not-05", "text": "defend the planet by clicking on the alien ships to fire lasers" },
+  { "id": "c-not-06", "text": "click at the right moment to stack blocks into a tall tower" },
+  { "id": "c-not-07", "text": "race a hover car around the rings of a giant planet" },
+  { "id": "c-not-08", "text": "click on the zombies to stop them before they reach your house" },
+  { "id": "c-not-09", "text": "tap to jump over the spikes as a ball rolls through the caves of a planet" },
+  { "id": "c-not-10", "text": "tap to slice the fruit that flies up into the air" }
+ ]
+}

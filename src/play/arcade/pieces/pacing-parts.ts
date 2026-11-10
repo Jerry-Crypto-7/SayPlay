@@ -405,7 +405,10 @@ const itemField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
   const count = waves.waves.length + 1;
   const clock = (ruleOf(parts, 'time_limit')?.params as { readonly seconds: number } | undefined)?.seconds;
   const lastItems = waves.waves.at(-1)?.items ?? [];
-  const carried = Math.min(FIELD.carry, lastItems.length / 2);
+  // Věta s počtem blízko (P83A T2): poslední věc leží na zemi, boss ji nenese – začátečník ho za 60 s neporazil
+  // (3 životy za 6–12 s boje) a „keys 2/3“ zůstalo stát. Boss přijde dál s poslední vlnou a dá body.
+  const near = generatorParams(spec).near === true;
+  const carried = near ? 0 : Math.min(FIELD.carry, lastItems.length / 2);
   const gated = genreAtLeast(spec, FINALE_GENRE_VERSION);
   const at = waveStart(count - 1, count);
   const loot = carried > 0 && waves.item !== undefined ? { drop: { template: waves.item, count: carried } } : gated ? { score: FIELD.bossScore } : undefined;
@@ -420,7 +423,8 @@ const itemField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
     from: waveStart(1, count),
     finale: boss === undefined ? 'wave' : 'boss',
     ...(boss === undefined ? {} : { boss }),
-    ...heartbeat(spec, true),
+    // Věta s počtem blízko (P83A T2) jiskry nemá: zářily víc než klíč a „+1“ za ně počítadlo nezvedlo.
+    ...(near ? {} : heartbeat(spec, true)),
     adjust: (own, template) => {
       const flat = flatten(own, foes.step);
       if (template === undefined) return flat;

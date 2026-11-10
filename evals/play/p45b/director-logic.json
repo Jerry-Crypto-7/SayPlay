@@ -1,8 +1,8 @@
 {
  "about": "P45B T11: first answers of the compact director on local gpt-oss-20b for evals/play/p45b/director-sentences.json, judged offline by judgeLogicAnswer (src/play/director/__fixtures__/logic-answers.ts) – raw without and repaired with the phase-entry repair of the read path (withPhaseEntries). Target: >= 20/25 repaired write logic and pass with logic_proved. See evals/play/p45b/README.md.",
  "recordedAt": "2026-10-09T11:42:16.491Z",
- "judgedAt": "2026-11-05T07:45:07.780Z",
- "commit": "72d0b0ba",
+ "judgedAt": "2026-11-10T15:32:01.639Z",
+ "commit": "1d6cc174",
  "model": "gpt-oss-20b",
  "endpoint": "http://127.0.0.1:8792",
  "promptVersion": "3cf3f465",
@@ -12,7 +12,7 @@
   "of": 25
  },
  "repaired": {
-  "hit": 3,
+  "hit": 4,
   "of": 25
  },
  "before": {
@@ -61,14 +61,14 @@
   },
   {
    "id": "d20",
-   "passed": false,
+   "passed": true,
    "rawPassed": false,
    "phasesEntered": [
     "active"
    ],
    "wroteLogic": true,
-   "why": "not authored (MALFORMED): counts.target: unsupported or out of bounds for drive",
-   "fallbackReason": "MALFORMED",
+   "why": null,
+   "fallbackReason": null,
    "axis": "rescue",
    "ms": 7857
   },
@@ -202,7 +202,7 @@
     "second"
    ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:spawn_timer, phase:first, phase:second): RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"shoot_asteroid\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"hit_asteroid\",\"verb\":\"hit\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"respawn_asteroid\",\"verb\":\"spawn\",\"when\":{\"timer\":\"spawn_timer\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"aster; RULE_INVALID: /logic/timers/0: no rule starts timer spawn_timer – add a rule with {\"startTimer\":{\"timer\":\"spawn_timer\",\"ticks\":…}}; rules as written: [{\"id\":\"shoot_asteroid\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"hit_asteroid\",\"verb\":\"hit\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"respawn_asteroid\",\"verb\":\"spawn\",\"when\":{\"timer\":\"spawn_timer\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"aster; RULE_INVALID: /rules/0/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"shoot_asteroid\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"hit_asteroid\",\"verb\":\"hit\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"respawn_asteroid\",\"verb\":\"spawn\",\"when\":{\"timer\":\"spawn_timer\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"aster; RULE_INVALID: /rules/1/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"shoot_asteroid\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"hit_asteroid\",\"verb\":\"hit\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"respawn_asteroid\",\"verb\":\"spawn\",\"when\":{\"timer\":\"spawn_timer\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"aster; rule verbs dropped: shoot, hit, spawn",
+   "why": "the game does not keep the answer's logic (timer:spawn_timer, phase:first, phase:second): ACTION_LOST: spaceship glide has no action witness; ACTION_LOST: spaceship survive has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"shoot_asteroid\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"hit_asteroid\",\"verb\":\"hit\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"respawn_asteroid\",\"verb\":\"spawn\",\"when\":{\"timer\":\"spawn_timer\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"aster; RULE_INVALID: /logic/timers/0: no rule starts timer spawn_timer – add a rule with {\"startTimer\":{\"timer\":\"spawn_timer\",\"ticks\":…}}; rules as written: [{\"id\":\"shoot_asteroid\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"hit_asteroid\",\"verb\":\"hit\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"respawn_asteroid\",\"verb\":\"spawn\",\"when\":{\"timer\":\"spawn_timer\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"aster; RULE_INVALID: /rules/0/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"shoot_asteroid\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"hit_asteroid\",\"verb\":\"hit\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"respawn_asteroid\",\"verb\":\"spawn\",\"when\":{\"timer\":\"spawn_timer\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"aster; RULE_INVALID: /rules/1/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"shoot_asteroid\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"hit_asteroid\",\"verb\":\"hit\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"respawn_asteroid\",\"verb\":\"spawn\",\"when\":{\"timer\":\"spawn_timer\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"aster; rule verbs dropped: shoot, hit, spawn",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "survive",
    "ms": 22486
@@ -215,7 +215,7 @@
     "second"
    ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:phase1, phase:first, phase:second): RULE_INVALID: /rules/0/when/phase: unknown phase first; rules as written: [{\"id\":\"spawnAsteroid\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"asteroid\",\"count\":1,\"at\":\"edge\"}}]},{\"id\":\"spawnDebris\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"spaceDebris\",\"count\":1,\"at\":\"edge\"}}]},{\"id\":\"asteroidHit\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":null,\"do\":[{\"despawn\":\"other\"},{\"scor; RULE_INVALID: /rules/1/when/phase: unknown phase first; rules as written: [{\"id\":\"spawnAsteroid\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"asteroid\",\"count\":1,\"at\":\"edge\"}}]},{\"id\":\"spawnDebris\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"spaceDebris\",\"count\":1,\"at\":\"edge\"}}]},{\"id\":\"asteroidHit\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":null,\"do\":[{\"despawn\":\"other\"},{\"scor; rule verbs dropped: spawn, shoot",
+   "why": "the game does not keep the answer's logic (timer:phase1, phase:first, phase:second): bot_wins: the bot did not finish within 5400 ticks (0 m)",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "survive",
    "ms": 12801
@@ -265,8 +265,8 @@
     "running"
    ],
    "wroteLogic": true,
-   "why": "not authored (MALFORMED): counts.enemy: unsupported or out of bounds for drive",
-   "fallbackReason": "MALFORMED",
+   "why": "the game does not keep the answer's logic (timer:cold, phase:start, phase:running): bot_wins: the bot lost at tick 601, 174 m into the track",
+   "fallbackReason": "VERB_UNPROVED",
    "axis": "race",
    "ms": 7337
   },

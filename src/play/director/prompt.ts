@@ -275,7 +275,7 @@ export function buildDirectorRequest(sentence: string, draft: GenreSpec | null):
     model: EMISSION_MODEL,
     system: directorSystemPrompt(),
     user: directorUser(sentence, draft),
-    outputSchema: GENRE_ANSWER_SCHEMA,
-    codexOutputSchema: RECIPE_ANSWER_SCHEMA,
+    // Jen recept i pro OpenAI API (P83B): plné schéma (~375 tis. znaků) stálo 22–27 s a 0,55 USD na volání.
+    outputSchema: RECIPE_ANSWER_SCHEMA,
   };
 }

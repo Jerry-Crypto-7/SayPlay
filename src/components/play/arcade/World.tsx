@@ -585,6 +585,8 @@ export interface WorldProps {
   readonly heroAction: HeroAction;
   /** Duch dřívějšího běhu (P37B T8) pro slot scény; `undefined` = bez ducha. */
   readonly ghost?: ArcadeGhost;
+  /** Jména věcí z věty podle id role (`nameLines`); jmenovky klikací simulace (P83C T3). */
+  readonly names?: Readonly<Record<string, string>>;
 }
 
 const PICKUP_MS = 200;

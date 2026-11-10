@@ -52,7 +52,8 @@ const WAVES: ReadonlySet<string> = new Set(['arena.fight', 'shooter.default']);
 
 /** Táž věta bez počtu: výchozí hodnota žánru, žádné `counts`, cíl jako dřív. */
 const PLAIN: readonly { readonly sentence: string; readonly genre: string; readonly goal: RegExp; readonly count: number | undefined }[] = [
-  { sentence: 'A little witch picks glowing mushrooms in a dark swamp', genre: 'arena.collect', goal: /^Collect 10 mushrooms per wave, \d waves\.$/, count: 10 },
+  // P83A T3: sprška `treasure_rush` – sběr první minuty má 8 věcí ve vlně (`FIRST_MINUTE`).
+  { sentence: 'A little witch picks glowing mushrooms in a dark swamp', genre: 'arena.collect', goal: /^Collect 8 mushrooms per wave, \d waves\.$/, count: 8 },
   { sentence: 'A knight must collect keys in a haunted castle while dodging ghosts.', genre: 'arena.escape', goal: /^Grab 10 keys per wave, \d waves\. Don't get caught\.$/, count: 10 },
   { sentence: 'A knight fights wolves in a castle', genre: 'arena.fight', goal: /^Knock out \d waves of wolves\.$/, count: 1 },
   { sentence: 'A wizard lights candles in a dark forest', genre: 'quest.spatial', goal: /^Light all \d candles/, count: undefined },

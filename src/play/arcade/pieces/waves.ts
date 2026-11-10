@@ -136,15 +136,25 @@ export const collectClock = (items: number, waves: number): number =>
  */
 export const COUNTED_PLAN = { last: 26, perItem: 1, boss: 12 } as const;
 
-/** Nejdřívější tik vln od druhé (`at`) věty s počtem `need` rozdělené do `waves` vln. */
-export function countedTicks(waves: number, need: number): number[] {
-  const last = (COUNTED_PLAN.last + COUNTED_PLAN.perItem * need) * ARCADE_HZ;
+/**
+ * Věta s počtem blízko (P83A T2, `near` v ladění, píše ho žánr nových her): neobratný porotce za 55 s neviděl ani
+ * jeden klíč z 0/3 – jeden malý klíč na vlnu kdekoli v aréně 40 × 40 m. Tady jediná věc první vlny leží v `±first`
+ * u hrdiny (start ho drží 2 m od věci), víc věcí a další vlny v `±reach` kolem středu dál než `hole` od něj, a věc
+ * je o `sizePct` větší. Věc blíž než `magnet` od hrdiny k němu jede `pull` za tik (hrdina běží 150): náhodné šipky
+ * soudu ji minuly o metr. Přitažený klíč robot sebere dřív, proto poslední vlna až v `last + perItem × N` s
+ * (`COUNTED_PLAN` 26 s dal robotovi útěku 29,5 s) – robot dál hraje 30–90 s.
+ */
+export const COUNTED_NEAR = { first: 2600, reach: 6 * UNIT, hole: 2 * UNIT, sizePct: 150, magnet: 3 * UNIT, pull: 110, last: 28 } as const;
+
+/** Nejdřívější tik vln od druhé (`at`) věty s počtem `need` rozdělené do `waves` vln; poslední v `lastSeconds + perItem × need` s. */
+export function countedTicks(waves: number, need: number, lastSeconds: number = COUNTED_PLAN.last): number[] {
+  const last = (lastSeconds + COUNTED_PLAN.perItem * need) * ARCADE_HZ;
   return Array.from({ length: waves - 1 }, (_, k) => Math.round(((k + 1) * last) / (waves - 1)));
 }
 
 /** Hodiny věty s počtem (s): rozvrh vln a boss s rezervou, pod horizontem ověření. */
-export const countedClock = (need: number): number =>
-  Math.min(WAVE_PLAN.clockMax, Math.round((COUNTED_PLAN.last + COUNTED_PLAN.perItem * need) * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin + COUNTED_PLAN.boss));
+export const countedClock = (need: number, lastSeconds: number = COUNTED_PLAN.last): number =>
+  Math.min(WAVE_PLAN.clockMax, Math.round((lastSeconds + COUNTED_PLAN.perItem * need) * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin + COUNTED_PLAN.boss));
 
 /** O kolik zrychlí každá další vlna, aby poslední byla o `speedRise` rychlejší. */
 export const waveSpeedStep = (waves: number): number => Math.max(1, Math.round(WAVE_PLAN.speedRise / (waves - 1)));
@@ -167,15 +177,15 @@ export function entrySpots(rng: CompileRng, edge: number): number[] {
 
 /**
  * Místa věcí jedné vlny (x, z po dvojicích) uvnitř `±edge`, aspoň `gap` od
- * sebe a aspoň `WAVE_PLAN.itemHole` od středu; strop pokusů jen pojistka.
+ * sebe a aspoň `hole` od středu; strop pokusů jen pojistka.
  */
-export function wavePositions(rng: CompileRng, count: number, edge: number, gap: number): number[] {
+export function wavePositions(rng: CompileRng, count: number, edge: number, gap: number, hole: number = WAVE_PLAN.itemHole): number[] {
   const placed: number[] = [];
   for (let k = 0; k < count; k += 1) {
     for (let attempt = 0; attempt < 200; attempt += 1) {
       const x = rng.int(-edge, edge);
       const z = rng.int(-edge, edge);
-      if (x * x + z * z < WAVE_PLAN.itemHole * WAVE_PLAN.itemHole) continue;
+      if (x * x + z * z < hole * hole) continue;
       let free = true;
       for (let i = 0; i < placed.length && free; i += 2) free = (x - placed[i]!) ** 2 + (z - placed[i + 1]!) ** 2 >= gap * gap;
       if (!free) continue;
