@@ -68,19 +68,29 @@ const PATCH: Readonly<Record<Cover, (base: string, look: Look) => string>> = {
   rock: (base) => mix(base, '#1c1917', 0.35),
 };
 
+/** Tráva bez neonu (P81 R2): sytost země v trávě krát tolik – předloha má měkkou zelenou, ne svítivou. */
+export const GRASS_SATURATION = 0.75;
+const hsl = { h: 0, s: 0, l: 0 };
+const soften = (hex: string, amount: number): string => {
+  const color = new Color(hex);
+  color.getHSL(hsl);
+  return `#${color.setHSL(hsl.h, hsl.s * amount, hsl.l).getHexString()}`;
+};
+
 /**
- * Paleta země sady. `base` = barva souše (údolí a závod `ground`, ostrůvky a aréna
+ * Paleta země sady. `land` = barva souše (údolí a závod `ground`, ostrůvky a aréna
  * svou souš). Stín a dálka jdou k barvě polokoule zespodu, světlo ke slunci sady.
  */
-export function groundPalette(look: Look, base: string = look.ground): GroundPalette {
+export function groundPalette(look: Look, land: string = look.ground): GroundPalette {
   const road = SURFACES[look.surface];
+  const base = look.cover === 'grass' ? soften(land, GRASS_SATURATION) : land;
   return {
     dark: mix(mix(base, look.light[1], 0.3), '#000000', 0.1),
     base,
     light: mix(base, look.sunColor, 0.12),
     patch: PATCH[look.cover](base, look),
-    // Štěrk u silnice a dlažby, jinde zem vyšlapaná do barvy cesty.
-    verge: look.surface === 'asphalt' || look.surface === 'paving' ? mix('#a39a8c', base, 0.25) : mix(base, road.color, 0.4),
+    // Zem vyšlapaná do barvy cesty a tmavší – kraj cesty a arény jako obrys (P81 T4), ne krémový štěrk.
+    verge: mix(mix(base, road.color, 0.35), '#1c1917', 0.3),
     far: mix(mix(base, look.light[1], 0.5), '#000000', 0.3),
   };
 }
@@ -146,7 +156,7 @@ const WALL_AO_M = 1.5;
  *
  * Interiér (P62 T6, `Look.interior`) má bílé vrcholy a UV v metrech: dlažbu dá
  * textura povrchu (`interiorFloorMap`), ne zem sady – ta se skvrnami a krajnicí
- * četla jako venek.
+ * četla jako venek. Hradní nádvoří (`stone`) má dlažbu taky (P81 R6: kde byly dlaždice, zůstanou).
  */
 export function buildFieldGround(look: Look, area: Box, edge: (x: number, z: number) => number | null = () => null): BufferGeometry {
   const paint = look.interior === undefined ? groundPainter(groundPalette(look)) : null;

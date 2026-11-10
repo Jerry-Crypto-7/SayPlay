@@ -17,6 +17,7 @@
 import { CASTLE_FILL, CAVE_FILL, CITY_FILL, FACTORY_FILL, GRAVEYARD_FILL, LIVING_ROOM_FILL, MALL_FILL, OCEAN_FILL, SPACE_FILL, SUPERMARKET_FILL, UNDERWATER_FILL, VOLCANO_FILL } from './fill';
 import { placeMood, placeTime } from './sentence';
 import settingKits from './setting-kits.json';
+import { LOOK_STYLE, type LookStyle, restyleLook } from './style';
 
 /** Počasí a denní doba nad sadou (P29D): živá změna je píše do logu, sdílená verze do `theme`. */
 export const WEATHERS = ['clear', 'rain', 'snow', 'fog'] as const;
@@ -260,6 +261,8 @@ export interface Surface {
 export const SURFACES = {
   asphalt: { color: '#5a5f66', edge: '#e8e6df', marks: { kind: 'dashes', color: '#e8e6df' }, wall: ['#ece8df', '#d9473a'] },
   dirt: { color: '#94754f', edge: '#75593b', wall: ['#8a6a44', '#5e4630'], flecks: '#6f5536' },
+  // Cukrová země (P81 R3, předloha s11): světlá teplá cesta a bonbonový obrubník bílá–červená místo hlíny.
+  candy: { color: '#c8906c', edge: '#b47a58', wall: ['#f6efe6', '#e2553f'], flecks: '#a8724f' },
   sand: { color: '#dcc193', edge: '#c3a476', wall: ['#b88a62', '#e07a5f'], flecks: '#e58f75' },
   // Písek mořského dna (podmoří): pás jako `sand` (jiné hry ho kreslí bez svitu), svit trati závodu. Svit sjednotí
   // červenou všeho na trati, odstín pak nese zelená: světlý pískovec proti korálu, sytější korálové drobky.
@@ -557,7 +560,8 @@ export function markedFlora(look: Pick<Look, 'flora' | 'skyline'>): Flora | unde
  * Život v pozadí sady (P54B T10, `look/Ambient.tsx`): hejno ptáků, motýli, ryby pod hladinou,
  * ryby vyskakující z moře, netopýři, jiskry nad sopkou, prach ve světle interiéru, padající hvězdy.
  */
-export const AMBIENT_KINDS = ['birds', 'butterflies', 'fish', 'jumping-fish', 'bats', 'sparks', 'dust', 'meteors'] as const;
+// `leaves` (P81) přidává jen profil vzhledu (`restyleLook`), žádná sada ho nemá v datech.
+export const AMBIENT_KINDS = ['birds', 'butterflies', 'fish', 'jumping-fish', 'bats', 'sparks', 'dust', 'meteors', 'leaves'] as const;
 export type AmbientKind = (typeof AMBIENT_KINDS)[number];
 
 /** Barvy života v pozadí: teplé a neutrální (nic fialového), světlé září. Paleta patří sem, ne do `.tsx` (brand guard). */
@@ -570,6 +574,8 @@ export const AMBIENT_COLOURS: Readonly<Record<AmbientKind, readonly string[]>> =
   sparks: ['#fbbf24', '#f97316', '#fde68a'],
   dust: ['#fff7e6', '#ffedd5', '#fef3c7'],
   meteors: ['#fff6e8', '#e0f2fe', '#fde68a'],
+  // Listí ve slunci: světle zelené a zlatavé, ne hnědé (oranžový nádech nesmí převládnout).
+  leaves: ['#9cc65a', '#c9d86a', '#e3c25e', '#7fb24e'],
 };
 
 export interface Look {
@@ -853,6 +859,7 @@ const WATERWAY = /\brivers?\b|canal|\blake\b|rapids|\bsea\b|ocean/;
 const PLACE_SURFACES: readonly (readonly [RegExp, SurfaceKind])[] = [
   [/harbou?r|\bdocks?\b|\bpiers?\b|boardwalk|wharf|marina|jetty/, 'planks'],
   [/\broads?\b|street|highway|motorway|freeway|race ?track|speedway|parking/, 'asphalt'],
+  [/candy|sweets?\b|lollipop|gingerbread|\bsugar/, 'candy'],
 ];
 
 /** Místo z věty, které přebije znak na obzoru (P73D T5): cukrová země nemá vlastní sadu, padá na louku. */
@@ -915,6 +922,9 @@ interface MoodShift {
   readonly fog: readonly [near: number, far: number];
   /** Zem jde o `amount` k `tone` (bouřka: mokrá); bez něj zem sady. */
   readonly ground?: { readonly tone: string; readonly amount: number };
+  /** Zenit oblohy jde o `amount` k `top` místo k `tone`; slunce k `sunTone` místo k `lightTone`. */
+  readonly top?: string;
+  readonly sunTone?: string;
 }
 
 /*
@@ -930,7 +940,10 @@ const MOOD_SHIFTS: Readonly<Record<Exclude<Mood, 'dusk' | 'cozy'>, MoodShift>> =
   spooky: { tone: '#1d3a37', lightTone: '#a3d6c8', amount: 0.7, light: 0.85, sun: 0.3, glow: 0.15, fog: [0.45, 0.65] },
   // Bouřka: tmavé šedé nebe; déšť kreslí `Weather.tsx`. Zem mokrá, tmavě šedomodrá (P76 T2): teplá hnědá zem města
   // z P75 v dešti podle soudce „less convincing as a stormy city“.
-  storm: { tone: '#3a4a4a', lightTone: '#b0bcc4', amount: 0.7, light: 0.9, sun: 0.35, glow: 0.08, fog: [0.6, 0.8], ground: { tone: '#2c3e50', amount: 0.75 } },
+  // P81 R3 (předloha s9): teplé nízké světlo na budovách proti tmavšímu studenému nebi; výplň zůstane studená.
+  // Mokrá zem modrozelená: pod teplým sluncem vyjde zelenošedá jako zem bouřky v `main` pod tmavým světlem
+  // (šedomodrá pod zvednutým světlem posunula odstín pod hrdinou o 50°, šedá s teplým sluncem do olivové).
+  storm: { tone: '#2a3838', lightTone: '#b0bcc4', amount: 0.7, light: 0.9, sun: 0.45, glow: 0.08, fog: [0.6, 0.8], ground: { tone: '#114658', amount: 0.75 }, top: '#1b2727', sunTone: '#dccaa8' },
   // Mlha: světlá a blíž.
   fog: { tone: '#c8d0d0', lightTone: '#e2e8ec', amount: 0.6, light: 1, sun: 0.6, glow: 0.4, fog: [0.3, 0.55] },
   // Jasno: barvy sady, silnější slunce a dohled dál.
@@ -967,23 +980,32 @@ function luminance(hex: string): number {
 /** Světlo na matné ploše: polokoule shora a slunce. simplified: bez úhlů a ACES – stačí na srovnání nálady s nocí. */
 const brightness = (look: Pick<Look, 'light' | 'sun' | 'sunColor'>): number => look.light[2] * luminance(look.light[0]) + look.sun * luminance(look.sunColor);
 
-/** Sada v náladě. Světlo neklesne pod noc: hrdina a překážky zůstanou proti zemi čitelné aspoň jako v noci. */
+/** Barvy hrdiny a překážek z kitu (`color.tomato`, `sun`, `ink`, `paper` v `@/brand/tokens`), proti kterým se čte zem. */
+const FIGURES = ['#FF5A36', '#FFC530', '#1F1A17', '#FFFFFF'] as const;
+
+/**
+ * Sada v náladě. Světlo neklesne pod noc: hrdina a překážky zůstanou proti zemi čitelné aspoň jako v noci.
+ * Nálada, která přebarví zem (bouřka P76: studená mokrá zem), přiblíží zem jasu některé postavy – světlo se
+ * pak zvedne o tolik, o kolik se ten rozdíl jasu zmenšil (bez toho byla tmavá postava na mokré zemi hůř čitelná než v noci).
+ */
 function withMood(look: Look, shift: MoodShift): Look {
   const tone = (hex: string) => mix(hex, shift.tone, shift.amount);
   const toLight = (hex: string) => mix(hex, shift.lightTone, shift.amount);
-  const moody = { light: [toLight(look.light[0]), tone(look.light[1]), look.light[2] * shift.light] as const, sun: look.sun * shift.sun, sunColor: toLight(look.sunColor) };
-  const lift = Math.max(1, brightness(NIGHT) / brightness(moody));
+  const moody = { light: [toLight(look.light[0]), tone(look.light[1]), look.light[2] * shift.light] as const, sun: look.sun * shift.sun, sunColor: mix(look.sunColor, shift.sunTone ?? shift.lightTone, shift.amount) };
+  const ground = shift.ground === undefined ? look.ground : mix(look.ground, shift.ground.tone, shift.ground.amount);
+  const closer = Math.max(1, ...FIGURES.map((figure) => Math.abs(luminance(figure) - luminance(look.ground)) / Math.max(1e-6, Math.abs(luminance(figure) - luminance(ground)))));
+  const lift = Math.max(1, (brightness(NIGHT) / brightness(moody)) * closer);
   return {
     ...look,
     sky: tone(look.sky),
-    skyTop: tone(look.skyTop),
+    skyTop: mix(look.skyTop, shift.top ?? shift.tone, shift.amount),
     horizon: tone(look.horizon),
     light: [moody.light[0], moody.light[1], moody.light[2] * lift],
     sun: moody.sun * lift,
     sunColor: moody.sunColor,
     glow: look.glow * shift.glow,
     fog: [look.fog[0] * shift.fog[0], look.fog[1] * shift.fog[1]],
-    ...(shift.ground === undefined ? {} : { ground: mix(look.ground, shift.ground.tone, shift.ground.amount) }),
+    ...(shift.ground === undefined ? {} : { ground }),
   };
 }
 
@@ -992,7 +1014,7 @@ function withMood(look: Look, shift: MoodShift): Look {
  * jízda hrdiny, denní doba, počasí a nálada. Noc přebije náladu; věta bez slov nálady a denní doby má sadu beze změny.
  * Místo a náladu specu čte postaru (`placeMood`), novou větu nese uložená denní doba a počasí (P54B T11, `sentenceSky`).
  */
-export function sceneLook(theme: { readonly setting: string; readonly mood: string; readonly look?: LookId; readonly motion?: string; readonly timeOfDay?: TimeOfDay; readonly weather?: Weather }): Look {
+export function sceneLook(theme: { readonly setting: string; readonly mood: string; readonly look?: LookId; readonly motion?: string; readonly timeOfDay?: TimeOfDay; readonly weather?: Weather }, style: LookStyle = LOOK_STYLE): Look {
   const look = LOOKS[lookOf(theme)];
   const setting = theme.setting.toLowerCase();
   const ground = PLACE_GROUNDS.find(([pattern]) => pattern.test(setting))?.[1] ?? look.ground;
@@ -1015,5 +1037,7 @@ export function sceneLook(theme: { readonly setting: string; readonly mood: stri
   const wind = mood === 'storm' ? { wind: STORM_WIND, storm: true as const } : {};
   if (time === 'night') return { ...placed, ...NIGHT, exposure: Math.min(placed.exposure, 1), ...wind };
   const timed = time === 'dusk' ? { ...placed, ...DUSK } : placed;
-  return mood === undefined ? timed : { ...withMood(timed, MOOD_SHIFTS[mood]), ...wind };
+  const moody = mood === undefined ? timed : { ...withMood(timed, MOOD_SHIFTS[mood]), ...wind };
+  // Vzhled celého obrazu (P81): paleta místa podle profilu; zlatá hodina jen pod jasnou denní oblohou.
+  return restyleLook(moody, lookOf(theme), { night: false, overcast: time === 'dusk' || (mood !== undefined && mood !== 'bright') }, style);
 }

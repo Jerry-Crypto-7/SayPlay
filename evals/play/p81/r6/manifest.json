@@ -1,0 +1,261 @@
+{
+ "takenAt": "2026-11-10T05:39:54.288Z",
+ "noHud": false,
+ "hz": 60,
+ "moments": [
+  {
+   "id": "0start",
+   "second": 0
+  },
+  {
+   "id": "1play",
+   "second": 3
+  },
+  {
+   "id": "2play",
+   "second": 8
+  }
+ ],
+ "shots": [
+  {
+   "id": "s3",
+   "vp": "desktop",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s3-desktop-0start.jpg",
+     "tick": 0,
+     "runState": "ready"
+    },
+    {
+     "moment": "1play",
+     "file": "s3-desktop-1play.jpg",
+     "tick": 180,
+     "runState": "running"
+    },
+    {
+     "moment": "2play",
+     "file": "s3-desktop-2play.jpg",
+     "tick": 480,
+     "runState": "running"
+    }
+   ],
+   "errors": [],
+   "versionId": "63fe78f25d9f4d5fb30c8ee2d5b2ded4",
+   "genre": "arena",
+   "setting": "rooftops",
+   "look": "city",
+   "quality": "high"
+  },
+  {
+   "id": "s3",
+   "vp": "phone",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s3-phone-0start.jpg",
+     "tick": 0,
+     "runState": "ready"
+    },
+    {
+     "moment": "1play",
+     "file": "s3-phone-1play.jpg",
+     "tick": 180,
+     "runState": "running"
+    },
+    {
+     "moment": "2play",
+     "file": "s3-phone-2play.jpg",
+     "tick": 480,
+     "runState": "running"
+    }
+   ],
+   "errors": [],
+   "versionId": "63fe78f25d9f4d5fb30c8ee2d5b2ded4",
+   "genre": "arena",
+   "setting": "rooftops",
+   "look": "city",
+   "quality": "high"
+  },
+  {
+   "id": "s4",
+   "vp": "desktop",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s4-desktop-0start.jpg",
+     "tick": 0,
+     "runState": "ready"
+    },
+    {
+     "moment": "1play",
+     "file": "s4-desktop-1play.jpg",
+     "tick": 180,
+     "runState": "running"
+    },
+    {
+     "moment": "2play",
+     "file": "s4-desktop-2play.jpg",
+     "tick": 480,
+     "runState": "running"
+    }
+   ],
+   "errors": [],
+   "versionId": "2ce0252fe7800417e45f89d795e55218",
+   "genre": "timing",
+   "setting": "tower",
+   "look": "castle",
+   "quality": "high"
+  },
+  {
+   "id": "s4",
+   "vp": "phone",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s4-phone-0start.jpg",
+     "tick": 0,
+     "runState": "ready"
+    },
+    {
+     "moment": "1play",
+     "file": "s4-phone-1play.jpg",
+     "tick": 180,
+     "runState": "running"
+    },
+    {
+     "moment": "2play",
+     "file": "s4-phone-2play.jpg",
+     "tick": 480,
+     "runState": "running"
+    }
+   ],
+   "errors": [],
+   "versionId": "2ce0252fe7800417e45f89d795e55218",
+   "genre": "timing",
+   "setting": "tower",
+   "look": "castle",
+   "quality": "high"
+  },
+  {
+   "id": "s8",
+   "vp": "desktop",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s8-desktop-0start.jpg",
+     "tick": 0,
+     "runState": "ready"
+    },
+    {
+     "moment": "1play",
+     "file": "s8-desktop-1play.jpg",
+     "tick": 96,
+     "runState": "won"
+    },
+    {
+     "moment": "2play",
+     "file": "s8-desktop-2play.jpg",
+     "tick": 96,
+     "runState": "won"
+    }
+   ],
+   "errors": [],
+   "versionId": "39e3eede3e314558cb3eb6204d646de2",
+   "genre": "quest",
+   "setting": "old castle",
+   "look": "castle",
+   "quality": "high"
+  },
+  {
+   "id": "s8",
+   "vp": "phone",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s8-phone-0start.jpg",
+     "tick": 0,
+     "runState": "ready"
+    },
+    {
+     "moment": "1play",
+     "file": "s8-phone-1play.jpg",
+     "tick": 96,
+     "runState": "won"
+    },
+    {
+     "moment": "2play",
+     "file": "s8-phone-2play.jpg",
+     "tick": 96,
+     "runState": "won"
+    }
+   ],
+   "errors": [],
+   "versionId": "39e3eede3e314558cb3eb6204d646de2",
+   "genre": "quest",
+   "setting": "old castle",
+   "look": "castle",
+   "quality": "medium"
+  },
+  {
+   "id": "s11",
+   "vp": "desktop",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s11-desktop-0start.jpg",
+     "tick": 0,
+     "runState": "ready"
+    },
+    {
+     "moment": "1play",
+     "file": "s11-desktop-1play.jpg",
+     "tick": 180,
+     "runState": "running"
+    },
+    {
+     "moment": "2play",
+     "file": "s11-desktop-2play.jpg",
+     "tick": 480,
+     "runState": "running"
+    }
+   ],
+   "errors": [],
+   "versionId": "2d23fe22b054391789dd646bd53baa50",
+   "genre": null,
+   "setting": "candy land",
+   "look": "meadow",
+   "quality": "high"
+  },
+  {
+   "id": "s11",
+   "vp": "phone",
+   "frames": [
+    {
+     "moment": "0start",
+     "file": "s11-phone-0start.jpg",
+     "tick": 0,
+     "runState": "ready"
+    },
+    {
+     "moment": "1play",
+     "file": "s11-phone-1play.jpg",
+     "tick": 180,
+     "runState": "running"
+    },
+    {
+     "moment": "2play",
+     "file": "s11-phone-2play.jpg",
+     "tick": 480,
+     "runState": "running"
+    }
+   ],
+   "errors": [],
+   "versionId": "2d23fe22b054391789dd646bd53baa50",
+   "genre": null,
+   "setting": "candy land",
+   "look": "meadow",
+   "quality": "high"
+  }
+ ]
+}

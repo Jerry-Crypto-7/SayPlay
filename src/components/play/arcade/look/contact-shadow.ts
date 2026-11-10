@@ -11,15 +11,18 @@ import { oklab, paletteLab, rgbOf, type Rgb } from './rig/toon';
 /** Šedomodrá, ke které se hledá tón palety (jen odstín a, b): chladné místo dá šedomodrý stín, teplé teplý. */
 const COOL = oklab([0.13, 0.17, 0.25]);
 /** Světlost tónu stínu (Oklab L): tmavší než zem, aby ji ztmavil, ale daleko od černé. */
-export const SHADE_L = 0.38;
+export const SHADE_L = 0.42;
 /** Nejvyšší sytost tónu (Oklab chroma): pastelový stín, ne barevná skvrna. */
 const SHADE_CHROMA = 0.05;
-/** Krytí elipsy uprostřed (T3 0,5; T6 tmavší – soudce chtěl pevnější ukotvení předmětů). */
-export const CONTACT_OPACITY = 0.65;
+/**
+ * Krytí elipsy uprostřed (T3 0,5; T6 tmavší – soudce chtěl pevnější ukotvení předmětů). P81: měkčí, širší
+ * a světlejší stín předlohy (`SHADE_L` 0,38 → 0,42, `CONTACT_SPREAD` 1,35 → 1,6).
+ */
+export const CONTACT_OPACITY = 0.6;
 /** Výška nad zemí proti z-fightingu (m). */
 export const CONTACT_LIFT = 0.03;
 /** Elipsa je o tolik širší než půdorys předmětu. */
-export const CONTACT_SPREAD = 1.35;
+export const CONTACT_SPREAD = 1.6;
 /** Nad tolik metrů nad svou zemí (skok) elipsa zmizí. */
 export const CONTACT_FADE_M = 2;
 

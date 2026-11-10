@@ -17,6 +17,7 @@ import { Weather } from '@/components/play/arcade/Weather';
 
 import { type Look, LOOKS, LOOK_IDS, PROP_KINDS, SCENERY_MODELS, STORM_WIND, isSceneryModel, kitFor, lookFor, lookOf, moodFor, sceneLook } from '../arcade/look';
 import settingKits from '../arcade/look/setting-kits.json';
+import { TODAY_STYLE } from '../arcade/look/style';
 import { type GameSpecV1, readGameSpec } from '../spec';
 import runner from '../arcade/__fixtures__/runner.json';
 import { draftGameSpecWithMeta } from '../draft';
@@ -160,7 +161,9 @@ describe('rekvizity prostředí (P45H T3)', () => {
   const kinds = (props: Parameters<typeof sceneryPlaces>[0], layout: 'sides' | 'behind') => sceneryPlaces(props, layout, 6, 0, 120).map((place) => place.kind);
 
   it('věta bez kitu má sadu beze změny', () => {
-    expect(sceneLook(theme('a dog runs in a field'))).toBe(LOOKS.meadow);
+    // Profil vzhledu P81 přebarví paletu; sada sama (bez profilu) zůstane, rekvizity i pod profilem.
+    expect(sceneLook(theme('a dog runs in a field'), TODAY_STYLE)).toBe(LOOKS.meadow);
+    expect(sceneLook(theme('a dog runs in a field')).props).toBe(LOOKS.meadow.props);
     // Obývák má od modelů P45I vlastní kit (konferenční stolek), park od P46G T8, město od P57 T9, proto tu už nejsou.
     expect(sceneLook({ ...theme('a busy factory'), look: 'factory' }).props).toBe(LOOKS.factory.props);
   });
@@ -231,9 +234,10 @@ describe('nálada z věty (P46G T5)', () => {
   });
 
   // Návrh z věty, jak ho staví rychlá verze.
-  const sentenceLook = (sentence: string) => sceneLook(draftGameSpecWithMeta(sentence).spec.theme);
+  const sentenceLook = (sentence: string, style = TODAY_STYLE) => sceneLook(draftGameSpecWithMeta(sentence).spec.theme, style);
 
   it('„dark forest“ je tmavší než les: obloha a mlha, slunce, dohled; zem zůstane', () => {
+    // Nálada sady bez profilu P81: profil dává teplé slunce a sytou zem jen jasné obloze (`restyleLook`).
     const forest = sentenceLook('A race car speeds through a forest');
     const dark = sentenceLook('A race car speeds through a dark forest');
     expect(dark).not.toEqual(forest);
@@ -247,7 +251,8 @@ describe('nálada z věty (P46G T5)', () => {
   it('noc přebije náladu', () => {
     const night = sceneLook({ setting: 'a forest at night', mood: 'fast' });
     // Vítr bouřky fouká i v noci (P54B T13); světlo je noci.
-    for (const setting of ['a sunny forest at night', 'a dark creepy forest at night', 'a stormy foggy forest at night']) expect({ ...sceneLook({ setting, mood: 'fast' }), wind: undefined }, setting).toEqual(night);
+    // Bouřka nese i příznak `storm` (studená mokrá zem P76), ten noc nepřebije.
+    for (const setting of ['a sunny forest at night', 'a dark creepy forest at night', 'a stormy foggy forest at night']) expect({ ...sceneLook({ setting, mood: 'fast' }), wind: undefined, storm: undefined }, setting).toEqual(night);
     expect(sceneLook({ setting: 'a stormy foggy forest at night', mood: 'fast' }).wind).toBe(STORM_WIND);
     expect(sceneLook({ setting: 'a sunny forest', mood: 'dark', timeOfDay: 'night' })).toEqual(night);
   });
@@ -258,11 +263,12 @@ describe('nálada z věty (P46G T5)', () => {
     // Dnešní věty P46G kromě „dark forest“ a nálady, které píšou žánry a režisér.
     for (const sentence of p46g.sentences.filter((entry) => entry.id !== 'forest-race')) {
       const theme = draftGameSpecWithMeta(sentence.text).spec.theme;
-      expect(light(sceneLook(theme)), sentence.text).toEqual(light(LOOKS[lookOf(theme)]));
+      // Bez profilu P81: ten světlo přebarví všem denním sadám stejně, s náladou i bez ní.
+      expect(light(sceneLook(theme, TODAY_STYLE)), sentence.text).toEqual(light(LOOKS[lookOf(theme)]));
     }
     for (const mood of ['energetic', 'fast', 'playful', 'tense', 'adventurous', 'cheerful', 'cozy', 'curious', 'calm', 'eerie', 'dreamy', 'electric']) {
       expect(moodFor('a forest', mood)).toBeNull();
-      expect(sceneLook({ setting: 'a busy factory', mood })).toBe(LOOKS.factory);
+      expect(sceneLook({ setting: 'a busy factory', mood }, TODAY_STYLE)).toBe(LOOKS.factory);
     }
   });
 

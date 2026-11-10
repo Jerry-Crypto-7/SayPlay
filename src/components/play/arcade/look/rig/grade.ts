@@ -20,57 +20,14 @@ import { Effect } from 'postprocessing';
 import { Uniform, Vector3 } from 'three';
 
 import type { LookId } from '@/play/arcade/look';
+import { type Grade, type GradeFamily, LOOK_FAMILY, LOOK_STYLE } from '@/play/arcade/look/style';
 
 import type { QualityTier } from './quality';
 
-export const GRADE_FAMILIES = ['green', 'warm', 'cold', 'water', 'indoor', 'dark'] as const;
-export type GradeFamily = (typeof GRADE_FAMILIES)[number];
+export { GRADE_FAMILIES, type Grade, type GradeFamily, LOOK_FAMILY } from '@/play/arcade/look/style';
 
-export interface Grade {
-  /** Zdvih stínů po kanálech (0 = černá zůstane černou). */
-  readonly lift: readonly [number, number, number];
-  /** Zisk světel po kanálech (1 = beze změny). */
-  readonly gain: readonly [number, number, number];
-  /** Exponent středních tónů: > 1 ztmaví vybledlé, < 1 rozjasní tmavé. */
-  readonly gamma: number;
-  readonly saturation: number;
-  readonly contrast: number;
-  /** Ztmavení rohů (0 = bez viněty). */
-  readonly vignette: number;
-}
-
-export const LOOK_FAMILY: Readonly<Record<LookId, GradeFamily>> = {
-  meadow: 'green',
-  forest: 'green',
-  jungle: 'green',
-  castle: 'green',
-  desert: 'warm',
-  beach: 'warm',
-  volcano: 'warm',
-  snow: 'cold',
-  ocean: 'water',
-  underwater: 'water',
-  city: 'indoor',
-  mall: 'indoor',
-  supermarket: 'indoor',
-  living_room: 'indoor',
-  factory: 'indoor',
-  cave: 'dark',
-  graveyard: 'dark',
-  space: 'dark',
-};
-
-export const GRADES: Readonly<Record<GradeFamily, Grade>> = {
-  // Zlatá hodina diorama (P73D T4): denní rodiny teplejší zisk a měkčí sytost – hračka, ne neon.
-  green: { lift: [0.01, 0.01, 0.015], gain: [1.05, 1.01, 0.94], gamma: 1.04, saturation: 1.06, contrast: 1.06, vignette: 0.22 },
-  warm: { lift: [0.02, 0.01, 0], gain: [1.05, 1, 0.92], gamma: 1.04, saturation: 1.04, contrast: 1.08, vignette: 0.22 },
-  // Mlha arény sníh vybělí: gama vrátí střední tóny, bílá zůstane bílou.
-  cold: { lift: [0, 0.01, 0.03], gain: [0.99, 1, 1.01], gamma: 1.22, saturation: 1.2, contrast: 1.1, vignette: 0.2 },
-  water: { lift: [0, 0.02, 0.03], gain: [0.98, 1.02, 1.03], gamma: 1.04, saturation: 1.12, contrast: 1.06, vignette: 0.26 },
-  indoor: { lift: [0.01, 0.01, 0], gain: [1.04, 1, 0.95], gamma: 1.03, saturation: 1.04, contrast: 1.06, vignette: 0.2 },
-  // Noc: černá se zvedne do modré, střední tóny se rozjasní – hrdina nezapadne.
-  dark: { lift: [0.03, 0.045, 0.07], gain: [1, 1.02, 1.04], gamma: 0.8, saturation: 1.1, contrast: 1, vignette: 0.3 },
-};
+/** Ladění rodin z profilu vzhledu (P81, `LOOK_STYLE.grade`). */
+export const GRADES: Readonly<Record<GradeFamily, Grade>> = LOOK_STYLE.grade.families;
 
 export const gradeOf = (lookId: LookId): Grade => GRADES[LOOK_FAMILY[lookId]];
 
@@ -78,7 +35,7 @@ export const gradeOf = (lookId: LookId): Grade => GRADES[LOOK_FAMILY[lookId]];
  * Kontrast navíc na telefonní úrovni (P54B T14): `low` nemá AO ani bloom, kontaktní stíny
  * a záře chybí a obraz na malém displeji splývá – postava se slévá se zemí.
  */
-export const LOW_CONTRAST = 0.08;
+export const LOW_CONTRAST = LOOK_STYLE.grade.lowContrast;
 
 /** Ladění rodiny na úrovni kvality; jen uniformy, změna úrovně nic nepřekládá. */
 export const gradeFor = (family: GradeFamily, tier: QualityTier): Grade =>
@@ -87,6 +44,7 @@ export const gradeFor = (family: GradeFamily, tier: QualityTier): Grade =>
 const FRAGMENT = /* glsl */ `
 uniform vec3 lift;
 uniform vec3 gain;
+uniform float split;
 uniform float gamma;
 uniform float saturation;
 uniform float contrast;
@@ -95,7 +53,9 @@ uniform float vignette;
 void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
   vec3 c = pow(clamp(inputColor.rgb, 0.0, 1.0), vec3(1.0 / 2.2));
   float shade = 1.0 - smoothstep(0.3, 0.5, max(c.r, max(c.g, c.b)));
-  c = gain * (c + lift * (1.0 - c));
+  // Split-tone (P81): zisk jen ve světlech – tmavé a střední tóny (tučňák, podlaha ve stínu) bez teplého nádechu.
+  vec3 toned = mix(vec3(1.0), gain, smoothstep(0.45, 0.85, dot(c, vec3(0.2126, 0.7152, 0.0722))));
+  c = mix(gain, toned, split) * (c + lift * (1.0 - c));
   c = pow(max(c, 0.0), vec3(gamma));
   float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
   c = mix(vec3(l), c, saturation);
@@ -121,6 +81,7 @@ export class GradeEffect extends Effect {
       uniforms: new Map<string, Uniform>([
         ['lift', new Uniform(new Vector3())],
         ['gain', new Uniform(new Vector3(1, 1, 1))],
+        ['split', new Uniform(0)],
         ['gamma', new Uniform(1)],
         ['saturation', new Uniform(1)],
         ['contrast', new Uniform(1)],
@@ -133,6 +94,7 @@ export class GradeEffect extends Effect {
     const uniforms = this.uniforms;
     (uniforms.get('lift')!.value as Vector3).set(...grade.lift);
     (uniforms.get('gain')!.value as Vector3).set(...grade.gain);
+    uniforms.get('split')!.value = grade.split;
     uniforms.get('gamma')!.value = grade.gamma;
     uniforms.get('saturation')!.value = grade.saturation;
     uniforms.get('contrast')!.value = grade.contrast;

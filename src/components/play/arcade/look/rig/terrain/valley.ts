@@ -2,7 +2,7 @@
  * Údolí běžce (P32A T3, ukázka B): ledová dráha se zubatým krajem, sněhové
  * náspy a za nimi svahy do hor. Posunutá rovina – mřížka sloupců napříč tratí
  * a řad podél ní – bez indexů a s normálou na plochu (flat shading), barvy
- * ve vrcholech z palety sady (`valleyPalette`).
+ * ve vrcholech z palety sady (`valleyPalette`). Sníh má od P81 R3 hladké svahy (`smoothSnow`).
  *
  * Uvnitř hrací plochy (`PLAYABLE_HALF`) má každý vrchol přesně výšku země jádra
  * (`playableGround`, všude 0), takže každý bod uvnitř leží v trojúhelníku ze
@@ -12,13 +12,13 @@
  * Čistá funkce vstupu: žádná náhoda, táž trať má pokaždé stejné údolí.
  */
 
-import { BufferGeometry, Color, Float32BufferAttribute } from 'three';
+import { BufferAttribute, BufferGeometry, Color, Float32BufferAttribute } from 'three';
 
 import { UNIT } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { RUNNER } from '@/play/arcade/pieces/runner';
 
-import { groundPainter, groundPalette, hash, mix, noise, smooth } from '../../ground';
+import { type GroundPaint, groundPainter, groundPalette, hash, mix, noise, smooth } from '../../ground';
 
 /** Šum a míchání barev žijí u země (`look/ground.ts`); ostatní generátory terénu je berou odsud. */
 export { hash, mix, noise, smooth };
@@ -137,6 +137,56 @@ export function valleyHeightAt(from: number, to: number, heights: Float32Array):
 }
 
 /**
+ * Sníh (P81 R3, předloha s12): tatáž síť se sdílenými vrcholy – `computeVertexNormals` (i po ohnutí v `bendGeometry`)
+ * dá hladké normály, fazety zmizí. Barva ve vrcholu z kresby země, do stínu a skály plynule podle sklonu.
+ */
+function smoothSnow(rows: number, h: (column: number, row: number) => number, zAt: (column: number, row: number) => number, ground: GroundPaint, colors: { readonly shade: Color; readonly rock: Color }): BufferGeometry {
+  const width = XS.length;
+  const count = (rows + 1) * width;
+  const positions = new Float32Array(count * 3);
+  const tints = new Float32Array(count * 3);
+  const face = new Color();
+  for (let row = 0; row <= rows; row += 1) {
+    for (let column = 0; column < width; column += 1) {
+      const at = (row * width + column) * 3;
+      const x = XS[column]!;
+      const z = zAt(column, row);
+      positions[at] = x;
+      positions[at + 1] = h(column, row);
+      positions[at + 2] = z;
+      // Sklon z výšek sousedů (na kraji mřížky jednostranně).
+      const [left, right] = [Math.max(0, column - 1), Math.min(width - 1, column + 1)];
+      const [back, front] = [Math.max(0, row - 1), Math.min(rows, row + 1)];
+      const dx = (h(right, row) - h(left, row)) / Math.max(1e-6, XS[right]! - XS[left]!);
+      const dz = (h(column, front) - h(column, back)) / Math.max(1e-6, (front - back) * ROW);
+      const up = 1 / Math.hypot(1, dx, dz);
+      ground(x, z, Math.abs(x) - PATH_HALF, face);
+      face.lerp(colors.shade, smooth((0.86 - up) / 0.16)).lerp(colors.rock, smooth((0.56 - up) / 0.12));
+      face.multiplyScalar(0.98 + 0.03 * hash(column, row));
+      tints[at] = face.r;
+      tints[at + 1] = face.g;
+      tints[at + 2] = face.b;
+    }
+  }
+  const index = count > 65535 ? new Uint32Array(rows * (width - 1) * 6) : new Uint16Array(rows * (width - 1) * 6);
+  let at = 0;
+  const vertex = (column: number, row: number): number => row * width + column;
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < width - 1; column += 1) {
+      const [a, b, c, d] = [vertex(column, row), vertex(column + 1, row), vertex(column + 1, row + 1), vertex(column, row + 1)];
+      // Tytéž trojúhelníky jako `buildValley` (`heightAt` platí beze změny).
+      for (const corner of flipped(column, row) ? [a, d, b, b, d, c] : [a, c, b, a, d, c]) index[at++] = corner;
+    }
+  }
+  const geometry = new BufferGeometry();
+  geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new Float32BufferAttribute(tints, 3));
+  geometry.setIndex(new BufferAttribute(index, 1));
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+/**
  * Interiér (P62 T6, `Look.interior`) je rovná podlaha jako hala, s bílými vrcholy a UV v metrech (x, z před ohnutím
  * po trati): dlažbu dá textura povrchu (`interiorFloorMap`). Zem sady se světlými skvrnami a krajnicí soudce četl
  * jako „outdoor road over pale hills“.
@@ -152,6 +202,7 @@ export function buildValley({ look, from, to }: ValleyOptions): Valley & { reado
   const colors = { shade: new Color(palette.shade), rock: new Color(palette.rock) };
   const lava = palette.lava === undefined ? null : new Color(palette.lava).multiplyScalar(LAVA_GLOW);
   const ground = groundPainter(groundPalette(look, palette.surface));
+  if (look.cover === 'snow' && !indoor) return { geometry: smoothSnow(rows, h, zAt, ground, colors), heights, heightAt: valleyHeightAt(from, to, heights) };
   const cells = rows * (XS.length - 1);
   const positions = new Float32Array(cells * 18);
   const tints = new Float32Array(cells * 18);

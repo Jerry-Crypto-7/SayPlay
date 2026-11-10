@@ -70,13 +70,16 @@ describe('P73D T4: zlatá hodina', () => {
     }
   });
 
-  it('grades daytime warmer and softer, while night, water and snow keep their tone', () => {
+  it('grades daytime warm only in the highlights, while night, water and snow keep their tone', () => {
     for (const family of ['green', 'warm', 'indoor'] as const) {
-      expect(GRADES[family].saturation, family).toBeLessThanOrEqual(1.06);
+      // P81 směr mix: sytost prototypu 1,18 (P73D měkčí ≤ 1,06); přesycení majitel odmítl – strop 1,2.
+      expect(GRADES[family].saturation, family).toBeLessThanOrEqual(1.2);
       expect(GRADES[family].gain[0], family).toBeGreaterThan(GRADES[family].gain[2] + 0.05);
+      // Split-tone: teplý zisk jen ve světlech – podlaha a tučňák ve stínu nezhnědnou. Hala a město ladění P73D.
+      expect(GRADES[family].split, family).toBe(family === 'indoor' ? 0 : 1);
     }
-    expect(GRADES.cold).toEqual({ lift: [0, 0.01, 0.03], gain: [0.99, 1, 1.01], gamma: 1.22, saturation: 1.2, contrast: 1.1, vignette: 0.2 });
-    expect(GRADES.water).toEqual({ lift: [0, 0.02, 0.03], gain: [0.98, 1.02, 1.03], gamma: 1.04, saturation: 1.12, contrast: 1.06, vignette: 0.26 });
-    expect(GRADES.dark).toEqual({ lift: [0.03, 0.045, 0.07], gain: [1, 1.02, 1.04], gamma: 0.8, saturation: 1.1, contrast: 1, vignette: 0.3 });
+    expect(GRADES.cold).toEqual({ lift: [0, 0.01, 0.03], gain: [0.99, 1, 1.01], split: 0, gamma: 1.22, saturation: 1.2, contrast: 1.1, vignette: 0.2 });
+    expect(GRADES.water).toEqual({ lift: [0, 0.02, 0.03], gain: [0.98, 1.02, 1.03], split: 0, gamma: 1.04, saturation: 1.12, contrast: 1.06, vignette: 0.26 });
+    expect(GRADES.dark).toEqual({ lift: [0.03, 0.045, 0.07], gain: [1, 1.02, 1.04], split: 0, gamma: 0.8, saturation: 1.1, contrast: 1, vignette: 0.3 });
   });
 });

@@ -36,7 +36,8 @@ import {
   Vector3,
 } from 'three';
 
-import { type Look, type LookId, NIGHT } from '@/play/arcade/look';
+import { type Look, type LookId, LOOKS, NIGHT } from '@/play/arcade/look';
+import { LOOK_STYLE } from '@/play/arcade/look/style';
 
 import { Ambient } from '../Ambient';
 import { setCharacterRim } from '../load';
@@ -44,11 +45,12 @@ import { loadsIdle } from '../pending-loads';
 import { darkness, setScenePalette } from './toon';
 import { Wind } from '../Vegetation';
 import { shadeSky } from '../contact-shadow';
-import { airOf, BACK_LIGHT, BACK_SKY, goldenHour, liftLight, SHADOW_INTENSITY, SHADOW_RADIUS } from './fog-light';
+import { airOf, BACK_LIGHT, BACK_SKY, goldenHour, liftLight, SHADOW_INTENSITY, SHADOW_RADIUS, SNOW_SHADOW } from './fog-light';
 import { LOOK_FAMILY } from './grade';
 import { type PaintedSky, paintedSkyOf, paintFade, type PaintStep, stagePlace } from './painted-sky';
 import { Post, useQualityTier } from './Post';
 import { TIER_SETTINGS } from './quality';
+import { inkMeshes, isInk, outlinable, setInkViewport } from './InkOutline';
 
 /**
  * Kamera končí tam, kde mlha (P28E-R1). Za koncem mlhy má každý pixel barvu oblohy,
@@ -133,7 +135,10 @@ void main() {
     float forward = side > 0.5 ? dir.x : dir.z;
     vec2 uv = vec2(0.5 - atan(left, forward) / 3.14159265, paintHorizon + asin(clamp(dir.y, -1.0, 1.0)) / 1.57079633);
     vec3 art = texture2D(painted, uv).rgb * paintTint;
-    art = mix(art, gl_FragColor.rgb, PAINT_HAZE * (1.0 - smoothstep(0.0, 0.18, dir.y)));
+    // P81 R3: fialová ani v obraze (hory sněhu s12) – tón, kde červená i modrá převyšují zelenou, zešedne.
+    art = mix(art, vec3(dot(art, vec3(0.2126, 0.7152, 0.0722))), smoothstep(0.0, 0.08, min(art.r, art.b) - art.g));
+    // P81: pás oparu u obzoru (výška HAZE_BAND) a přechod obzor → zenit přes obraz nahoru (PAINT_GRADIENT).
+    art = mix(art, gl_FragColor.rgb, min(1.0, PAINT_HAZE * (1.0 - smoothstep(0.0, HAZE_BAND, dir.y)) + PAINT_GRADIENT * smoothstep(0.05, 0.9, dir.y)));
     // Pod obzorem jen dnešní obloha v barvě mlhy: zem obrazu (písek, silnice s auty) by za koncem mlhy stála jako stěna.
     gl_FragColor.rgb = mix(gl_FragColor.rgb, art, paint * smoothstep(-0.1, -0.01, dir.y));
   }
@@ -141,7 +146,7 @@ void main() {
 }`;
 
 /** Kolik barvy oblohy přimíchat do obrazu přímo na obzoru – navazuje na kulisy v mlze. */
-const PAINT_HAZE = 0.3;
+const PAINT_HAZE = LOOK_STYLE.sky.paintHaze;
 
 /**
  * Strop haly (m): výška nad zemí, nejmenší odstup nad kamerou (kamera arény nad stropem), rozteč světel a půl
@@ -171,7 +176,7 @@ export function skyMaterial(): ShaderMaterial {
       paintTint: { value: new Color(1, 1, 1) },
       side: { value: 0 },
     },
-    defines: { PAINT_HAZE: PAINT_HAZE.toFixed(2), CEILING_Y: CEILING.y.toFixed(1), CEILING_MIN: CEILING.min.toFixed(1), LAMP_GRID: CEILING.grid.toFixed(1), LAMP_HALF: `vec2(${CEILING.half.map((m) => m.toFixed(2)).join(', ')})` },
+    defines: { PAINT_HAZE: PAINT_HAZE.toFixed(2), HAZE_BAND: LOOK_STYLE.sky.hazeBand.toFixed(2), PAINT_GRADIENT: LOOK_STYLE.sky.gradient.toFixed(2), CEILING_Y: CEILING.y.toFixed(1), CEILING_MIN: CEILING.min.toFixed(1), LAMP_GRID: CEILING.grid.toFixed(1), LAMP_HALF: `vec2(${CEILING.half.map((m) => m.toFixed(2)).join(', ')})` },
     vertexShader: SKY_VERTEX,
     fragmentShader: SKY_FRAGMENT,
     // Kamera je uvnitř koule.
@@ -313,7 +318,7 @@ export const NIGHT_EXPOSURE = 1.3;
  */
 export function exposureOf(look: Look): number {
   const dim = Math.min(Math.max(2 - brightnessOf(look) / brightnessOf(NIGHT), 0), 1);
-  return look.exposure * (1 + (NIGHT_EXPOSURE - 1) * darkness(look) * dim);
+  return look.exposure * LOOK_STYLE.grade.exposure * (1 + (NIGHT_EXPOSURE - 1) * darkness(look) * dim);
 }
 
 /** Jak daleko před hrdinou je střed výřezu stínu (m) – kamera se dívá dopředu. Polovina hrany je z úrovně kvality. */
@@ -370,7 +375,7 @@ function Sun({ look, sun: intensity, control, mapSize, half }: { readonly look: 
     sun.position.copy(at).add(toSun);
   });
 
-  return <directionalLight ref={light} color={look.sunColor} intensity={intensity} castShadow shadow-mapSize={[mapSize, mapSize]} shadow-bias={-0.0005} shadow-normalBias={0.02} shadow-radius={SHADOW_RADIUS} shadow-intensity={SHADOW_INTENSITY} />;
+  return <directionalLight ref={light} color={look.sunColor} intensity={intensity} castShadow shadow-mapSize={[mapSize, mapSize]} shadow-bias={-0.0005} shadow-normalBias={0.02} shadow-radius={SHADOW_RADIUS} shadow-intensity={look.cover === 'snow' ? SNOW_SHADOW : SHADOW_INTENSITY} />;
 }
 
 /**
@@ -378,14 +383,41 @@ function Sun({ look, sun: intensity, control, mapSize, half }: { readonly look: 
  * plochy (země, dráha, čáry) a plochy bez hloubky stín jen přijímají – vrhaly by ho
  * samy na sebe.
  */
-function ShadowFlags() {
+/** Obrysy kulis začnou po tolika snímcích (~2 s) a berou nejvýš tolik sítí na průchod (každý 30. snímek). */
+const SCENERY_INK_DELAY_FRAMES = 120;
+const SCENERY_INK_BATCH = 40;
+
+function ShadowFlags({ ink }: { readonly ink: boolean }) {
   const scene = useThree((three) => three.scene);
+  const size = useThree((three) => three.size);
   const frames = useRef(0);
+  // Úroveň `low` obrysy kulis nekreslí; návrat výš je ukáže, nové se pak dorovnají.
+  useEffect(() => {
+    scene.traverse((node) => {
+      if (node.userData.ink === 'scenery') node.visible = ink;
+    });
+  }, [scene, ink]);
   useFrame(() => {
-    if (frames.current++ % 30 !== 0) return;
+    // Scény bez obrysu hrdiny (`InkOutline`) by obrysům kulis nikdy nenastavily tloušťku.
+    if (ink) setInkViewport(size.width, size.height);
+    const frame = frames.current++;
+    if (frame % 30 !== 0) return;
+    // Obrysy kulis až po rozjezdu hry a po dávkách: svaření vrcholů obalu a nové programy v prvním snímku
+    // stály telefon (P81 T6) půl sekundy do hratelnosti.
+    let budget = frame >= SCENERY_INK_DELAY_FRAMES ? SCENERY_INK_BATCH : 0;
     scene.traverse((node) => {
       const mesh = node as Mesh;
-      if (mesh.isMesh === true && mesh.userData.rigShadow === undefined) flagShadow(mesh);
+      if (mesh.isMesh !== true) return;
+      if (mesh.userData.rigShadow === undefined) flagShadow(mesh);
+      // Obrys kulis a rekvizit (P81): rozhodnutí jednou na síť; skrytá síť (zásobník efektů) počká na další průchod.
+      if (ink && budget > 0 && mesh.userData.sceneryInk === undefined && mesh.visible) {
+        budget -= 1;
+        mesh.userData.sceneryInk = outlinable(mesh);
+        if (mesh.userData.sceneryInk === true && inkMeshes(mesh, 'scenery') > 0) {
+          // Zmrazená kulisa (`freeze`) svět matic dětí sama nepřepočítá: obal dostane polohu rodiče hned.
+          for (const child of mesh.children) if (isInk(child)) child.updateMatrixWorld(true);
+        }
+      }
     });
   });
   return null;
@@ -466,17 +498,19 @@ export function StyleRig({ look, lookId, control, surface }: { readonly look: Lo
   const [backLit] = useState(() => tier === 'high');
   // Expozice se počítá ze světla sady (noc zvedá dál stejně), zvednutí jen přisvítí scénu (P70D T2).
   const shine = useMemo(() => liftLight(lit), [lit]);
-  const air = useMemo(() => airOf(look), [look]);
+  const portrait = useThree((three) => three.size.height > three.size.width);
+  const air = useMemo(() => airOf(look, portrait), [look, portrait]);
   // Úroveň kvality jen na začátku: výměna obrazu uprostřed hry by stáhla druhý a prolínala znovu.
   const [paintTier] = useState(tier);
   const [place] = useState(() => stagePlace(surface.current));
-  const painted = useMemo(() => paintedSkyOf(look, lookId, paintTier, place), [look, lookId, paintTier, place]);
+  const painted = useMemo(() => (LOOK_STYLE.sky.painted ? paintedSkyOf(look, lookId, paintTier, place) : null), [look, lookId, paintTier, place]);
   // Okrajový svit postav barvou oblohy sady (P54B T14): jen uniformy, materiály se nepřekládají.
   // Paleta, přimíchání a okraj toonu sady (P56B T6): také jen uniformy.
+  // Bouřka (R3, předloha s9): kulisy se táhnou k paletě suchého místa – mokrá zem a šedé nebe stáhly domy do šedi.
   useEffect(() => {
     setCharacterRim(look);
-    setScenePalette(look);
-  }, [look]);
+    setScenePalette(look.storm === true ? { ...look, ground: LOOKS[lookId].ground, horizon: LOOKS[lookId].horizon } : look);
+  }, [look, lookId]);
   return (
     <>
       <color attach="background" args={[air.color]} />
@@ -487,7 +521,8 @@ export function StyleRig({ look, lookId, control, surface }: { readonly look: Lo
       <hemisphereLight args={[shadeSky(shine.light[0], look.palette), shine.light[1], shine.light[2]]} />
       <Sun look={golden} sun={shine.sun} control={control} mapSize={TIER_SETTINGS[tier].shadowMapSize} half={TIER_SETTINGS[tier].shadowHalf} />
       {backLit ? <directionalLight position={back.dir} color={back.color} intensity={shine.sun * BACK_LIGHT} /> : <></>}
-      <ShadowFlags />
+      {/* Obrysy kulis jen na `high` (desktop): telefon startuje na `medium` a stály ho čas do hratelnosti (P81 T6). */}
+      <ShadowFlags ink={LOOK_STYLE.ink.scenery && tier === 'high'} />
       <SceneryWindow />
       {/* Život v pozadí kolem orientačního bodu scény (P54B T10) a vítr ve vegetaci (T13). */}
       <Ambient look={look} tier={tier} />

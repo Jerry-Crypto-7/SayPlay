@@ -11,6 +11,7 @@
 
 import { UNIT } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
+import { LOOK_STYLE } from '@/play/arcade/look/style';
 import { FLAP } from '@/play/arcade/pieces/flap';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { RUNNER } from '@/play/arcade/pieces/runner';
@@ -119,7 +120,7 @@ export function WorldBackdrop({ control, length, look, seed }: { readonly contro
     <>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, trackLength / 2 - 10]}>
         <planeGeometry args={[trackWidth + 0.6, trackLength]} />
-        <meshStandardMaterial color={look.track} roughness={0.9} />
+        <meshStandardMaterial color={look.track} roughness={LOOK_STYLE.floor.roughness} />
       </mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, trackLength / 2 - 10]} renderOrder={UNDER_PANORAMA}>
         <planeGeometry args={[80, trackLength + 80]} />
@@ -129,7 +130,7 @@ export function WorldBackdrop({ control, length, look, seed }: { readonly contro
       {[-0.5, 0.5].map((edge) => (
         <mesh key={edge} rotation={[-Math.PI / 2, 0, 0]} position={[edge * laneWidth, 0, trackLength / 2 - 10]}>
           <planeGeometry args={[0.08, trackLength]} />
-          <meshBasicMaterial color="#e2e8f0" />
+          <meshBasicMaterial color={LOOK_STYLE.floor.laneLine} />
         </mesh>
       ))}
     </>

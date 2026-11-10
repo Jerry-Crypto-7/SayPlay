@@ -44,6 +44,16 @@ export class Faces {
     if (this.collect !== null && upOf(a, b, c) > 1e-6) this.collect.push(...a, ...b, ...c);
   }
 
+  /** Trojúhelník s barvou v každém vrcholu (`paint` z polohy vrcholu): sousední plochy na sebe barvou plynule navazují. */
+  triPainted(a: Vertex, b: Vertex, c: Vertex, paint: (vertex: Vertex) => Color): void {
+    this.positions.push(...a, ...b, ...c);
+    for (const vertex of [a, b, c]) {
+      const color = paint(vertex);
+      this.colors.push(color.r, color.g, color.b);
+    }
+    if (this.collect !== null && upOf(a, b, c) > 1e-6) this.collect.push(...a, ...b, ...c);
+  }
+
   /**
    * Pás mezi horním a spodním prstencem se stejným počtem bodů, oba v pořadí
    * s kladnou plochou (`ccw`): normála míří ven. Úhlopříčka se střídá podle

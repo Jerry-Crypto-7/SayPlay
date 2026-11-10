@@ -42,13 +42,12 @@ import { GhostSlot } from '../../GhostSlot';
 import { HorizonBackdrop } from '../../look/Backdrop';
 import { FieldGround } from '../../look/FieldGround';
 import type { Box as GroundBox } from '../../look/ground';
-import { airOf } from '../../look/rig/fog-light';
 import { Scenery } from '../../look/Scenery';
 import { VegetationAround } from '../../look/Vegetation';
 import type { Layer, Side } from '../../look/vegetation-places';
 import { type PlayRect, playRect as playRectOf, usePlayRectRef } from '../../portrait-frame';
 import { FittedModel, type WorldProps, modelIdOf } from '../../World';
-import { type MinigolfCourseView, minigolfCameraPose, minigolfCameraRig, minigolfCameraStep, minigolfCourseView } from './minigolf-camera';
+import { type MinigolfCourseView, minigolfCameraPose, minigolfCameraRig, minigolfCameraStep, minigolfCourseView, minigolfReach } from './minigolf-camera';
 import { MinigolfTouch } from './MinigolfTouch';
 
 const m = (units: number): number => units / UNIT;
@@ -275,7 +274,7 @@ export function MinigolfScene({ session, cast, surface, scene: look, enabled, gh
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const course = useMemo(() => courseOf(world, cast), [world, cast]);
   const dressing = useMemo(() => minigolfDressing(course.view, look), [course, look]);
-  const fogStart = useMemo(() => airOf(look).near, [look]);
+  const fogStart = useMemo(() => minigolfReach(look), [look]);
   const playRect = usePlayRectRef();
   useTouchLayer(surface, session, enabled);
   useDockedCard(surface);

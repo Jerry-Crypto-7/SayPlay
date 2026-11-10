@@ -15,6 +15,7 @@ import type { ArcadeSession } from '@/components/play/arcade/session';
 import { draftGameSpec } from '@/play/draft';
 
 import { type Look, LOOKS, lookOf, moodFor, sceneLook, sentenceSky, timeOfDayFor, weatherFor } from '../index';
+import { restyleLook, TODAY_STYLE } from '../style';
 
 interface Label {
   readonly time?: 'night' | 'dusk';
@@ -138,7 +139,9 @@ describe('P54B T11: nálada, počasí a denní doba z celé věty', () => {
       { setting: 'a farm in the early morning', mood: 'playful' },
       { setting: 'a lake at twilight', mood: 'calm' },
     ]) {
-      expect(light(sceneLook(theme)), theme.setting).toEqual(light(LOOKS[lookOf(theme)]));
+      // Profil před P81: světlo sady beze změny přebarvení (P81 přebarví každou sadu stejně, slova to nemění).
+      expect(light(sceneLook(theme, TODAY_STYLE)), theme.setting).toEqual(light(LOOKS[lookOf(theme)]));
+      expect(light(sceneLook(theme)), theme.setting).toEqual(light(restyleLook(LOOKS[lookOf(theme)], lookOf(theme), { night: false, overcast: false })));
     }
     // Slova, která sada četla už dřív, platí dál.
     expect(light(sceneLook({ setting: 'a stormy sea', mood: 'calm' }))).not.toEqual(light(LOOKS.ocean));

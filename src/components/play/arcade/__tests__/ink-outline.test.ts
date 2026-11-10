@@ -25,7 +25,7 @@ import {
 import { describe, expect, it, vi } from 'vitest';
 
 import { frameOf } from '../ArcadeStage';
-import { INK_COLOR, INK_PX, inkCount, inkMeshes, setInkViewport } from '../look/rig/InkOutline';
+import { INK_COLOR, INK_PX, inkCount, inkMeshes, outlinable, setInkViewport } from '../look/rig/InkOutline';
 
 const hullsOf = (mesh: Mesh): Mesh[] => mesh.children.filter((child) => child.userData.ink !== undefined) as Mesh[];
 
@@ -92,7 +92,8 @@ describe('ink outline on the hero and foes (P36C T6)', () => {
     const heroInk = hullsOf(hero)[0]!.material as ShaderMaterial;
     const foeInk = hullsOf(foe)[0]!.material as ShaderMaterial;
     expect(heroInk.vertexColors).toBe(true);
-    expect(heroInk.uniforms.inkSurface!.value).toBeGreaterThan(0.5);
+    // P81 (směr mix): čtvrtina tónu povrchu, zbytek inkoust – dřív 0,7.
+    expect(heroInk.uniforms.inkSurface!.value).toBeGreaterThan(0);
     expect(foeInk.uniforms.inkSurface!.value).toBe(0);
     expect(heroInk.fragmentShader).toMatch(/ink = mix\(inkColor, vColor\.rgb \* 0\.\d+, inkSurface\)/);
     // Textura bez barev ve vrcholech: inkoust, a vlastní materiál (jiný program než tónovaný).
@@ -158,5 +159,55 @@ describe('ink outline on the hero and foes (P36C T6)', () => {
     const offset = (hullsOf(mesh)[0]!.material as ShaderMaterial).uniforms.inkOffset!.value as Vector2;
     expect(offset.x * (400 / 2)).toBeCloseTo(INK_PX);
     expect(offset.y * (800 / 2)).toBeCloseTo(INK_PX);
+  });
+});
+
+describe('scenery outline goes on visible models only (P81 T5)', () => {
+  const solid = (geometry = new BoxGeometry(1, 2, 1)) => new Mesh(geometry, new MeshStandardMaterial());
+
+  it('outlines a solid prop, once, with ink and no shadow', () => {
+    const prop = solid();
+    expect(outlinable(prop)).toBe(true);
+    expect(inkMeshes(prop, 'scenery')).toBe(1);
+    expect(inkMeshes(prop, 'scenery')).toBe(0);
+    expect(hullsOf(prop)[0]!.userData.rigShadow).toBe('off');
+    expect(INK_COLOR.scenery).toBe(INK_COLOR.hero);
+  });
+
+  it('skips an invisible hitbox, a mask, a see-through mesh and shader-driven life', () => {
+    const hitbox = solid();
+    (hitbox.material as MeshStandardMaterial).visible = false;
+    const mask = solid();
+    (mask.material as MeshStandardMaterial).colorWrite = false;
+    const glass = solid();
+    (glass.material as MeshStandardMaterial).transparent = true;
+    const life = solid();
+    life.userData.rigShadow = 'none';
+    for (const mesh of [hitbox, mask, glass, life]) expect(outlinable(mesh)).toBe(false);
+  });
+
+  it('skips ground and terrain, where the line would cost and never show', () => {
+    const floor = solid(new BoxGeometry(20, 0.2, 20));
+    const valley = solid();
+    valley.userData.terrain = 'valley';
+    expect(outlinable(floor)).toBe(false);
+    expect(outlinable(valley)).toBe(false);
+  });
+
+  it('leaves a foe or obstacle body to its own outline colour', () => {
+    const foe = new Group();
+    foe.userData.inkOwner = 'foe';
+    const body = solid();
+    foe.add(new Group().add(body));
+    expect(outlinable(body)).toBe(false);
+  });
+
+  it('outlines only the prop itself, not a nested see-through child', () => {
+    const prop = solid();
+    const glass = solid();
+    (glass.material as MeshStandardMaterial).transparent = true;
+    prop.add(glass);
+    expect(inkMeshes(prop, 'scenery')).toBe(1);
+    expect(hullsOf(glass)).toHaveLength(0);
   });
 });

@@ -30,8 +30,8 @@ export const PHYSICAL = '#include <lights_physical_fragment>';
 
 /** Pásmo drsnosti plastové hračky: pod ním by se model zrcadlil, nad ním by lesk zmizel. */
 export const CLAY_ROUGHNESS = [0.45, 0.75] as const;
-/** Síla teplého okraje kulis ve dne (násobek barvy povrchu na samé hraně siluety). */
-export const CLAY_RIM = 0.3;
+/** Síla teplého okraje kulis ve dne (násobek barvy povrchu na samé hraně siluety; P77 0,3, P81 silnější lesk modelíny). */
+export const CLAY_RIM = 0.45;
 /** Tón okraje: světlo zlaté hodiny (kit `sun-soft`). */
 const CLAY_RIM_TINT = new Color(colorHex['sun-soft']);
 
@@ -136,17 +136,21 @@ export function rgbOf([L, a, b]: Rgb): Rgb {
 
 /**
  * Paleta (v Oklab), přimíchání a teplý okraj sady do sdílených uniform; `Color.set` převede hex z sRGB do
- * lineární. Okraj slábne s nocí: v noci by kulisy na hranách svítily (T13-R1).
+ * lineární. Okraj slábne s nocí: v noci by kulisy na hranách svítily (T13-R1). Bouřka (P81 T5) okraj nemá: slunce
+ * nesvítí, okraj je emisivní a v tmavém dešti přebil osvětlení – kulisy s9 vypadaly jako vybledlé žluté sklo.
  */
-export function setScenePalette(look: Pick<Look, 'ground' | 'tint' | 'block' | 'track' | 'horizon'>): void {
+export function setScenePalette(look: Pick<Look, 'ground' | 'tint' | 'block' | 'track' | 'horizon' | 'storm'>): void {
   const color = new Color();
   scenePaletteOf(look).forEach((hex, index) => {
     color.set(hex);
     toon.palette.value[index]!.fromArray(oklab([color.r, color.g, color.b]));
   });
   toon.mix.value = PALETTE_MIX;
-  toon.rim.value.copy(CLAY_RIM_TINT).multiplyScalar(CLAY_RIM * (1 - darkness(look)));
+  toon.rim.value.copy(CLAY_RIM_TINT).multiplyScalar(CLAY_RIM * (look.storm === true ? STORM_RIM : 1 - darkness(look)));
 }
+
+/** Okraj v bouřce (P81 R3): třetina – teplé hrany domů předlohy s9; celý okraj z kulis dělal vybledlé sklo (T5). */
+export const STORM_RIM = 0.35;
 
 /** Paleta místa (`Look.palette`, `#rrggbb`) v Oklab pro `snapToPalette`. */
 export function paletteLab(hexes: readonly string[]): Rgb[] {
