@@ -1,7 +1,7 @@
 /**
  * P83A T3: pět vět slepého soudu (rychlá verze, semínko publikace) – vyhraje začátečník do 75 s? Vypíše výhru
  * robota a začátečníka na 10 seedech. Pátá věta (záludná, s pokusem o vylákání systémového promptu) je
- * rekonstruovaná podle `SOUD-POLE-2026-11-10.md` – přesné znění protokol soudu neuvádí.
+ * rekonstruovaná podle zápisu slepého testu z 10. 11. 2026 – přesné znění protokol soudu neuvádí.
  *
  *   node --experimental-strip-types --no-warnings --import ./scripts/ts-paths.mjs evals/play/p83/a-judge5.ts
  */

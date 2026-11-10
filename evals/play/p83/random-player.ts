@@ -1,6 +1,6 @@
 /**
  * P83A: neobratný porotce v aréně – náhodné šipky a tahy s pevným seedem, jak je hrál skript slepého soudu
- * (`SOUD-POLE-2026-11-10.md`: 55–59 s šipek, WASD a tahů, počítadlo zůstalo 0/3). Žádný cíl nevidí: každé okno
+ * (10. 11. 2026: 55–59 s šipek, WASD a tahů, počítadlo zůstalo 0/3). Žádný cíl nevidí: každé okno
  * 0,33–1,5 s drží jeden směr – šipka (8 směrů), tah (libovolný úhel), nebo nic. Los z vlastního streamu `pure-rand`
  * (`createStreams(seed).ai`), takže týž svět a týž seed dají týž běh.
  */
