@@ -9,8 +9,9 @@
  * takže hráč dostane návrh, ne chybu. Placená záloha (P30A T3) platí z vlastního
  * stropu `processFallbackSpendCap()`.
  *
- * Produkce (P30A): primár gpt-oss-20b přes sdílené API (`openai:`), záloha astra
- * přes placené API. `codex-cli` (předplatné) zůstává jen pro vývoj.
+ * Produkce (rozhodnutí majitele 5. 11. 2026): gpt-6-astra přes placené OpenAI API
+ * (`openai:`), bez zálohy – `WORLDSMITH_FALLBACK_*` prázdné (`scripts/cloud/env.production.example`,
+ * `DISCLOSURE.md`). gpt-oss-20b byl jen měřený kandidát (P30A). `codex-cli` (předplatné) zůstává jen pro vývoj.
  *
  * Objednávka se čte jako v `/api/generate` (`WORLDSMITH_BRANCH === 'live'`)
  * a vypínač `upstream` ji ruší – klíč zděděný z jiného projektu tak placenou
