@@ -1281,8 +1281,10 @@ function draftGenre(
       (fight ? null : (twist?.hero ?? null)));
   // Nesmyslná věta („the the the“) dala přenosu hrdinu „the“ – člen hrdinou není, hraje hrdina světa.
   // P83A T4: budova hrdinou není – „A small shop where I …“ hraje postava obchodu, ne krabice s nápisem.
-  // Věta, která budovou začíná a hrdinu neřekne, hraje postava budovy – ne myš supermarketu.
-  const saidBuilding = [heroWord, reading === null ? null : bare(reading.hero)].find((phrase) => phrase != null && buildingIn(phrase) !== null) ?? framedBuilding(sentence);
+  // Věta, která budovou začíná a hrdinu neřekne, hraje postava budovy – ne myš supermarketu. „… where you heal pets“
+  // hrdinu řekla: je to hráč, a roli, kterou věta nemá, mu rámec nepřidá (smlouva rolí: jen slova věty a výchozí místa).
+  const framed = /\bwhere\s+you\b/i.test(sentence) ? null : framedBuilding(sentence);
+  const saidBuilding = [heroWord, reading === null ? null : bare(reading.hero)].find((phrase) => phrase != null && buildingIn(phrase) !== null) ?? framed;
   const wordsHero = heroWord === null || DETERMINER.test(heroWord) || buildingIn(heroWord) !== null ? null : heroWord;
   // P56A T6: hrdina slov, kterého čtení má za protivníka, věc nebo místo, ustoupí podmětu čtení; bez něj hrdina světa.
   const heroSaid = reading === null || wordsHero === null || heroFitsReading(wordsHero, reading, sentence) ? wordsHero : readingHero(reading);
