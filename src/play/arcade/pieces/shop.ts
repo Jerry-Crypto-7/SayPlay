@@ -49,7 +49,7 @@ export function shopParts(seed: number, params: ShopParams, health?: number): Mo
   const rules: PieceRef[] = [
     { id: 'shop_total', params: game },
     { id: 'time_limit', params: { seconds } },
-    aiming ? { id: 'out_of_health', params: {} } : { id: 'finish_collected', params: { need: game.count } },
+    aiming ? { id: 'out_of_health', params: {} } : { id: 'finish_collected', params: { need: game.count, noun: 'items' } },
   ];
   return {
     control: { id: 'shop', params: game },

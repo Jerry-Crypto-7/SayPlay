@@ -49,8 +49,8 @@ beforeAll(async () => {
 
 describe('P66 genres go live (T2 staged them, T12 routes sentences to them)', () => {
   it('the contract has 24 genres before P68: the 19 before P66 and five live ones with one default mode and their own cues', () => {
-    // P68 T1 přidal pět dalších koster (`p68-staged.test.ts`) – 24 platí pro žánry do P66.
-    expect(GENRES.filter((genre) => !(P68_GENRES as readonly string[]).includes(genre))).toHaveLength(24);
+    // P68 T1 přidal pět dalších koster (`p68-staged.test.ts`) – 24 platí pro žánry do P66. Pozdější žánry stojí za nimi.
+    expect(GENRES.slice(0, 29).filter((genre) => !(P68_GENRES as readonly string[]).includes(genre))).toHaveLength(24);
     for (const genre of P66) {
       expect(GENRES).toContain(genre);
       expect(GENRE_MODES[genre as GenreId]).toEqual(['default']);

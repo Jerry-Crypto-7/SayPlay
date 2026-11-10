@@ -19,6 +19,7 @@ import { railfpsGenre } from './railfps';
 import { rhythmGenre } from './rhythm';
 import { runnerGenre } from './runner';
 import { shooterGenre } from './shooter';
+import { shopGenre } from './shop';
 import { sliceGenre } from './slice';
 import { sortGenre } from './sort';
 import { stealGenre } from './steal';
@@ -64,5 +65,6 @@ export const GENRE_MODULES: { readonly [G in GenreId]: GenreModule<G> } = {
   railfps: railfpsGenre,
   buildshift: buildshiftGenre,
   drawsave: drawsaveGenre,
+  shop: shopGenre,
 };
 

@@ -60,7 +60,7 @@ export const livesMechanic = (): GameSpecV1['mechanics'][number] => ({ id: 'heal
  * na kolejích (`railfps`), směna se stavbou obchodu (`buildshift`) a kresli a zachraň (`drawsave`). Hrají až po
  * úloze kategorie a zapnutí v P68-I („zapoj X“, brána `ROUTE_PENDING` + `DIRECTOR_PENDING`).
  */
-export const GENRES = ['runner', 'platformer', 'arena', 'voyage', 'quest', 'shooter', 'throw', 'timing', 'rhythm', 'duel', 'flap', 'catch', 'whack', 'defense', 'slice', 'hop', 'crowd', 'merge', 'push', 'survivor', 'hole', 'steal', 'sort', 'arrows', 'stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave'] as const;
+export const GENRES = ['runner', 'platformer', 'arena', 'voyage', 'quest', 'shooter', 'throw', 'timing', 'rhythm', 'duel', 'flap', 'catch', 'whack', 'defense', 'slice', 'hop', 'crowd', 'merge', 'push', 'survivor', 'hole', 'steal', 'sort', 'arrows', 'stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave', 'shop'] as const;
 export type GenreId = (typeof GENRES)[number];
 
 export const GENRE_MODES = {
@@ -93,6 +93,7 @@ export const GENRE_MODES = {
   railfps: ['default'],
   buildshift: ['default'],
   drawsave: ['default'],
+  shop: ['default'],
 } as const satisfies Readonly<Record<GenreId, readonly [string, ...string[]]>>;
 export type GenreMode<G extends GenreId = GenreId> = (typeof GENRE_MODES)[G][number];
 
@@ -233,6 +234,7 @@ export const genreSpecSchema = z.discriminatedUnion('genre', [
   variant('railfps'),
   variant('buildshift'),
   variant('drawsave'),
+  variant('shop'),
 ]);
 export type GenreSpec = z.infer<typeof genreSpecSchema>;
 export type GenreSpecOf<G extends GenreId> = Extract<GenreSpec, { readonly genre: G }>;
@@ -279,6 +281,8 @@ export const FOE_DOES: Readonly<Record<GenreId, CastRole>> = {
   railfps: 'shoot_at',
   buildshift: 'scenery',
   drawsave: 'avoid',
+  // P83E: obchod nepřítele nemá, věci police jsou kusy hry.
+  shop: 'scenery',
 };
 
 /**
@@ -432,6 +436,8 @@ export const COUNT_PARAMS: { readonly [G in GenreId]: { readonly [M in GenreMode
   // T11: počet zákazníků z věty (žádost `stavba/integration.md`); mez 6–20 drží modul.
   buildshift: { default: { collectible: 'customers' } },
   drawsave: { default: { enemy: 'threats' } },
+  // P83E: „three items“ → věci police; mez 2–8 drží modul.
+  shop: { default: { collectible: 'items' } },
 };
 
 const countParamsOf = (spec: Pick<GenreSpec, 'genre' | 'mode'>): Readonly<Partial<Record<CountRole, string>>> =>

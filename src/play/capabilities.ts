@@ -153,6 +153,7 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   // T11: zákazníky a zboží kreslí scéna z popisku (`things.customer` / `things.goods`), odchody bez obsluhy = životy.
   buildshift: arcade({ cues: 'build shop stations on the grid, spend the stock and serve customers before the shift ends', roles: ['customer', 'goods'], finish: false, labels: ['player', 'customer', 'goods'], mechanics: ['health'] }),
   drawsave: arcade({ cues: 'draw a wall with your finger to protect the hero from the threats until time runs out', roles: [], finish: false, labels: [], mechanics: [] }),
+  shop: arcade({ setting: true, cues: 'tap an item on the shelf, the hero carries it to the counter and the total adds its price tag', roles: ['item'], finish: false, labels: ['player', 'item'], mechanics: ['health'] }),
 };
 
 export const controlOf = (spec: Pick<GameSpecV1, 'control'>): ControlId => spec.control ?? 'tap_go';

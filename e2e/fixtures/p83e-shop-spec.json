@@ -1,0 +1,63 @@
+{
+  "schema": "gamespec.v1",
+  "control": "shop",
+  "controlParams": {
+    "generator": "shop_counter",
+    "tuning": {
+      "items": 3,
+      "unit": "price"
+    }
+  },
+  "genre": {
+    "id": "shop",
+    "mode": "default",
+    "compilerVersion": "genre.v8"
+  },
+  "title": "Fox Shop",
+  "archetype": "collect_exit",
+  "targetDurationSec": 60,
+  "theme": {
+    "setting": "toy shop",
+    "mood": "playful"
+  },
+  "objective": {
+    "kind": "collect",
+    "description": "Put 3 teddy bears on the counter and watch the total add up before the clock runs out.",
+    "count": 3,
+    "role": "item"
+  },
+  "mechanics": [],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "fox",
+      "count": 1
+    },
+    {
+      "count": 1,
+      "id": "item",
+      "kind": "collectible",
+      "label": "teddy bear"
+    }
+  ],
+  "scoring": {},
+  "tutorial": {
+    "goalLine": "Put 3 teddy bears on the counter!",
+    "controlsHint": "Tap an item to carry it to the counter. Arrows and Space work too."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}

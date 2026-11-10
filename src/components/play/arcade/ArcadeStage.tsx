@@ -55,6 +55,7 @@ import { MinigolfScene } from './genres/minigolf/MinigolfScene';
 import { RailfpsScene } from './genres/railfps/RailfpsScene';
 import { BuildshiftScene } from './genres/buildshift/BuildshiftScene';
 import { DrawsaveScene } from './genres/drawsave/DrawsaveScene';
+import { ShopScene } from './genres/shop/ShopScene';
 import { GENRE_TOUCH } from './genres/touch-registry';
 import { HooksLayer } from './hooks/HooksLayer';
 import { PopAnchor } from './hooks/ScorePop';
@@ -1280,6 +1281,8 @@ const StageCanvas = memo(function StageCanvas({
             <BuildshiftScene {...world} />
           ) : stage.scene === 'drawsave' ? (
             <DrawsaveScene {...world} />
+          ) : stage.scene === 'shop' ? (
+            <ShopScene {...world} />
           ) : (
             <World {...world} control={control} />
           )}

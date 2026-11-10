@@ -647,7 +647,8 @@ const key = (p: Pair): string => `${p.genre}.${p.mode}`;
  * T12 zapojil `drawsave`, T10 `railfps`, R12 `minigolf` (T9 ho vrátil, P68-L T3 opravil čas do hratelnosti),
  * P68R T5 `buildshift` (P68R T3 opravil čas do hratelnosti na telefonu).
  */
-export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt']);
+// P83E T3: obchod se součtem je kostra (scéna a ruční spec); T4 ho zapne a odsud odebere.
+export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt', 'shop']);
 
 /**
  * Věta, ve které žádný režim nic neslyšel („a cozy game“, „a squirrel hoards

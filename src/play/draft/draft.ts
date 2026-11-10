@@ -1182,6 +1182,7 @@ const GENRE_SETTING: Readonly<Record<GenreId, string>> = {
   railfps: 'abandoned factory',
   buildshift: 'cozy diner', // T11: obchod je uvnitř (`stavba/integration.md`)
   drawsave: 'meadow',
+  shop: 'toy shop',
 };
 const VERB_SETTING: Readonly<Record<string, string>> = { cook: 'kitchen', repair: 'workshop' };
 

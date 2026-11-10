@@ -151,5 +151,6 @@ export function genreDoubles(fallback: readonly string[] = []): { readonly [G in
     railfps: stagedGenre('railfps', []),
     buildshift: stagedGenre('buildshift', []),
     drawsave: stagedGenre('drawsave', []),
+    shop: stagedGenre('shop', []),
   };
 }

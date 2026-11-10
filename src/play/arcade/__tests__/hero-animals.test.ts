@@ -44,6 +44,7 @@ const CONTROL: Readonly<Record<GenreId, string>> = {
   railfps: 'railfps',
   buildshift: 'buildshift',
   drawsave: 'drawsave',
+  shop: 'shop',
 };
 
 /** Slovo věty → model, který to zvíře zobrazuje; `clips` = hýbe se klipy z GLB. */

@@ -60,6 +60,7 @@ import { type BotHand, botHand } from './bot-hand';
 import { type Clip, startClip } from './clip';
 import { publishLive } from './live-share';
 import { pauseWhenAway } from './focus';
+import { shopTotalCounter } from './genres/shop/shop-text';
 import { bestOnce, type LoadedGhost, loadGhost } from './GhostSlot';
 import { isTyping } from './input';
 import { heroActionOf } from './action-cue/cues';
@@ -170,8 +171,10 @@ export function goalProgressOf(spec: GameSpecV1, world: ArcadeWorld, snapshot: A
 const hasLives = (spec: GameSpecV1): boolean => spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true || spec.control === 'steer' && typeof spec.controlParams?.crashBudget === 'number';
 
 /** Počítadla pilulky postupu mimo cíl sbírání: zbývající rány, náboje, životy a cíl k překonání – DOM HUD i panel VR (P65 T5). */
-function hudCountersOf(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot, target: HudCounter | null): HudCounter[] {
+function hudCountersOf(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot, target: HudCounter | null, tally: HudCounter | null = null): HudCounter[] {
   const counters: HudCounter[] = [];
+  // P83E: součet obchodu první – je to číslo, kvůli kterému hra je.
+  if (tally !== null) counters.push(tally);
   if (aiming(spec)) counters.push({ label: 'shots', count: snapshot.shots, text: `${snapshot.shots} ${spec.control === 'throw' ? 'throws' : 'shots'} left` });
   if (countsAmmo(world)) counters.push({ label: 'ammo', count: snapshot.shots, text: `${snapshot.shots} ammo` });
   if (hasLives(spec)) counters.push({ label: 'lives', count: snapshot.health, text: String(snapshot.health), icon: 'heart' });
@@ -201,6 +204,8 @@ function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnaps
   const hooks = hooksOf(world.rules);
   const extra: ResultStat[] = [];
   const track = tracked(spec, world);
+  const tally = shopTotalCounter(world, state);
+  if (tally !== null) extra.push({ value: tally.text, label: 'total' });
   if (hasLives(spec)) extra.push({ value: String(snapshot.health), label: 'lives left' });
   if (track) extra.push({ value: `${snapshot.progress}%`, label: 'of the way' });
   const scoring = snapshot.score !== 0 || (par !== null && par.score > 0);
@@ -249,6 +254,7 @@ function ArcadeHud({
   paused,
   caught,
   target = null,
+  tally = null,
   onPause,
   bottom,
   children,
@@ -264,13 +270,15 @@ function ArcadeHud({
   readonly caught: boolean;
   /** Cíl k překonání (P36B T4) – poslední položka pilulky postupu. */
   readonly target?: HudCounter | null;
+  /** Součet obchodu (P83E T3) – první položka pilulky postupu. */
+  readonly tally?: HudCounter | null;
   readonly onPause?: () => void;
   readonly bottom?: ReactNode;
   readonly children?: ReactNode;
 }) {
   const lives = hasLives(spec) ? ` · ${snapshot.health} lives` : '';
   const clock = timerLeft(spec, Math.floor(snapshot.tick / ARCADE_HZ));
-  const counters = hudCountersOf(spec, world, snapshot, target);
+  const counters = hudCountersOf(spec, world, snapshot, target, tally);
   const limit = limitOf(world);
   const elapsed = snapshot.tick / ARCADE_HZ;
   return (
@@ -470,6 +478,8 @@ function ArcadePlayGame({
     return worldHasPhysics(arcade) ? holdUntilRapier(created) : created;
   });
   const snapshot = useSyncExternalStore(session.subscribe, session.snapshot, session.snapshot);
+  // P83E: součet obchodu ze stavu – přičte se s položenou věcí, a ta pohne i `snapshot.items`, takže HUD se překreslí.
+  const tally = shopTotalCounter(session.world, session.state());
   const inputCount = useSyncExternalStore(session.subscribe, () => session.inputs().length, () => 0);
   // Nápověda dotyku, kterou text hry neřekne (zóny plošinovky, P36C T2).
   const zoneHint = ZONE_HINTS[baseControlOf(arcade.control).id];
@@ -1031,6 +1041,7 @@ function ArcadePlayGame({
         paused={paused}
         caught={caught}
         target={target}
+        tally={tally}
         onPause={menu ? pauseGame : undefined}
         bottom={
           menu && (
@@ -1159,7 +1170,7 @@ function ArcadePlayGame({
             ? {
                 session,
                 goalLine: spec.tutorial.goalLine,
-                counters: xrCountersOf(collectGoal(arcade, snapshot.items), hudCountersOf(spec, arcade, snapshot, target)),
+                counters: xrCountersOf(collectGoal(arcade, snapshot.items), hudCountersOf(spec, arcade, snapshot, target, tally)),
                 result: !running && demo === null && settled ? (snapshot.runState === 'won' ? 'won' : 'lost') : null,
                 again,
               }

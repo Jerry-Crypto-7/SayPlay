@@ -60,7 +60,8 @@ const mentions = (text: string, id: string): boolean => new RegExp(`\\b${id}`, '
 
 describe('P68 skeletons (T1)', () => {
   it('the contract has 29 genres: the 24 before P68 and five new ones with one default mode', () => {
-    expect(GENRES).toHaveLength(29);
+    // P83 přidává žánry na konec (`shop` …) – 29 platí pro žánry do P68, pět P68 je jejich konec.
+    expect(GENRES.slice(24, 29)).toEqual([...P68]);
     expect(P68_GENRES).toEqual(P68);
     for (const genre of P68) {
       expect(GENRES).toContain(genre);
