@@ -19,8 +19,8 @@ beforeAll(async () => {
 });
 
 const BUILDING_AT_START = /^an?\s+(?:\w+\s+)?(\w+)\s+where\b/i;
-/** Místo uvnitř budovy, které věta řekne předložkou, zůstává místem hry bez čtení (vzhled scény se nepohne). */
-const INSIDE: Readonly<Record<string, string>> = { [PLACE_SENTENCES[0]]: 'counter' };
+/** Věta o pultu se součtem hraje od P83E obchod se součtem: místem je obchod, jak ho věta řekla, ne sada supermarketu. */
+const INSIDE: Readonly<Record<string, string>> = { [PLACE_SENTENCES[0]]: 'small shop' };
 /** Budova, kterou slovník míst vede pod svou sadou (shop → supermarket). */
 const KNOWN_AS: Readonly<Record<string, string>> = { shop: 'supermarket' };
 

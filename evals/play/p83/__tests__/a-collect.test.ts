@@ -16,7 +16,9 @@ beforeAll(async () => {
   await loadRapier();
 });
 
-describe.each(JUDGE_SENTENCES)('"%s"', (sentence) => {
+// Věta o obchodě (`JUDGE_SENTENCES[1]`) hraje od P83E obchod se součtem, ne sběr v aréně – její výhru a počítání
+// hlídá `arcade/pieces/__tests__/shop.test.ts`. Sběr tu drží věta, která v aréně zůstala.
+describe.each([JUDGE_SENTENCES[0]])('"%s"', (sentence) => {
   const world = (): ReturnType<typeof quickWorld> => quickWorld(sentence);
 
   it('the beginner bot wins inside 60 s on every seed, and each "+1" grows the counter', () => {
