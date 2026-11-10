@@ -135,10 +135,7 @@ function expectIndoor(id: (typeof INDOOR)[number], tree: ReactNode): void {
   const floor = floorOf(tree);
   expect(floor.props.userData, id).toMatchObject({ surface });
   expect(['grass', 'sand'], id).not.toContain(surface);
-  // P81 R2: hradní nádvoří (`stone`) je kámen se skvrnami bez mřížky dlaždic (zelená zem místa z T4 vyšla neonová);
-  // spáry tam hlídá `p81-style.test.ts`. Hala má podlahu z povrchu dál.
-  const share = surfaceShare(floor.props.geometry as BufferGeometry, SURFACES[surface].color);
-  expect(share, `${id}: floor laid in ${surface}`).toBeGreaterThan(0.4);
+  expect(surfaceShare(floor.props.geometry as BufferGeometry, SURFACES[surface].color), `${id}: floor laid in ${surface}`).toBeGreaterThan(0.4);
 
   const walls = wallsOf(tree);
   expect(new Set(walls.map((piece) => piece.id)).size, `${id} wall kinds`).toBeLessThanOrEqual(WALL_KINDS);
@@ -287,10 +284,11 @@ function describeTree(node: ReactNode): unknown[] {
  * P77 T2 (`bab71daf`) přidal každé sadě tóny kulis (`palette`, `PLACE_PALETTES`) – `look` všech míst přepsán v P81
  * (červený už na `main` `bab71daf`, otisky tam i v P81 shodné; `surface`, `styled` a `agar` beze změny).
  * P81 T4 přepsal `styled` všech míst: barva podlahy ve vrcholech, val místo kvádrů, tmavší krajnice.
+ * P81 R6 přepsal `styled` města: dlažba se spárami zpět jako na `main` (zem za hranou zůstává z T4).
  */
 const MAIN: Readonly<Record<string, { readonly look: string; readonly surface: string; readonly styled: string; readonly agar: string }>> = {
   meadow: { look: 'f0c823d2', surface: '9b5032c0', styled: 'df0ada26', agar: 'af20e51a' },
-  city: { look: '834cead7', surface: '3d16a743', styled: 'feba2379', agar: '7aad2795' },
+  city: { look: '834cead7', surface: '3d16a743', styled: 'ec777627', agar: '7aad2795' },
   forest: { look: '76084c9', surface: '9b5032c0', styled: 'd900908', agar: '94472e88' },
   jungle: { look: '7867ee64', surface: '9b5032c0', styled: '7a82a8b0', agar: '12b41537' },
   desert: { look: 'b8bc57ab', surface: '353a5c9e', styled: 'eefaf690', agar: 'fce62cb4' },

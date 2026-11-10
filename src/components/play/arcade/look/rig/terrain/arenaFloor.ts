@@ -9,9 +9,9 @@
  * nevisí, ani se neboří. Vzor nese barva vrcholů, ne výška. Stěny stojí až
  * za hranou a jádro o nich neví – hranou arény je hrana jádra, ne tahle síť.
  *
- * P81 T4 (blíž předloze `evals/play/p75/target/`): venku žádná dlažba ani mozaika – hradní nádvoří (pod nebem,
- * zem místa), tráva, skála, písek i led mají barvu ve vrcholech s velkými měkkými skvrnami, k okraji tmavší;
- * tráva, písek a sníh mají za hranou místo kvádrů oblý val. Dlaždice zůstaly jen halám.
+ * P81 T4 (blíž předloze `evals/play/p75/target/`): tráva, skála, písek i led mají barvu ve vrcholech s velkými
+ * měkkými skvrnami, k okraji tmavší, žádná mozaika; tráva, písek a sníh mají za hranou místo kvádrů oblý val.
+ * Dlažba hradu, města a hal zůstala jako na `main` (P81 R6, majitel: „kde byly dlaždice, nech dlaždice“).
  *
  * Bez indexů, flat shading, barvy ve vrcholech z palety sady. Čistá funkce
  * vstupu: žádná náhoda, tatáž aréna vypadá pokaždé stejně.
@@ -26,7 +26,7 @@ import { type BufferGeometry, Color } from 'three';
 import { type Cover, type InteriorFloor, type Look, SURFACES } from '@/play/arcade/look';
 import { LOOK_STYLE } from '@/play/arcade/look/style';
 
-import { buildPodium, courtyardBase, groundPainter, groundPalette, smooth } from '../../ground';
+import { buildPodium, groundPainter, groundPalette, smooth } from '../../ground';
 import { Faces, type Vertex, capOf } from './islands';
 import { hash, mix, noise } from './valley';
 
@@ -277,8 +277,6 @@ export function buildArenaFloor({ look, half }: ArenaFloorOptions): ArenaFloor {
   const shade = (color: Color, scale: number): Color => face.copy(color).multiplyScalar(scale);
   // Souš s odstíny a skvrnami (P46G T3); za hranou krajnice u stěn a do dálky tmavne.
   const earth = groundPainter(groundPalette(look, palette.land));
-  // Hradní nádvoří kamenem bez spár (P81 R2), za hranou arény tráva místa.
-  const courtyard = look.interior?.floor === 'stone' ? groundPainter(groundPalette(look, courtyardBase(look, palette.land))) : earth;
   // Velké měkké světlé a tmavé skvrny přes celou plochu a k okraji arény tmavší – zvlnění bez geometrie (P81 T4).
   const soft = (x: number, z: number, color: Color): Color => {
     const wash = 0.9 + 0.2 * noise(x * 0.07 + 13, z * 0.07 - 7);
@@ -290,12 +288,12 @@ export function buildArenaFloor({ look, half }: ArenaFloorOptions): ArenaFloor {
   const ground = new Faces();
   // Podlaha interiéru sahá pod stěnu z kulis; zem sady začíná až za ní.
   const inside = look.interior === undefined ? half : half + INTERIOR_UNDER;
-  // Hradní nádvoří (`stone`, P81 T4) je pod otevřeným nebem: zem místa jako venku (předloha s4 – měkká tráva),
-  // žádná mřížka dlaždic a spár. Dlaždice zůstávají halám.
-  if (look.interior !== undefined && look.interior.floor !== 'stone') paving(ground, inside, floor, seam, face, INTERIOR_LAYOUTS[look.interior.floor]);
+  // Kde byly dlaždice, zůstanou (P81 R6, majitel): haly, hradní nádvoří i dlažba města mají mřížku se spárami jako `main`.
+  if (look.interior !== undefined) paving(ground, inside, floor, seam, face, INTERIOR_LAYOUTS[look.interior.floor]);
+  else if (look.cover === 'paving') paving(ground, half, floor, seam, face, CASTLE_PAVING);
   else {
     const cell = look.cover === 'snow' ? 2.4 : 1.6;
-    grid(ground, -inside, -inside, inside, inside, cell, 11, (x, z) => {
+    grid(ground, -half, -half, half, half, cell, 11, (x, z) => {
       if (look.cover === 'snow') {
         // Ledové kry dvou odstínů a u hrany závěj sněhu.
         face.copy(floor).lerp(seam, 0.4 * smooth((noise(x * 0.12 + 3, z * 0.12) - 0.55) / 0.15));
@@ -307,8 +305,8 @@ export function buildArenaFloor({ look, half }: ArenaFloorOptions): ArenaFloor {
         const ripple = Math.sin(x * 1.1 + z * 0.4 + noise(x * 0.08, z * 0.08) * 7);
         return soft(x, z, face.copy(floor).lerp(seam, smooth((ripple - 0.4) / 0.5)).multiplyScalar(1 - 0.07 * smooth((-ripple - 0.4) / 0.5)));
       }
-      // Tráva, skála i dlažba venku: odstíny a skvrny země sady (P46G T3).
-      return soft(x, z, courtyard(x, z, null, face));
+      // Tráva a skála: odstíny a skvrny země sady (P46G T3).
+      return soft(x, z, earth(x, z, null, face));
     });
   }
   // Zem za hranou: čtyři pásy kolem hrací plochy, hrubší mřížka; krajnice se měří od hrany arény (interiér od kraje podlahy).

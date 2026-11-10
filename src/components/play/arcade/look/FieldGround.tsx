@@ -13,7 +13,7 @@ import { useEffect, useMemo } from 'react';
 
 import type { Look } from '@/play/arcade/look';
 
-import { type Box, buildFieldGround, buildPodium, pavedFloor } from './ground';
+import { type Box, buildFieldGround, buildPodium } from './ground';
 import { interiorFloorMap } from './interior-floor';
 import { UNDER_PANORAMA } from './under-panorama';
 
@@ -40,7 +40,7 @@ export function FieldGround({ look, area, edge, y = 0, under = false, podium = t
   const rim = useMemo(() => (podium && look.interior === undefined ? buildPodium(look, area) : null), [podium, look, area]);
   useEffect(() => () => rim?.dispose(), [rim]);
   // Interiér (P62 T6): dlažba povrchu sady jako textura, síť má bílé vrcholy a UV v metrech.
-  const map = look.interior === undefined || !pavedFloor(look) ? null : interiorFloorMap(look.interior.floor);
+  const map = look.interior === undefined ? null : interiorFloorMap(look.interior.floor);
   return under ? (
     <>
       <mesh geometry={geometry} position={[0, y, 0]} renderOrder={UNDER_PANORAMA}>

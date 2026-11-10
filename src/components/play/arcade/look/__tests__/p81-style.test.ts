@@ -241,13 +241,23 @@ describe('P81 T4: podlaha arény a terén', () => {
     expect(arena.heightAt(3, -7)).toBe(0);
   });
 
-  it('hradní nádvoří venku nemá spáry dlažby; tráva má místo kvádrů nízký val', () => {
-    const castle = sceneLook({ setting: SETTING.castle, mood: '', look: 'castle' });
-    const seam = new Color(arenaPalette(castle).seam);
-    const colors = buildArenaFloor({ look: castle, half: HALF }).floor.getAttribute('color');
+  // R6 (majitel 10. 11.: „kde byly dlaždice, nech dlaždice“): hradní nádvoří (s4, s8) a střechy města (s3) mají
+  // na `main` mřížku dlaždic se spárami – zůstane; tráva dlažbu nedostane. Spára = vrchol přesně v barvě spáry palety.
+  const seamShare = (id: (typeof LOOK_IDS)[number]): number => {
+    const look = sceneLook({ setting: SETTING[id], mood: '', look: id });
+    const seam = new Color(arenaPalette(look).seam);
+    const colors = buildArenaFloor({ look, half: HALF }).floor.getAttribute('color');
     let seams = 0;
     for (let i = 0; i < colors.count; i += 1) if (Math.abs(colors.getX(i) - seam.r) + Math.abs(colors.getY(i) - seam.g) + Math.abs(colors.getZ(i) - seam.b) < 1e-3) seams += 1;
-    expect(seams).toBe(0);
+    return seams / colors.count;
+  };
+
+  it.each(['castle', 'city'] as const)('R6: %s má dlaždice se spárami jako na main', (id) => {
+    expect(seamShare(id), id).toBeGreaterThan(0.1);
+  });
+
+  it('R6: tráva dlaždice nemá; místo kvádrů má nízký val', () => {
+    expect(seamShare('meadow')).toBe(0);
     const ring = buildArenaFloor({ look: sceneLook({ setting: SETTING.meadow, mood: '', look: 'meadow' }), half: HALF }).walls.getAttribute('position');
     let top = 0;
     for (let i = 0; i < ring.count; i += 1) top = Math.max(top, ring.getY(i));

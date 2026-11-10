@@ -78,12 +78,6 @@ const soften = (hex: string, amount: number): string => {
 };
 
 /**
- * Zem polí a nádvoří: hradní nádvoří (`stone`, interiér pod nebem) kamennou paletou bez mřížky dlaždic
- * (P81 R2 – zelená zem místa na s4 vyšla neonová a nečetla jako hrad), jinak zem sady.
- */
-export const courtyardBase = (look: Look, land: string): string => (look.interior?.floor === 'stone' ? SURFACES.stone.color : land);
-
-/**
  * Paleta země sady. `land` = barva souše (údolí a závod `ground`, ostrůvky a aréna
  * svou souš). Stín a dálka jdou k barvě polokoule zespodu, světlo ke slunci sady.
  */
@@ -162,13 +156,10 @@ const WALL_AO_M = 1.5;
  *
  * Interiér (P62 T6, `Look.interior`) má bílé vrcholy a UV v metrech: dlažbu dá
  * textura povrchu (`interiorFloorMap`), ne zem sady – ta se skvrnami a krajnicí
- * četla jako venek. Hradní nádvoří (`stone`) je pod otevřeným nebem: zem místa jako venku (P81, jako podlaha
- * arény v T4 – předloha s4 má měkkou trávu, ne mřížku dlaždic).
+ * četla jako venek. Hradní nádvoří (`stone`) má dlažbu taky (P81 R6: kde byly dlaždice, zůstanou).
  */
-export const pavedFloor = (look: Pick<Look, 'interior'>): boolean => look.interior !== undefined && look.interior.floor !== 'stone';
-
 export function buildFieldGround(look: Look, area: Box, edge: (x: number, z: number) => number | null = () => null): BufferGeometry {
-  const paint = pavedFloor(look) ? null : groundPainter(groundPalette(look, courtyardBase(look, look.ground)));
+  const paint = look.interior === undefined ? groundPainter(groundPalette(look)) : null;
   const columns = Math.max(1, Math.ceil((area.x1 - area.x0) / FIELD_CELL_M));
   const rows = Math.max(1, Math.ceil((area.z1 - area.z0) / FIELD_CELL_M));
   const count = (rows + 1) * (columns + 1);

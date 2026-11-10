@@ -152,24 +152,8 @@ describe('P62 T6: interiér má podlahu i mimo arénu', () => {
   it.each(INDOOR)('%s: běžec a zem polí kladou dlažbu sady, údolí je rovná podlaha', (id) => {
     const look = LOOKS[id];
     expectIndoorFloor(`${id} runner`, look, runnerGround(look));
-    // P81 T5: hradní nádvoří je pod otevřeným nebem – zem polí je zem místa (jako podlaha arény v T4), ne dlažba.
-    if (id === 'castle') {
-      const courtyard = shooterGround(look);
-      expect(courtyard.map, 'castle courtyard').toBeNull();
-      // P81 R2: kámen bez spár, ne zelená zem místa (na s4 vyšla neonová a nečetla jako hrad).
-      const colors = courtyard.geometry.getAttribute('color');
-      const mean = new Color();
-      for (let i = 0; i < colors.count; i++) {
-        mean.r += colors.getX(i) / colors.count;
-        mean.g += colors.getY(i) / colors.count;
-        mean.b += colors.getZ(i) / colors.count;
-      }
-      const gap = (hex: string) => {
-        const c = new Color(hex);
-        return Math.hypot(c.r - mean.r, c.g - mean.g, c.b - mean.b);
-      };
-      expect(gap(SURFACES.stone.color), 'castle courtyard is stone').toBeLessThan(gap(look.ground));
-    } else expectIndoorFloor(`${id} shooter`, look, shooterGround(look));
+    // P81 R6: i hradní nádvoří (s4, s8) klade dlažbu jako `main` – kde byly dlaždice, zůstanou.
+    expectIndoorFloor(`${id} shooter`, look, shooterGround(look));
     expect(Math.max(...buildValley({ look, from: -20, to: 200 }).heights), `${id} flat`).toBe(0);
   });
 
