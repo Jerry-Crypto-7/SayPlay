@@ -9,6 +9,7 @@
 import { runBeginner, secondsOf } from '@/play/arcade/beginner-bot';
 import { loadRapier } from '@/play/arcade/physics/world';
 import { runBot } from '@/play/arcade/verify';
+import { draftGameSpecWithMeta } from '@/play/draft';
 
 import { JUDGE_SENTENCES, SEEDS, quickWorld } from './a-repro';
 
@@ -29,8 +30,11 @@ async function main(): Promise<void> {
       const world = quickWorld(sentence);
       const bot = runBot(world);
       const runs = Array.from({ length: SEEDS }, (_, k) => runBeginner(world, undefined, { seed: k + 1 }));
+      const { genre } = draftGameSpecWithMeta(sentence, 1).spec;
       console.log(JSON.stringify({
         sentence: sentence.slice(0, 40),
+        mode: `${genre?.id ?? '-'}.${genre?.mode ?? '-'}`,
+        rules: world.rules.map((rule) => rule.id).join(' '),
         bot: `${bot.outcome}@${secondsOf(bot.tick).toFixed(1)}`,
         beginnerWins: runs.filter((run) => run.outcome === 'won' && secondsOf(run.tick) <= WIN_WITHIN_S).length,
         beginner: runs.map((run) => `${run.outcome}@${secondsOf(run.tick).toFixed(1)}`),
