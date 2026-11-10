@@ -6,3 +6,4 @@ Strop majitele: **10 USD celkem**, při 9 USD přestat volat. Čísla jsou podle
 |---|---|---|---|---|
 | T1a | rytíř (+ kulička a obchod odmítnuté místním stropem, 0 volání) | 2 | 0,5876 USD | 0,5876 USD |
 | T1b | kulička, obchod | 9 | 2,0225 USD | 2,6102 USD |
+| T5 | 15 nových vět – všech 45 volání 429 `credit_balance_exhausted` (účet bez kreditu) | 0 | 0 USD | 2,6102 USD |
