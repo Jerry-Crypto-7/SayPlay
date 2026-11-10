@@ -55,6 +55,8 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
   'drawsave.default': { move: 'stationary', actions: ['drawwall'], objective: 'survive', threats: ['hazard'] },
   // P68 T10: the first-person rail shooter is live – its cell moved here from `STAGED_PRESETS`.
   'railfps.default': { move: 'stationary', actions: ['railshoot'], objective: 'defeat', threats: ['chaser'] },
+  // P83C T4: the tap-to-explore scene is live – its cell moved here from `STAGED_PRESETS`.
+  'orrery.default': { move: 'stationary', actions: ['explore'], objective: 'score', threats: [] },
 };
 
 /**
@@ -63,10 +65,7 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
  * P54C T12 and P66 T12 made the last ones live; the table stays for a genre whose own task has to fall back.
  * P68 T1 stages its five games here; each P68-I activation task moves its own line to `PRESETS`.
  */
-export const STAGED_PRESETS: Readonly<Record<string, Recipe>> = {
-  // P83C T2: tap-to-explore scene; P83C T4 moves the cell to `PRESETS` when sentences route to it.
-  'orrery.default': { move: 'stationary', actions: ['explore'], objective: 'score', threats: [] },
-};
+export const STAGED_PRESETS: Readonly<Record<string, Recipe>> = {};
 
 /**
  * What the sentence asked for, passed by `assemble` (P45B T9): its words and the requested

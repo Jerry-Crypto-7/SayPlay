@@ -75,6 +75,10 @@ const ROWS: readonly Row[] = [
   ...(GENRE_MODULES.buildshift.availability('default') === 'ready'
     ? [{ genre: 'buildshift', sentence: 'run a cat cafe and serve 12 cats their milk', place: 'cafe', slots: { 'thing.customer': 'cat', 'thing.goods': 'milk' } } as const]
     : []),
+  // P83C T4: orrery (dev věta c-dev-02), stejná podmínka.
+  ...(GENRE_MODULES.orrery.availability('default') === 'ready'
+    ? [{ genre: 'orrery', sentence: 'show me a farm with a cow, a pig, a sheep and a horse, and tapping one makes it jump and say its name', place: 'farm', slots: { 'thing.orrery0': 'cow' } } as const]
+    : []),
 ];
 
 /** Dev věty P61, které `main` prohrál na prostředí nebo protivníkovi (`evals/play/p61/baseline-dev.json`). */
