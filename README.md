@@ -2,7 +2,7 @@
 
 Type one sentence and play a short 3D game made from it, with its own rules, goal and a win a robot has proved, in the browser on a desktop or a phone. For anyone with a game idea and no game engine: no account, no install, no code.
 
-**Live demo:** [worldstream-sigma.vercel.app](https://worldstream-sigma.vercel.app) · **Video:** linked here with the submission · **Proof for each claim, with a command to check it:** [docs/submission/evidence.md](docs/submission/evidence.md) · **Sentences to try, with what to expect:** [judge-prompts.md](docs/submission/judge-prompts.md)
+**Live demo:** [worldstream-sigma.vercel.app](https://worldstream-sigma.vercel.app) · **Video (2:18):** [youtu.be/IVE_WsxhlpM](https://youtu.be/IVE_WsxhlpM) · **Proof for each claim, with a command to check it:** [docs/submission/evidence.md](docs/submission/evidence.md) · **Sentences to try, with what to expect:** [judge-prompts.md](docs/submission/judge-prompts.md)
 
 ## Why it matters
 
