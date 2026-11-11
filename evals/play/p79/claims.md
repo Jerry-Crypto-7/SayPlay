@@ -30,7 +30,7 @@ Several measurement reports are written in Czech, so some excerpts are Czech. A 
 | M14 | The hero recognised (second excerpt of M13) | 39/118 | 2026-10-04 | `evals/play/p37/o8.md` | `hrdina poznaný` `39/118` |
 | M15 | The quick version read the verb in 98 of 200 sentences on 4 October, with the same word check as M4 | 98/200 | 2026-10-04 | `evals/play/p37/o8.md` | `98/200` |
 | M16 | Last measured AI version on the paid production model (gpt-6-astra, OpenAI API): 12 of 12 published, median 56.7 s until it was playable | 12/12, 56.7 s | 2026-10-24 | `evals/play/p58b/director.json` | `"model": "gpt-6-astra",` `"ok": 12,` `"aiP50": 56740,` |
-| M20 | Deployed demo on submission day: a fresh sentence got its AI version 164 s after it was sent (one sentence measured) | 164 s | 2026-11-11 | `evals/play/p85/ai-live.json` | `"aiReady": 1,` `"secondsToAiVersion": 164` |
+| M20 | Deployed demo on submission day: 7 of 7 fresh sentences got their AI version, a median 164 s after they were sent | 7/7, 164 s | 2026-11-11 | `evals/play/p85/ai-live.json` | `"aiReady": 7,` `"medianSecondsToAiVersion": 164` |
 | M17 | Cost of one AI version on that run: 0.62 USD per game, an upper bound (the ledger does not see the provider's cache discount) | 0.62 USD | 2026-10-24 | `evals/play/p58b/director.json` | `"perGameCleanBatch": 0.621628,` `prices are an upper bound` |
 | M19 | Model library: 1787 catalogue models – 362 CC0, 57 built by code in Blender, 32 built by code in three.js, 1336 generated offline – plus 144 rigged CC0 characters | 1787, 362, 57, 32, 1336, 144 | 2026-11-08 | `evals/play/p79/catalog.json` | `"catalogueModels": 1787,` `"cc0": 362,` `"blenderByCode": 57,` `"threeJsByCode": 32,` `"generatedOffline": 1336,` `"riggedCharacters": 144,` |
 
