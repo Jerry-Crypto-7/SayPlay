@@ -103,10 +103,12 @@ export function upgradeQueueId(draftId: string): string {
 export const UPGRADE_DEADLINE_SLACK_MS = 15_000;
 
 /**
- * Strop AI verze (P83B T3): od „Make it!“ do hotové AI verze nejvýš 45 s. Klient se po něm přestane ptát, řádek
+ * Strop AI verze: od „Make it!“ do hotové AI verze nejvýš 120 s. Klient se po něm přestane ptát, řádek
  * postupu zmizí a rychlá verze běží dál bez hlášky – AI verzi, která by přišla později, už nikdo nečeká.
+ * Původních 45 s (P83B T3) na nasazeném demu 11. 11. utnulo každé první volání režiséra těsně před koncem:
+ * zaplacené volání, žádná AI verze, a další dotaz spustil nový placený pokus.
  */
-export const UPGRADE_CEILING_MS = 45_000;
+export const UPGRADE_CEILING_MS = 120_000;
 
 /** Ze stropu kontrola robotem a zápis po režii: naměřeno 0–2,1 s (`evals/play/p83/b-repro.md`). */
 const UPGRADE_PUBLISH_MS = 3_000;
