@@ -19,6 +19,7 @@
 import type { Reading, VerbClass } from '../read/schema';
 
 import { type CastRole, GENRES, GENRE_MODES, type GenreId, type GenreMode, type GenreModule, type ModeAvailability } from './contract';
+import { DEFENDS, THROWN_BY } from '../draft/lexicon';
 import { FAMILIES, type VerbFamily } from './families';
 import { GENRE_MODULES } from './index';
 
@@ -159,6 +160,16 @@ const NOT_THROUGH = String.raw`(?!(?:through|into|across|down|off|of)\b)`;
 const FALLS = String.raw`(?:fall(?:s|ing)?|drop(?:s|ping)?|rain(?:s|ing)?|tumbl(?:e|es|ing)) (?:from|out of|down)\b`;
 /** Nádoba, kterou hráč posouvá pod padající věci („move a bucket left and right“, „slide my bowl under it“). */
 const VESSEL = String.raw`(?:baskets?|buckets?|bowls?|nets?|cups?|carts?|trays?|pans?|sacks?|hats?|plates?|aprons?)`;
+/**
+ * P84 T3: věta, která počítá věci do nádob („pack twelve cupcakes into boxes of four“, „put six teddy bears into two
+ * boxes“, „sort ten letters into mailboxes“) – hraje se sběr s počtem z věty; balení do krabic přizná pruh. Třídění do
+ * „správné“ přihrádky nebo podle barvy zůstává tříděním.
+ */
+const COUNT_WORD = String.raw`(?:\d+|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty)`;
+const COUNTED_INTO = String.raw`(?= (?:all |the |my )?${COUNT_WORD} (?:[a-z'-]+ ){0,2}?[a-z'-]+ (?:in|into|inside) (?![^.;!?]*\b(?:right|matching|correct|proper)\b)(?![^.;!?]*\bby (?:colou?r|kind|type|shape|size)))`;
+const PACK_COUNTED = new RegExp(String.raw`\b(?:pack|put|sort|load|box|stack|place|stuff|drop)(?:s|es|ed|ing|ting|ping)?${COUNTED_INTO}`);
+/** P84 T2: brankář chytá, co po něm hází soupeř (`DEFENDED` v `catch.ts`). */
+const DEFENDS_AGAINST = String.raw`\b${DEFENDS}(?= (?:the |all |some |every |\d+ )?(?:[a-z'-]+ ){0,2}?[a-z'-]+ ${THROWN_BY})`;
 /** Úder na to, co vykouklo: zájmeno za úderem („tap them before they vanish“, „smash them quick“). */
 const STRIKE_THEM = String.raw`(?:${STRIKE}|whack(?:s|ing)?|bonk(?:s|ing)?|hammer(?:s|ing)?|punch(?:es|ing)?|slap(?:s|ping)?) (?:them|it|'em|each one)\b`;
 /** Množné číslo těsně před slovesem – vlna se valí („orcs march“, „skeletons keep coming“), jeden hrdina ne. */
@@ -288,7 +299,7 @@ const VERBS: readonly Verb[] = [
   // Třídění: sloveso třídění („sort the candies“; ne „a sort of“ ani místnost „a sorting room“), věci do správné nádoby
   // („puts … back on the right shelves“, „drops letters into the matching bags“), přelévání do jedné barvy, podle barvy.
   v('sort', 'sign', SORT, new RegExp([
-    String.raw`\bsort(?:s|ed|ing)?\b(?! (?:of|rooms?|office|cent(?:er|re)|hat|facility|station|machine)\b)`,
+    String.raw`\bsort(?:s|ed|ing)?\b(?! (?:of|rooms?|office|cent(?:er|re)|hat|facility|station|machine)\b)(?!${COUNTED_INTO})`,
     String.raw`\b(?:put(?:s|ting)?|drop(?:s|ping)?|plac(?:e|es|ing)|send(?:s|ing)?|mov(?:e|es|ing)|toss(?:es|ing)?|slot(?:s|ting)?|fil(?:e|es|ing)|shelv(?:e|es|ing)|load(?:s|ing)?|pack(?:s|ing)?)(?= (?:[a-z0-9,'-]+ ){0,8}?${RIGHT_BIN})`,
     String.raw`\bpour(?:s|ing)?(?=[^.;!?]*\b(?:one|a single) colou?r\b)`,
     String.raw`\b(?:group(?:s|ing)?|arrang(?:e|es|ing)|separat(?:e|es|ing)|organi[sz](?:e|es|ing))(?= (?:[a-z0-9,'-]+ ){0,6}?by (?:colou?r|kind|type|shape|size)s?\b)`,
@@ -442,6 +453,9 @@ const VERBS: readonly Verb[] = [
     String.raw`\b${WAKES_UP} (?:[a-z]+ ){0,3}?(?:when|whenever|each time|every time|if|once) ${TAP_TARGET}`,
     // T7: odpoví zájmeno za klepnutím („click one and it spins faster“, „tap them so they glow“).
     String.raw`\b${TOUCHED}(?! (?:on )?(?:the |your |a )?(?:screen|button|mouse|space ?bar|keys?)\b) (?:on )?(?:a|an|the|each|every|any|one|them|it|[a-z-]+s)\b[^.;!?]{0,60}? (?:and|so|then) (?:it|they|each one) (?:will )?${WAKES_UP}`,
+    // P84 T1: místo, kde klepnutí na věc s ní něco udělá („an aquarium where tapping a fish makes it swim“, „a pond where
+    // tapping a frog makes it jump“) – prohlídka místa, ne plavání ani skákačka; co simulace neumí, přizná pruh.
+    String.raw`\bwhere (?:you |i |we )?${TOUCHED}(?! (?:on )?(?:the |your |a )?(?:screen|button|mouse|space ?bar|keys?)\b) (?:on )?(?:a|an|the|each|every|any|one|[a-z-]+s)\b[^.;!?]{0,40}? (?:makes?|making|lets?) (?:it|them|each one|that one) [a-z]+`,
   ].join('|'))),
   // Úkol v prostoru: předměty rozeseté po scéně.
   v('light', 'goal', SPATIAL, new RegExp(String.raw`\b(?:light(?:s|ing)?(?: up)?|ignit(?:e|es|ing)|kindl(?:e|es|ing)) ${OBJECT}|\blight(?:s|ing)?(?: up)?(?= (?:[a-z]+ )?(?:lanterns?|candles?|torches?|lamps?|beacons?|fireworks?|bonfires?|campfires?)\b)`)),
@@ -471,6 +485,7 @@ const VERBS: readonly Verb[] = [
     String.raw`\b(?:catch(?:es|ing)?|collect(?:s|ing)?|grab(?:s|bing)?|gather(?:s|ing)?|snag(?:s|ging)?|scoop(?:s|ing)?|eat(?:s|ing)?)(?= (?!(?:him|her|me|us|you|the player)\b)(?:${SAME_CLAUSE}){0,4}?${CAUGHT})`,
     String.raw`\b${FALLS}(?= (?:[a-z'-]+ ){0,3}?[a-z'-]+\b[^.]*?\b(?:catch(?:es|ing)?|(?:slide|move|hold|put)s? (?:my|your|the|a|his|her) (?:[a-z]+ )?${VESSEL} under)\b)`,
     String.raw`\b(?:mov(?:e|es|ing)|slid(?:e|es|ing)|swing(?:s|ing)?|hold(?:s|ing)?|carr(?:y|ies|ying)) (?:a|an|the|your|my|his|her|their) (?:[a-z]+ )?${VESSEL}(?= [^.]*?\b(?:to catch|under (?:it|them|the)|left and right)\b)`,
+    DEFENDS_AGAINST,
   ].join('|'))),
   // P55 T3: co vykoukne a hráč do toho udeří zájmenem („ghosts appear in windows, tap them before they vanish“,
   // „gophers pop up in the garden and you smash them“).
@@ -595,6 +610,7 @@ const VERBS: readonly Verb[] = [
   // Sběr – žánr dostane podle zbytku věty.
   v('collect', 'pickup', null, new RegExp(String.raw`\bcollect(?:s|ing)?\b|\bgather(?:s|ing)?\b|\bfind(?:s|ing)?\b|\bpick(?:s|ing)? up\b|\bgrab(?:s|bing)?\b|\beat(?:s|ing)?\b|\bsteal(?:s|ing)?\b|\bcatch(?:es|ing)? (?!${PRONOUN})|\bhoard(?:s|ing)?\b|\bpick(?:s|ing)? (?:[a-z]+ ){0,2}(?:herbs?|flowers?|berries|apples?|fruits?|mushrooms?|cherries|grapes)\b|\bdrag(?:s|ging|ged)\b|\bdrag (?:the|a|an|his|her|their|it|them)\b`)),
   v('search', 'pickup', null, /\bsearch(?:es|ing)?\b|\bexplor(?:e|es|ing)\b|\blook(?:s|ing)? for\b/),
+  v('collect', 'pickup', null, PACK_COUNTED),
   // Útěk a přežití.
   v('chase', 'chase', ESCAPE, new RegExp(String.raw`\bchas(?:e|es|ed|ing)\b|\bhunt(?:s|ed|ing)?\b|\bpursu(?:e|es|ed|ing)\b|\bstalk(?:s|ing)?\b|\b(?:catch(?:es)?|follow(?:s|ing)?) ${PRONOUN}`)),
   v('escape', 'chase', ESCAPE, /\bescap(?:e|es|ed|ing)\b|\bfle(?:e|es|eing)\b|\bfled\b|\b(?:runs?|running) (?:away )?from\b|\boutrun(?:s)?\b/),
