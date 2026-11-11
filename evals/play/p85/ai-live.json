@@ -2,14 +2,18 @@
   "measuredOn": "2026-11-11",
   "target": "deployed demo, POST /api/play/games then GET /api/play/games/:id/upgrade every 5 s",
   "model": "gpt-6-astra",
-  "note": "One fresh sentence after the upgrade window went back to 270 s. With the window at 45 s and at 120 s the same demo cut every director call and returned no AI version that day.",
-  "sentences": 1,
-  "aiReady": 1,
+  "note": "Seven fresh sentences after the upgrade window went back to 270 s. With the window at 45 s and at 120 s the same demo cut every director call and returned no AI version that day. A sentence sent a second time got the stored AI version in 9 s.",
+  "sentences": 7,
+  "aiReady": 7,
+  "medianSecondsToAiVersion": 164,
   "runs": [
-    {
-      "sentence": "A baker juggles five hot pies across a windy rooftop market",
-      "status": "ready",
-      "secondsToAiVersion": 164
-    }
-  ]
+    { "sentence": "A baker juggles five hot pies across a windy rooftop market", "status": "ready", "secondsToAiVersion": 164 },
+    { "sentence": "A spaceship shoots asteroids in deep space", "status": "ready", "secondsToAiVersion": 109 },
+    { "sentence": "A penguin slides down an icy mountain", "status": "ready", "secondsToAiVersion": 157 },
+    { "sentence": "Explain how volcanoes erupt to a ten year old", "status": "ready", "secondsToAiVersion": 127 },
+    { "sentence": "A goalkeeper penguin blocks snowballs thrown by a polar bear until the whistle blows", "status": "ready", "secondsToAiVersion": 273 },
+    { "sentence": "An aquarium where tapping a fish makes it swim to the surface and blow a bubble", "status": "ready", "secondsToAiVersion": 268 },
+    { "sentence": "A bakery where I pack twelve cupcakes into boxes of four and it shows how many boxes are full", "status": "ready", "secondsToAiVersion": 273 }
+  ],
+  "repeat": { "sentence": "A penguin slides down an icy mountain", "status": "ready", "secondsToAiVersion": 9 }
 }
