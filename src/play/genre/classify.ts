@@ -442,6 +442,9 @@ const VERBS: readonly Verb[] = [
     String.raw`\b${WAKES_UP} (?:[a-z]+ ){0,3}?(?:when|whenever|each time|every time|if|once) ${TAP_TARGET}`,
     // T7: odpoví zájmeno za klepnutím („click one and it spins faster“, „tap them so they glow“).
     String.raw`\b${TOUCHED}(?! (?:on )?(?:the |your |a )?(?:screen|button|mouse|space ?bar|keys?)\b) (?:on )?(?:a|an|the|each|every|any|one|them|it|[a-z-]+s)\b[^.;!?]{0,60}? (?:and|so|then) (?:it|they|each one) (?:will )?${WAKES_UP}`,
+    // P84 T1: místo, kde klepnutí na věc s ní něco udělá („an aquarium where tapping a fish makes it swim“, „a pond where
+    // tapping a frog makes it jump“) – prohlídka místa, ne plavání ani skákačka; co simulace neumí, přizná pruh.
+    String.raw`\bwhere (?:you |i |we )?${TOUCHED}(?! (?:on )?(?:the |your |a )?(?:screen|button|mouse|space ?bar|keys?)\b) (?:on )?(?:a|an|the|each|every|any|one|[a-z-]+s)\b[^.;!?]{0,40}? (?:makes?|making|lets?) (?:it|them|each one|that one) [a-z]+`,
   ].join('|'))),
   // Úkol v prostoru: předměty rozeseté po scéně.
   v('light', 'goal', SPATIAL, new RegExp(String.raw`\b(?:light(?:s|ing)?(?: up)?|ignit(?:e|es|ing)|kindl(?:e|es|ing)) ${OBJECT}|\blight(?:s|ing)?(?: up)?(?= (?:[a-z]+ )?(?:lanterns?|candles?|torches?|lamps?|beacons?|fireworks?|bonfires?|campfires?)\b)`)),

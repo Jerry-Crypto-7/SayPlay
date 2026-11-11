@@ -1019,7 +1019,8 @@ function sentenceNouns(sentence: string): { hero: string | null; pickup: string 
   const second = reskin === undefined ? null : nounAfter(/\band\s+(.+)/.exec(reskin)?.[1]);
   const subject = SUBJECT.exec(text);
   const said = subject === null ? null : withoutDeterminers((subject[1] ?? subject[2])!);
-  const hero = nounAfter(reskin) ?? (said === null || /ing\b/.test(said) || TITLE_SKIP.has(said.split(' ')[0]!) ? null : singular(said));
+  // P84 T1: podmět je celé jmenné slovo – „an aquarium where tapping …“ dal hrdinu „aquarium where“ (spojka za místem).
+  const hero = nounAfter(reskin) ?? (said === null || /ing\b/.test(said) || said.split(' ').some((word) => TITLE_SKIP.has(word) || word === 'which') ? null : singular(said));
   return { hero, pickup: nounAfter(PICKUP.exec(text)?.[1]), avoid: nounAfter(AVOID.exec(text)?.[1]), second };
 }
 
