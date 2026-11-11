@@ -1,5 +1,5 @@
 {
-    "$comment": "Submission manifest for Sayplay (/play), state on 8 November 2026. The AI director is gpt-6-astra through the paid OpenAI API, with no fallback model; without it the demo builds the quick version from the words alone. Every number in README.md, the description and the walkthrough has a row in evals/play/p79/claims.md with its date, file and exact excerpt; check 9 verifies it. The video is cut from docs/video-script.md. A value starting with TODO: is a placeholder that the submission check treats as missing. The demo and its backend stay online until at least 31 December 2026.",
+    "$comment": "Submission manifest for Sayplay (/play), state on 11 November 2026. The AI director is gpt-6-astra through the paid OpenAI API, with no fallback model; without it the demo builds the quick version from the words alone. Every number in README.md, the description and the walkthrough has a row in evals/play/p79/claims.md with its date, file and exact excerpt; check 9 verifies it. docs/submission/evidence.md maps each claim to a file and a command that checks it without keys; docs/submission/judge-prompts.md lists sentences inside and outside the scope with the start card each one gives. The video is cut from docs/video-script.md. A value starting with TODO: is a placeholder that the submission check treats as missing. The demo and its backend stay online until at least 31 December 2026.",
     "repositoryUrl": "https://github.com/Jerry-Crypto-7/Hackathon",
     "demoUrl": "https://worldstream-sigma.vercel.app",
     "backendUrl": "https://worldstream-sigma.vercel.app/api/health",
@@ -26,6 +26,18 @@
         "evals/play/p76/vs-main.md",
         "evals/play/p58b/director.json",
         "evals/play/p79/catalog.json",
-        "evals/play/p79/claims.md"
+        "evals/play/p79/claims.md",
+        "evals/play/p77/perf.md",
+        "evals/play/p77/judge.md",
+        "evals/play/p78/hostile.md",
+        "evals/play/p78/load.md",
+        "evals/play/p78/verb.md",
+        "evals/play/p78/ai-live.md",
+        "evals/play/p85b/prompts-check.json"
+    ],
+    "evidencePaths": [
+        "docs/submission/evidence.md",
+        "docs/submission/judge-prompts.md",
+        "evals/play/p84/README.md"
     ]
 }
