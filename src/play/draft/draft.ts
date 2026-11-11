@@ -957,7 +957,11 @@ function withPlace(roles: SentenceRoles, sentence: string): SentenceRoles {
   for (const at of lookWords(text)) {
     const rest = text.slice(text.lastIndexOf(' ', at) + 1);
     for (const phrase of [nounPhrase(rest, 2), nounPhrase(rest, 1)]) {
-      if (phrase !== null && isPlace(phrase)) return { ...roles, setting: phrase };
+      if (phrase === null || !isPlace(phrase)) continue;
+      // P85A T2: hrdina místem není („A spaceship dodges asteroids“, „A farmer plants five seeds“ – karta psala
+      // „Place: spaceship“) – místem je sada, kterou jeho slovo vybralo; scéna zůstane stejná.
+      const hero = roles.player !== null && phrase.split(' ').at(-1) === roles.player.split(' ').at(-1);
+      return { ...roles, setting: hero ? lookFor(phrase)!.replace(/_/g, ' ') : phrase };
     }
   }
   return roles;
