@@ -1,0 +1,15 @@
+{
+  "measuredOn": "2026-11-11",
+  "target": "deployed demo, POST /api/play/games then GET /api/play/games/:id/upgrade every 5 s",
+  "model": "gpt-6-astra",
+  "note": "One fresh sentence after the upgrade window went back to 270 s. With the window at 45 s and at 120 s the same demo cut every director call and returned no AI version that day.",
+  "sentences": 1,
+  "aiReady": 1,
+  "runs": [
+    {
+      "sentence": "A baker juggles five hot pies across a windy rooftop market",
+      "status": "ready",
+      "secondsToAiVersion": 164
+    }
+  ]
+}
