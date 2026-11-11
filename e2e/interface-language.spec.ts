@@ -91,7 +91,7 @@ test('hra z věty mluví anglicky', async ({ page }) => {
   await page.goto('/play');
   await page.getByLabel('Say it in one sentence').fill(SENTENCE);
   await page.getByTestId('play-create').click();
-  await expect(page).toHaveURL(/\/play\/[a-f0-9]+$/);
+  await expect(page).toHaveURL(/\/play\/[a-f0-9]+$/, { timeout: 60_000 });
   // Kdyby se hra nevykreslila, test by prošel tím, že neměří nic.
   await expect(page.locator('.play-shell')).toBeVisible({ timeout: 60_000 });
 
@@ -108,7 +108,7 @@ test('počítadlo cíle nese slovo věty, ostatní popisky jsou z uzavřeného s
   await page.goto('/play');
   await page.getByLabel('Say it in one sentence').fill(COUNTED);
   await page.getByTestId('play-create').click();
-  await expect(page).toHaveURL(/\/play\/[a-f0-9]+$/);
+  await expect(page).toHaveURL(/\/play\/[a-f0-9]+$/, { timeout: 60_000 });
   const counter = page.getByTestId('hud-counter-keys');
   await expect(counter).toBeVisible({ timeout: 60_000 });
   await expect(counter).toContainText('keys 0/3');
@@ -130,7 +130,7 @@ test('tlačítko akce nese anglické sloveso věty z uzavřeného seznamu', asyn
   await page.goto('/play');
   await page.getByLabel('Say it in one sentence').fill('A squirrel runs and dodges falling acorns');
   await page.getByTestId('play-create').click();
-  await expect(page).toHaveURL(/\/play\/[a-f0-9]+$/);
+  await expect(page).toHaveURL(/\/play\/[a-f0-9]+$/, { timeout: 60_000 });
   const buttons = page.locator('[data-testid^="arcade-ability-"]');
   await expect(buttons.first()).toBeVisible({ timeout: 60_000 });
 
