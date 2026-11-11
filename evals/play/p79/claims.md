@@ -58,6 +58,8 @@ Several measurement reports are written in Czech, so some excerpts are Czech. A 
 | K12 | A published game is kept for 180 days by default; production does not override it | 180 | 2026-11-09 | `src/play/version/store.ts` | `ttlSeconds: 180 * 24 * 3600` |
 | K13 | The closed registry has 31 game types | 31 | 2026-11-11 | `src/play/genre/contract.ts` | `export const GENRES = ['runner', 'platformer', 'arena'` `'drawsave', 'orrery', 'shop'] as const;` |
 | K14 | One of them, `stunt`, is switched off, so 30 are on | 30 | 2026-11-11 | `src/play/genre/classify.ts` | `export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt']);` |
+| K15 | 989 unit and integration test files and 134 browser test files, counted with `git ls-files` | 989, 134 | 2026-11-11 | `evals/play/p85b/counts.json` | `"unitTestFiles": 989,` `"browserTestFiles": 134` |
+| K16 | An accepted AI answer is cached by sentence for seven days | 7 | 2026-11-11 | `src/server/answer-cache.ts` | `export const ANSWER_TTL_SECONDS = 7 * 24 * 60 * 60;` |
 
 ## What the AI does and how AI built it (checked on 2026-11-11)
 
