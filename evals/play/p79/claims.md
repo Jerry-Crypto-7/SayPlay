@@ -56,6 +56,18 @@ Several measurement reports are written in Czech, so some excerpts are Czech. A 
 | K10 | A dare score counts only after the server replays the run; the browser's score is not read | – | 2026-11-08 | `src/app/api/play/games/[id]/dare/route.ts` | `scoredReplay(arcade!, inputs, patches)` |
 | K11 | A scheduled GitHub Actions probe checks the demo, `/api/health`, `/play` and `/api/build-id` every 10 minutes and opens an issue when one fails | 10 min | 2026-11-09 | `.github/workflows/health-probe.yml` | `cron: '*/10 * * * *'` `opens one "Demo down" issue` |
 | K12 | A published game is kept for 180 days by default; production does not override it | 180 | 2026-11-09 | `src/play/version/store.ts` | `ttlSeconds: 180 * 24 * 3600` |
+| K13 | The closed registry has 31 game types | 31 | 2026-11-11 | `src/play/genre/contract.ts` | `export const GENRES = ['runner', 'platformer', 'arena'` `'drawsave', 'orrery', 'shop'] as const;` |
+| K14 | One of them, `stunt`, is switched off, so 30 are on | 30 | 2026-11-11 | `src/play/genre/classify.ts` | `export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt']);` |
+
+## What the AI does and how AI built it (checked on 2026-11-11)
+
+| ID | Claim | Numbers | Date | File | Evidence |
+|---|---|---|---|---|---|
+| A1 | The director of the deployed demo is gpt-6-astra through the paid OpenAI API | – | 2026-11-11 | `scripts/cloud/env.production.example` | `WORLDSMITH_MODEL=gpt-6-astra` |
+| A2 | On the deployed demo the AI reading of the sentence runs only for the AI version | – | 2026-11-11 | `scripts/cloud/env.production.example` | `PLAY_READER_PATH=ai` `PLAY_READER_MODEL=gpt-6-astra` |
+| A3 | With that setting the first game asks no model: the reading is skipped and the game is drafted from the words | – | 2026-11-11 | `src/app/api/play/games/route.ts` | `readerForAiVersion() ? Promise.resolve(null)` `draftGameSpecWithMeta(sentence, 1, { reading: sentenceReading })` |
+| A4 | The code was written with Claude Code and the Codex CLI under the author's direction; these tools are not part of the product | – | 2026-11-11 | `DISCLOSURE.md` | `Claude (Anthropic, through Claude Code, mainly claude-opus-5 and claude-opus-5-5) and Codex (OpenAI, through the Codex CLI, mainly gpt-5.6-sol and gpt-6-astra)` `the demo never calls them` |
+| A5 | An AI judge decides which generated 3D models enter the library; nothing it answers is written into the library or into training data | – | 2026-11-11 | `DISCLOSURE.md` | `Odpověď (jméno předmětu) rozhoduje, jestli model jde do knihovny; do knihovny ani do trénovacích dat se z ní nic nepíše.` |
 
 ## Dropped
 
@@ -63,6 +75,7 @@ Claims that had no file in this repository and were removed from the texts:
 
 - "15 rigged CC0 characters" (README before P79): the lists hold 144 (M19).
 - "Eleven controls": the registry has 29 control ids, 28 of them playable (K2; `stunt` is switched off).
+- "28 kinds of play" (README of 8 November): the tap-to-explore scene and the shop counter were merged on 11 November; the registry now has 31 game types, 30 switched on (K13, K14).
 - "AI time p50 12 s, p90 20 s" (24 September): measured through a subscription CLI, not the production model; replaced by M16.
 - "From 3 November the model provider answered HTTP 429" as the reason the AI version was missing on the demo (`evals/play/p68/result.json`): a later check found the deployment's API keys were the cause. The texts now say only when the AI version was last verified (M16) and that the demo returned none on 7 November (M9).
 - "Frame rate 45.3–59.6 FPS" (6 November, `evals/play/p73/sceny/perf.md`): measured on the scenes before the final look; replaced by M11 and M11b.
