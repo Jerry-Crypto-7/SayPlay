@@ -15,7 +15,7 @@ import type { ArchetypeId } from '../registry';
 import type { ControlId, GameSpecV1 } from '../spec';
 import type { PublishedGame, VersionStore } from '../version';
 import { noVerbTopic } from './draft';
-import { plural, singular } from './lexicon';
+import { plural, singular, withoutRequestsToTheAi } from './lexicon';
 import { arcadeWorldOf, preloadPhysics } from '../arcade/compile';
 import { lookOf, type LookId } from '../arcade/look';
 import { RIGGED_ALIAS, enemyLabel, heroChoice, type ModelChoice } from '../arcade/models';
@@ -199,7 +199,9 @@ export async function honestyOf(versions: Pick<VersionStore, 'get'>, game: Publi
 }
 
 /** Read the final version afresh, including cold physics, never its draft's claims. */
-export async function honestyForSpec(sentence: string, spec: GameSpecV1, seed: number, publishedWorld?: ArcadeWorld): Promise<Honesty | null> {
+export async function honestyForSpec(typed: string, spec: GameSpecV1, seed: number, publishedWorld?: ArcadeWorld): Promise<Honesty | null> {
+  // P85A T2: pruh čte tutéž větu jako návrh – bez pokynu pro AI, který by jinak opakoval („Ignoring isn't here yet“).
+  const sentence = withoutRequestsToTheAi(typed);
   // Přiznání čte tabulku P44C – stejný spec dá jiné přiznání podle toho, jestli je zapnutá.
   const key = canonical({ sentence, spec, seed, world: publishedWorld ?? null, vocab: vocabVersion() });
   if (honesties.has(key)) return structuredClone(honesties.get(key)!);

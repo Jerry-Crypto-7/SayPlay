@@ -38,6 +38,9 @@ const now = labels.map((sentence) => {
   const top = P68.has(first.genre) ? recordedRoute.get(sentence.text)! : first;
   return { ...sentence, sets: sentence.sets.map((s) => `${s.set}#${s.id}`), genre: top.genre, mode: top.mode };
 });
+// P85A T2: klání je souboj dvou („Two knights joust …“ ze sady poroty) – t123 sady 200 tím jde z arény na souboj,
+// který mu slepé štítky dávají jako `best`. Přesun mezi starými žánry jen s přesným cílem, zapsaný v `route-branch.json`.
+const RELABELLED = new Map([['a knight on horseback jousts against a robot', 'duel.default']]);
 const inTest = (row: { sets: readonly string[] }): boolean => row.sets.some((s) => s.startsWith(`${TEST_SET}#`));
 const inOpen = (row: { sets: readonly string[] }): boolean => row.sets.some((s) => !s.startsWith(`${TEST_SET}#`));
 const rate = (rows: readonly RouteRow[]): number => routeStats(rows).wrongRate as number;
@@ -51,7 +54,8 @@ describe('P66 T12: quick games route to the five new genres without stealing (ge
       const was = before.get(row.text)!;
       if (`${was.genre}.${was.mode}` === `${row.genre}.${row.mode}`) continue;
       if (!NEW.has(row.genre)) {
-        if (!NEW.has(was.genre)) oldOld.push(`${was.genre}.${was.mode} -> ${row.genre}.${row.mode}: ${row.text}`);
+        const relabelled = RELABELLED.get(row.text) === `${row.genre}.${row.mode}` && row.best === row.genre;
+        if (!NEW.has(was.genre) && !relabelled) oldOld.push(`${was.genre}.${was.mode} -> ${row.genre}.${row.mode}: ${row.text}`);
         continue;
       }
       toNew += 1;

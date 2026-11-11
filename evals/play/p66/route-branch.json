@@ -10,8 +10,8 @@
    "sentences": 200,
    "none": 25,
    "counted": 175,
-   "wrong": 68,
-   "wrongRate": 0.389
+   "wrong": 67,
+   "wrongRate": 0.383
   },
   "open": {
    "sentences": 316,
@@ -26,8 +26,8 @@
    "sentences": 200,
    "none": 25,
    "counted": 175,
-   "wrong": 61,
-   "wrongRate": 0.349
+   "wrong": 60,
+   "wrongRate": 0.343
   },
   "open": {
    "sentences": 316,
@@ -1797,9 +1797,9 @@
     "duel",
     "timing"
    ],
-   "genre": "arena",
-   "mode": "collect",
-   "draft": "arena"
+   "genre": "duel",
+   "mode": "default",
+   "draft": "duel"
   },
   {
    "text": "a dwarf mines gold deep under a snowy mountain",

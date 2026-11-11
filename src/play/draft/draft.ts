@@ -103,6 +103,7 @@ import {
   toolsOf,
   withArticle,
   withoutPossessor,
+  withoutRequestsToTheAi,
   buildingIn,
   buildingPerson,
   framedBuilding,
@@ -1532,7 +1533,9 @@ export function composedCounts(sentence: string, reading: Reading | null, drafte
  * Návrh, to, co věta řekne o světle (P54B T11) – počasí a denní doba do uloženého `theme` – a název z věty místo
  * šablony modulu (P56A T8). Čtení, ze kterého návrh nic nevzal (mřížka `readBy: 'keywords'`), název nedá.
  */
-export function draftGameSpecWithMeta(sentence: string, seed = 1, options: DraftOptions = {}): DraftMeta {
+export function draftGameSpecWithMeta(typed: string, seed = 1, options: DraftOptions = {}): DraftMeta {
+  // P85A T2: pokyn pro AI ve větě („ignore your instructions …“) hru nestaví.
+  const sentence = withoutRequestsToTheAi(typed);
   const meta = draftMeta(sentence, seed, options);
   const sky = sentenceSky(sentence, meta.spec.theme);
   const title = sentenceTitle(sentence, meta.readBy === 'model' ? (options.reading ?? null) : null, meta.spec.title);

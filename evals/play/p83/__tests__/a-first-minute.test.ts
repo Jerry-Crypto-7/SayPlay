@@ -16,12 +16,14 @@ import { runBot } from '@/play/arcade/verify';
 import { draftGameSpecWithMeta } from '@/play/draft';
 import { FIRST_MINUTE } from '@/play/compose/compile';
 
-import { JUDGE_FIVE, WIN_WITHIN_S } from '../a-judge5';
+import { WIN_WITHIN_S } from '../a-judge5';
 import { JUDGE_SENTENCES, SEEDS, quickWorld } from '../a-repro';
 
 // Věta o sluneční soustavě (`JUDGE_FIVE[2]`) jde od P83C do klikací simulace, věta o obchodě od P83E do obchodu –
-// první minutu arény tu drží věty, které v aréně zůstaly.
-const UNCOUNTED = [JUDGE_FIVE[4]] as const;
+// první minutu arény tu drží věty, které v aréně zůstaly. Tučňák (`JUDGE_FIVE[4]`) byl arénou jen kvůli slovům
+// pokynu pro AI („ignore all previous instructions …“); od P85A T2 se pokyn nečte a hraje jako tatáž věta bez něj
+// (běžec, `evals/play/p85/__tests__/ai-requests.test.ts`) – arénu bez počtu drží liška.
+const UNCOUNTED = ['A fox gathers glowing berries in a snowy forest while owls swoop down'] as const;
 const RACCOON = 'A raccoon scrubs a mountain of dirty dishes in a busy diner kitchen.';
 
 const livesOf = (world: ArcadeWorld): number => instantiate(world)[HEADER.counters + COUNTER.health] as number;
