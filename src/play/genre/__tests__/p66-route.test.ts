@@ -32,15 +32,17 @@ const before = new Map(main.rows.map((row) => [row.text, row]));
 // `p68-route-<id>.test.ts`); tady zůstává na trase zapsané v `route-branch.json`. Druhý žánr za hrou P68 se pohnout smí:
 // znak hry je hlavní sloveso a sloveso starého žánru pak nese +1 místo +4 („an octopus runs a floating soup kiosk“).
 const P68 = new Set(['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave']);
+// P85A T2: klání je souboj dvou („Two knights joust …“ ze sady poroty) – t123 sady 200 tím jde z arény na souboj,
+// který mu slepé štítky dávají jako `best`. Tu větu hlídá P85 (`evals/play/p85/__tests__/noun-not-verb.test.ts`);
+// tady zůstává na trase P66 jen s přesně tímhle cílem – jiný přesun stráž dál shodí.
+const RELABELLED = new Map([['a knight on horseback jousts against a robot', 'duel.default']]);
 const recordedRoute = new Map(json<RouteFile>('p66/route-branch.json').rows.map((row) => [row.text, { genre: row.genre, mode: row.mode }]));
 const now = labels.map((sentence) => {
   const first = classifyGenre(sentence.text, null).ranked[0]!;
-  const top = P68.has(first.genre) ? recordedRoute.get(sentence.text)! : first;
+  const relabelled = RELABELLED.get(sentence.text) === `${first.genre}.${first.mode}`;
+  const top = P68.has(first.genre) || relabelled ? recordedRoute.get(sentence.text)! : first;
   return { ...sentence, sets: sentence.sets.map((s) => `${s.set}#${s.id}`), genre: top.genre, mode: top.mode };
 });
-// P85A T2: klání je souboj dvou („Two knights joust …“ ze sady poroty) – t123 sady 200 tím jde z arény na souboj,
-// který mu slepé štítky dávají jako `best`. Přesun mezi starými žánry jen s přesným cílem, zapsaný v `route-branch.json`.
-const RELABELLED = new Map([['a knight on horseback jousts against a robot', 'duel.default']]);
 const inTest = (row: { sets: readonly string[] }): boolean => row.sets.some((s) => s.startsWith(`${TEST_SET}#`));
 const inOpen = (row: { sets: readonly string[] }): boolean => row.sets.some((s) => !s.startsWith(`${TEST_SET}#`));
 const rate = (rows: readonly RouteRow[]): number => routeStats(rows).wrongRate as number;
@@ -54,8 +56,7 @@ describe('P66 T12: quick games route to the five new genres without stealing (ge
       const was = before.get(row.text)!;
       if (`${was.genre}.${was.mode}` === `${row.genre}.${row.mode}`) continue;
       if (!NEW.has(row.genre)) {
-        const relabelled = RELABELLED.get(row.text) === `${row.genre}.${row.mode}` && row.best === row.genre;
-        if (!NEW.has(was.genre) && !relabelled) oldOld.push(`${was.genre}.${was.mode} -> ${row.genre}.${row.mode}: ${row.text}`);
+        if (!NEW.has(was.genre)) oldOld.push(`${was.genre}.${was.mode} -> ${row.genre}.${row.mode}: ${row.text}`);
         continue;
       }
       toNew += 1;

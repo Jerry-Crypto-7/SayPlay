@@ -46,4 +46,10 @@ describe('P85A T2: a noun shaped like a verb is not the game verb', () => {
     expect(read.you).toBe(rival);
     expect(read.against).toEqual([rival]);
   });
+
+  // t123 sady 200: jediná věta, kterou oprava přesunula; strážci P66 a P68V ji nechávají na zapsané trase a hlídá ji tenhle test.
+  it('t123 "a knight on horseback jousts against a robot" plays the duel the labels call best', () => {
+    const top = classifyGenre('a knight on horseback jousts against a robot', null).ranked[0]!;
+    expect(`${top.genre}.${top.mode}`).toBe('duel.default');
+  });
 });
