@@ -60,6 +60,7 @@ Several measurement reports are written in Czech, so some excerpts are Czech. A 
 | K14 | One of them, `stunt`, is switched off, so 30 are on | 30 | 2026-11-11 | `src/play/genre/classify.ts` | `export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt']);` |
 | K15 | 989 unit and integration test files and 134 browser test files, counted with `git ls-files` | 989, 134 | 2026-11-11 | `evals/play/p85b/counts.json` | `"unitTestFiles": 989,` `"browserTestFiles": 134` |
 | K16 | An accepted AI answer is cached by sentence for seven days | 7 | 2026-11-11 | `src/server/answer-cache.ts` | `export const ANSWER_TTL_SECONDS = 7 * 24 * 60 * 60;` |
+| P1 | The 15 sentences of `docs/submission/judge-prompts.md`, read in Node by the quick version's reader with the reading fixes of 11 November (code `6d72c34a`): every game passed the publish gate and gave the same spec and world twice | 15 | 2026-11-11 | `evals/play/p85b/prompts-check.json` | `"codeCommit": "6d72c34a"` `"gate": "pass"` `"sameTwice": true` |
 
 ## What the AI does and how AI built it (checked on 2026-11-11)
 
