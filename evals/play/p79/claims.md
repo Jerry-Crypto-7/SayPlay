@@ -30,6 +30,7 @@ Several measurement reports are written in Czech, so some excerpts are Czech. A 
 | M14 | The hero recognised (second excerpt of M13) | 39/118 | 2026-10-04 | `evals/play/p37/o8.md` | `hrdina poznaný` `39/118` |
 | M15 | The quick version read the verb in 98 of 200 sentences on 4 October, with the same word check as M4 | 98/200 | 2026-10-04 | `evals/play/p37/o8.md` | `98/200` |
 | M16 | Last measured AI version on the paid production model (gpt-6-astra, OpenAI API): 12 of 12 published, median 56.7 s until it was playable | 12/12, 56.7 s | 2026-10-24 | `evals/play/p58b/director.json` | `"model": "gpt-6-astra",` `"ok": 12,` `"aiP50": 56740,` |
+| M20 | Deployed demo on submission day: a fresh sentence got its AI version 164 s after it was sent (one sentence measured) | 164 s | 2026-11-11 | `evals/play/p85/ai-live.json` | `"aiReady": 1,` `"secondsToAiVersion": 164` |
 | M17 | Cost of one AI version on that run: 0.62 USD per game, an upper bound (the ledger does not see the provider's cache discount) | 0.62 USD | 2026-10-24 | `evals/play/p58b/director.json` | `"perGameCleanBatch": 0.621628,` `prices are an upper bound` |
 | M19 | Model library: 1787 catalogue models – 362 CC0, 57 built by code in Blender, 32 built by code in three.js, 1336 generated offline – plus 144 rigged CC0 characters | 1787, 362, 57, 32, 1336, 144 | 2026-11-08 | `evals/play/p79/catalog.json` | `"catalogueModels": 1787,` `"cc0": 362,` `"blenderByCode": 57,` `"threeJsByCode": 32,` `"generatedOffline": 1336,` `"riggedCharacters": 144,` |
 
@@ -56,6 +57,21 @@ Several measurement reports are written in Czech, so some excerpts are Czech. A 
 | K10 | A dare score counts only after the server replays the run; the browser's score is not read | – | 2026-11-08 | `src/app/api/play/games/[id]/dare/route.ts` | `scoredReplay(arcade!, inputs, patches)` |
 | K11 | A scheduled GitHub Actions probe checks the demo, `/api/health`, `/play` and `/api/build-id` every 10 minutes and opens an issue when one fails | 10 min | 2026-11-09 | `.github/workflows/health-probe.yml` | `cron: '*/10 * * * *'` `opens one "Demo down" issue` |
 | K12 | A published game is kept for 180 days by default; production does not override it | 180 | 2026-11-09 | `src/play/version/store.ts` | `ttlSeconds: 180 * 24 * 3600` |
+| K13 | The closed registry has 31 game types | 31 | 2026-11-11 | `src/play/genre/contract.ts` | `export const GENRES = ['runner', 'platformer', 'arena'` `'drawsave', 'orrery', 'shop'] as const;` |
+| K14 | One of them, `stunt`, is switched off, so 30 are on | 30 | 2026-11-11 | `src/play/genre/classify.ts` | `export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt']);` |
+| K15 | 989 unit and integration test files and 134 browser test files, counted with `git ls-files` | 989, 134 | 2026-11-11 | `evals/play/p85b/counts.json` | `"unitTestFiles": 989,` `"browserTestFiles": 134` |
+| K16 | An accepted AI answer is cached by sentence for seven days | 7 | 2026-11-11 | `src/server/answer-cache.ts` | `export const ANSWER_TTL_SECONDS = 7 * 24 * 60 * 60;` |
+| P1 | The 15 sentences of `docs/submission/judge-prompts.md`, read in Node by the quick version's reader with the reading fixes of 11 November (code `6d72c34a`): every game passed the publish gate and gave the same spec and world twice | 15 | 2026-11-11 | `evals/play/p85b/prompts-check.json` | `"codeCommit": "6d72c34a"` `"gate": "pass"` `"sameTwice": true` |
+
+## What the AI does and how AI built it (checked on 2026-11-11)
+
+| ID | Claim | Numbers | Date | File | Evidence |
+|---|---|---|---|---|---|
+| A1 | The director of the deployed demo is gpt-6-astra through the paid OpenAI API | – | 2026-11-11 | `scripts/cloud/env.production.example` | `WORLDSMITH_MODEL=gpt-6-astra` |
+| A2 | On the deployed demo the AI reading of the sentence runs only for the AI version | – | 2026-11-11 | `scripts/cloud/env.production.example` | `PLAY_READER_PATH=ai` `PLAY_READER_MODEL=gpt-6-astra` |
+| A3 | With that setting the first game asks no model: the reading is skipped and the game is drafted from the words | – | 2026-11-11 | `src/app/api/play/games/route.ts` | `readerForAiVersion() ? Promise.resolve(null)` `draftGameSpecWithMeta(sentence, 1, { reading: sentenceReading })` |
+| A4 | The code was written with Claude Code and the Codex CLI under the author's direction; these tools are not part of the product | – | 2026-11-11 | `DISCLOSURE.md` | `Claude (Anthropic, through Claude Code, mainly claude-opus-5 and claude-opus-5-5) and Codex (OpenAI, through the Codex CLI, mainly gpt-5.6-sol and gpt-6-astra)` `the demo never calls them` |
+| A5 | An AI judge decides which generated 3D models enter the library; nothing it answers is written into the library or into training data | – | 2026-11-11 | `DISCLOSURE.md` | `Odpověď (jméno předmětu) rozhoduje, jestli model jde do knihovny; do knihovny ani do trénovacích dat se z ní nic nepíše.` |
 
 ## Dropped
 
@@ -63,6 +79,7 @@ Claims that had no file in this repository and were removed from the texts:
 
 - "15 rigged CC0 characters" (README before P79): the lists hold 144 (M19).
 - "Eleven controls": the registry has 29 control ids, 28 of them playable (K2; `stunt` is switched off).
+- "28 kinds of play" (README of 8 November): the tap-to-explore scene and the shop counter were merged on 11 November; the registry now has 31 game types, 30 switched on (K13, K14).
 - "AI time p50 12 s, p90 20 s" (24 September): measured through a subscription CLI, not the production model; replaced by M16.
 - "From 3 November the model provider answered HTTP 429" as the reason the AI version was missing on the demo (`evals/play/p68/result.json`): a later check found the deployment's API keys were the cause. The texts now say only when the AI version was last verified (M16) and that the demo returned none on 7 November (M9).
 - "Frame rate 45.3–59.6 FPS" (6 November, `evals/play/p73/sceny/perf.md`): measured on the scenes before the final look; replaced by M11 and M11b.

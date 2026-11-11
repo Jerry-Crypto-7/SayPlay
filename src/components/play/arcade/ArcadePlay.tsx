@@ -72,7 +72,7 @@ import { LaneEventBanner, laneEventViewOf } from './LaneEventBanner';
 import { PacingBanner } from './PacingBanner';
 import { LiveBox, enterOpensLiveBox } from './LiveBox';
 import { prefetchFieldDressing } from './look/field-dressing-client';
-import { holdUntilTouch, keepsWaiting, wakesGame } from './ready-gate';
+import { holdUntilTouch, keepsWaiting, playStateOf, wakesGame } from './ready-gate';
 import { ZONE_HINTS } from './touch-zones';
 import { Weather } from './Weather';
 import { createArcadeSession, loopDemo, type ArcadeSession, type ArcadeSnapshot } from './session';
@@ -85,6 +85,22 @@ const ArcadeStage = memo(dynamic(() => import('./ArcadeStage'), { ssr: false, lo
 // Chunky three.js stahovat už při načtení modulu, ne až po hydrataci: `dynamic` začne
 // až při prvním renderu a do té doby síť stojí (P28E T5, mezera ~0,25 s na telefonu).
 if (typeof window !== 'undefined') void import('./ArcadeStage');
+
+/**
+ * Kód scény dorazil (P85): do té doby stojí místo plátna kroky stavby a `data-state` hry hlásí `loading`.
+ * Týž chunk jako `dynamic` výš – nic se nestahuje podruhé. Server i hydratace hlásí „nedorazil“.
+ */
+export function useStageCode(): boolean {
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => {
+    let live = true;
+    void import('./ArcadeStage').then(() => live && setLoaded(true));
+    return () => {
+      live = false;
+    };
+  }, []);
+  return loaded;
+}
 
 
 /** Střelba a hod nemají trať: místo metrů ukazují zbývající rány. */
@@ -977,6 +993,9 @@ function ArcadePlayGame({
 
   // Ohlášení událostí pruhů (P55): jen žánry, které je mají.
   const laneEventView = laneEventViewOf(session.world.rules);
+  // Stav hry pro automat (P85, `data-state`): `ready` = tik 0, hodiny čekají na první dotek jako karta startu.
+  const stageCode = useStageCode();
+  const playState = playStateOf({ loading: !stageCode || !physicsReady, demo: demo !== null, runState: snapshot.runState, paused, waiting: snapshot.tick === 0 });
 
   return (
     // Pod plátnem obzor sady (P32D T6, P56B T4): do prvního snímku scény je vidět on, ne tmavé pozadí stránky.
@@ -984,7 +1003,8 @@ function ArcadePlayGame({
     // obzor je i barva pozadí scény (`StyleRig`), takže první snímek na něj navazuje.
     // `data-playing`: hráč už hraje (první tah proběhl, ne přehrávaná ukázka) – lišta domova (P34 T3) mu ustoupí.
     // Barva jde do proměnné `--_sky`: na desktopu jí je jen scéna 16:9, okolí je krémové (kit `05-layout.md`).
-    <main ref={shell} className="play-shell" data-playing={active && demo === null && snapshot.tick > 0 ? 'true' : 'false'} style={{ '--_sky': scene.horizon } as CSSProperties}>
+    // `play-game`, `data-state` a `data-version-id` (P85): hra i její verze čitelné z DOM, `docs/submission/automation.md`.
+    <main ref={shell} className="play-shell" data-testid="play-game" data-state={playState} data-version-id={versionId} data-playing={active && demo === null && snapshot.tick > 0 ? 'true' : 'false'} style={{ '--_sky': scene.horizon } as CSSProperties}>
       <ArcadeStage
         session={session}
         cast={cast}

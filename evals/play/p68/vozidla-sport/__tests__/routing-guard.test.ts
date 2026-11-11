@@ -30,7 +30,10 @@ describe('P68V routing guard', () => {
 
   it('no sentence changes its quick-game genre or mode on this branch', () => {
     const now = routeRows(classifyGenre, test200.sentences) as Row[];
-    expect(routeChanges(before.rows, now)).toEqual([]);
+    // P85A T2: klání je souboj („jousts“) – t123 jde na souboj, který mu štítky P66 dávají jako nejlepší; tu větu
+    // hlídá `evals/play/p85/__tests__/noun-not-verb.test.ts`. Jen tenhle přesun s tímhle cílem, jiný stráž shodí.
+    const allowed = (change: { id: string; after: string | null }): boolean => change.id === 't123' && change.after === 'duel/default';
+    expect(routeChanges(before.rows, now).filter((change: { id: string; after: string | null }) => !allowed(change))).toEqual([]);
   });
 
   it('flags a single changed genre and a missing sentence', () => {

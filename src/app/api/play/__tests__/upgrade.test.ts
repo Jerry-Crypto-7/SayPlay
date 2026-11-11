@@ -188,14 +188,14 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect(await upgrade(created.body.versionId)).toEqual(PENDING);
   });
 
-  it('pending nese deadlineAt: start práce + strop AI verze 45 s (P27C T1, P83B T3)', async () => {
+  it('pending nese deadlineAt: start práce + strop AI verze 270 s (P27C T1, P83B T3)', async () => {
     holdDirector();
     const before = Date.now();
     const created = await publish({ sentence: SENTENCE });
     const after = Date.now();
     const pending = await upgrade(created.body.versionId);
     const deadline = Date.parse(pending.deadlineAt);
-    expect(UPGRADE_CEILING_MS).toBe(45_000);
+    expect(UPGRADE_CEILING_MS).toBe(270_000);
     expect(deadline).toBeGreaterThanOrEqual(before + UPGRADE_CEILING_MS);
     expect(deadline).toBeLessThanOrEqual(after + UPGRADE_CEILING_MS);
     // Režie končí před stropem, aby kontrola robotem a zápis (naměřeno do 2,1 s) doběhly, než se klient přestane ptát.

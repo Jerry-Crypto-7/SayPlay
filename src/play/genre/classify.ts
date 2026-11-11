@@ -241,7 +241,8 @@ const OWNER = String.raw`(?:a|an|my|your|the|his|her|their|our)(?: own)?`;
 /** P83C T4: klepnutí prstem nebo myší. */
 const TOUCHED = String.raw`(?:tap|click|touch|press|poke|pat)(?:s|es|ed|ped|ing|ping)?`;
 /** P83C T4: věc po klepnutí řekne, co je („shows its name“, „tells you which season“). */
-const NAMED = String.raw`(?:show|shows|showing|tell|tells|telling|say|says|saying|see|hear|learn|reveal|reveals|display|displays)(?: you| me| us)? (?:its|their|his|her|which|what|who|the names?)\b`;
+// P85A T2: i „shows how many people live there“ – věc řekne číslo o sobě.
+const NAMED = String.raw`(?:show|shows|showing|tell|tells|telling|say|says|saying|see|hear|learn|reveal|reveals|display|displays)(?: you| me| us)? (?:its|their|his|her|which|what|who|the names?|how (?:many|much|old|big|tall|far|fast))\b`;
 /** P83C T4: věc se probudí – svítí, zrychlí, vyroste („makes it glow“, „make it buzz faster“, „bloom bigger“). */
 const WAKES = String.raw`(?:glow|shine|sparkle|twinkle|light up|bloom|grow|spin|turn on|switch on|come alive|come to life|start moving|[a-z]+ faster|[a-z]+ bigger|[a-z]+ brighter|faster|bigger|brighter)`;
 /** P83C T4: odpověď za klepnutím na věc: jméno, „make it …“, „light it up“, „switch its lights on“. */
@@ -568,7 +569,8 @@ const VERBS: readonly Verb[] = [
   // Skládačky, stavění, péče a obsluha – sloveso na předmětu na jednom místě.
   v('make', 'goal', STATION, /\b(?:merg(?:e|es|ing)|sort(?:s|ing)?|build(?:s|ing)?|connect(?:s|ing)?|unscrew(?:s|ing)?|untangl(?:e|es|ing)|decorat(?:e|es|ing)|design(?:s|ing)?|harvest(?:s|ing)?|heal(?:s|ing)?|serv(?:e|es|ing)|feed(?:s|ing)?|craft(?:s|ing)?|upgrad(?:e|es|ing)|manag(?:e|es|ing)|hir(?:e|es|ing)|dress(?:es|ing)? up|inflat(?:e|es|ing))\b|\bblow(?:s|ing)? up (?:[a-z]+ )?balloons?\b/),
   // Souboj jeden na jednoho je Souboj (P36A T11); rvačka a box s víc soupeři po scéně zůstávají Arénou.
-  v('duel', 'goal', DUEL, /\bduel(?:s|ing|led|ling)?\b/),
+  // P85A T2: klání („two knights joust“) je souboj dvou.
+  v('duel', 'goal', DUEL, /\bduel(?:s|ing|led|ling)?\b|\bjoust(?:s|ing|ed)?\b/),
   v('play', 'goal', DUEL, /\bplay(?:s|ing)? (?:a game of |a round of )?(?:chess|checkers|draughts|cards|poker|tic[- ]tac[- ]toe)\b/),
   // Spor s protějškem (P37A T4, věty mimo hry): přetahovaná jeden na jednoho – „argue with my wife“, „negotiate a raise with my boss“.
   // Rozhovor bez protivníka („explain quantum physics to my grandma“, „call grandma“) sloveso hry není – hraje ho absurdní přenos (T5).

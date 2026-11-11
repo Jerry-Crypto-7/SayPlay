@@ -103,6 +103,7 @@ import {
   toolsOf,
   withArticle,
   withoutPossessor,
+  withoutRequestsToTheAi,
   buildingIn,
   buildingPerson,
   framedBuilding,
@@ -956,7 +957,11 @@ function withPlace(roles: SentenceRoles, sentence: string): SentenceRoles {
   for (const at of lookWords(text)) {
     const rest = text.slice(text.lastIndexOf(' ', at) + 1);
     for (const phrase of [nounPhrase(rest, 2), nounPhrase(rest, 1)]) {
-      if (phrase !== null && isPlace(phrase)) return { ...roles, setting: phrase };
+      if (phrase === null || !isPlace(phrase)) continue;
+      // P85A T2: hrdina místem není („A spaceship dodges asteroids“, „A farmer plants five seeds“ – karta psala
+      // „Place: spaceship“) – místem je sada, kterou jeho slovo vybralo; scéna zůstane stejná.
+      const hero = roles.player !== null && phrase.split(' ').at(-1) === roles.player.split(' ').at(-1);
+      return { ...roles, setting: hero ? lookFor(phrase)!.replace(/_/g, ' ') : phrase };
     }
   }
   return roles;
@@ -1532,7 +1537,9 @@ export function composedCounts(sentence: string, reading: Reading | null, drafte
  * Návrh, to, co věta řekne o světle (P54B T11) – počasí a denní doba do uloženého `theme` – a název z věty místo
  * šablony modulu (P56A T8). Čtení, ze kterého návrh nic nevzal (mřížka `readBy: 'keywords'`), název nedá.
  */
-export function draftGameSpecWithMeta(sentence: string, seed = 1, options: DraftOptions = {}): DraftMeta {
+export function draftGameSpecWithMeta(typed: string, seed = 1, options: DraftOptions = {}): DraftMeta {
+  // P85A T2: pokyn pro AI ve větě („ignore your instructions …“) hru nestaví.
+  const sentence = withoutRequestsToTheAi(typed);
   const meta = draftMeta(sentence, seed, options);
   const sky = sentenceSky(sentence, meta.spec.theme);
   const title = sentenceTitle(sentence, meta.readBy === 'model' ? (options.reading ?? null) : null, meta.spec.title);

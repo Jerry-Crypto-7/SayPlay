@@ -13,7 +13,7 @@ import { BUTTON } from '@/play/arcade/contract';
 import { readGameSpec } from '@/play/spec';
 
 import { FirstPrompt, controlLines, desktopKeys } from '../../FirstPrompt';
-import { holdUntilTouch, wakesGame } from '../ready-gate';
+import { holdUntilTouch, playStateOf, wakesGame } from '../ready-gate';
 import { TICK_MS, createArcadeSession } from '../session';
 
 const world = (() => {
@@ -117,6 +117,31 @@ describe('ready gate', () => {
     expect(key('c', { ctrlKey: true })).toBe(false);
     expect(key(' ', { repeat: true })).toBe(false);
     vi.unstubAllGlobals();
+  });
+});
+
+// P85: `data-state` čte automat místo plátna – špatná přednost by vypadala správně a lhala (konec ukázky jako výhra hráče).
+describe('play state in the DOM', () => {
+  const base = { loading: false, demo: false, runState: 'running', paused: false, waiting: false } as const;
+
+  it('goes loading → ready → running → won or lost along a player run', () => {
+    expect(playStateOf({ ...base, loading: true, waiting: true })).toBe('loading');
+    expect(playStateOf({ ...base, waiting: true })).toBe('ready');
+    expect(playStateOf(base)).toBe('running');
+    expect(playStateOf({ ...base, runState: 'won' })).toBe('won');
+    expect(playStateOf({ ...base, runState: 'lost' })).toBe('lost');
+    expect(playStateOf({ ...base, runState: 'runtimeFault' })).toBe('lost');
+  });
+
+  it('a robot demo, even one that ended in a win, is never the player result', () => {
+    expect(playStateOf({ ...base, demo: true })).toBe('demo');
+    expect(playStateOf({ ...base, demo: true, runState: 'won' })).toBe('demo');
+  });
+
+  it('loading wins over everything, an ended run over a pause, a pause over the first-touch wait', () => {
+    expect(playStateOf({ ...base, loading: true, demo: true, runState: 'won', paused: true })).toBe('loading');
+    expect(playStateOf({ ...base, runState: 'lost', paused: true })).toBe('lost');
+    expect(playStateOf({ ...base, paused: true, waiting: true })).toBe('paused');
   });
 });
 

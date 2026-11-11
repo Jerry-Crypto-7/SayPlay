@@ -1,0 +1,7 @@
+{
+  "measuredOn": "2026-11-11",
+  "commit": "64007e0d",
+  "command": "git ls-files \"*.test.ts\" \"*.test.tsx\" (unit and integration, vitest); git ls-files \"e2e/*.spec.ts\" (browser, Playwright)",
+  "unitTestFiles": 989,
+  "browserTestFiles": 134
+}
