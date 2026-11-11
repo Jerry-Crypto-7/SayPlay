@@ -695,6 +695,14 @@ export function scoreArchetypes(sentence: string): Readonly<Record<ArchetypeId, 
 }
 
 /** Nepravidelná množná čísla, která `singular` čte zpátky: `wolf → wolves`, `mouse → mice` („5 waves of wolfs“, P56A T9). */
+/**
+ * P84 T2: věc letí k hráči od někoho jiného („snowballs thrown by a polar bear“, „pucks shot by a wolf“) – hází ten za
+ * „by“, ne hráč; hráč ji zastaví (`DEFENDS`: „blocks“, „stops“, „catches“). Čte to chytání (`genre/catch.ts`,
+ * `classify.ts`) i záměr věty (`intent/extract.ts`: hod za „by“ není akce hrdiny).
+ */
+export const THROWN_BY = String.raw`(?:thrown|shot|fired|kicked|hurled|tossed|launched|lobbed|flung|spat|bowled|pitched|sent)(?: (?:at|toward|towards) (?:him|her|it|them|me|you|us))? by\b`;
+export const DEFENDS = String.raw`(?:block|stop|catch|save|deflect|swat|parr(?:y|ie)|repel|fend(?:s|ing)? off)(?:s|es|ed|ing|ping)?`;
+
 const PLURAL_OF: Readonly<Record<string, string>> = Object.fromEntries(Object.entries(IRREGULAR).map(([many, one]) => [one, many]));
 /** Množné číslo stejné jako jednotné (P84 T1: „Tap the fishes!“). */
 const SAME_PLURAL: ReadonlySet<string> = new Set(['fish', 'sheep', 'deer', 'moose', 'salmon', 'trout', 'bison']);

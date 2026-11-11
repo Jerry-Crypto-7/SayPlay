@@ -19,6 +19,7 @@
 import type { Reading, VerbClass } from '../read/schema';
 
 import { type CastRole, GENRES, GENRE_MODES, type GenreId, type GenreMode, type GenreModule, type ModeAvailability } from './contract';
+import { DEFENDS, THROWN_BY } from '../draft/lexicon';
 import { FAMILIES, type VerbFamily } from './families';
 import { GENRE_MODULES } from './index';
 
@@ -159,6 +160,8 @@ const NOT_THROUGH = String.raw`(?!(?:through|into|across|down|off|of)\b)`;
 const FALLS = String.raw`(?:fall(?:s|ing)?|drop(?:s|ping)?|rain(?:s|ing)?|tumbl(?:e|es|ing)) (?:from|out of|down)\b`;
 /** Nádoba, kterou hráč posouvá pod padající věci („move a bucket left and right“, „slide my bowl under it“). */
 const VESSEL = String.raw`(?:baskets?|buckets?|bowls?|nets?|cups?|carts?|trays?|pans?|sacks?|hats?|plates?|aprons?)`;
+/** P84 T2: brankář chytá, co po něm hází soupeř (`DEFENDED` v `catch.ts`). */
+const DEFENDS_AGAINST = String.raw`\b${DEFENDS}(?= (?:the |all |some |every |\d+ )?(?:[a-z'-]+ ){0,2}?[a-z'-]+ ${THROWN_BY})`;
 /** Úder na to, co vykouklo: zájmeno za úderem („tap them before they vanish“, „smash them quick“). */
 const STRIKE_THEM = String.raw`(?:${STRIKE}|whack(?:s|ing)?|bonk(?:s|ing)?|hammer(?:s|ing)?|punch(?:es|ing)?|slap(?:s|ping)?) (?:them|it|'em|each one)\b`;
 /** Množné číslo těsně před slovesem – vlna se valí („orcs march“, „skeletons keep coming“), jeden hrdina ne. */
@@ -474,6 +477,7 @@ const VERBS: readonly Verb[] = [
     String.raw`\b(?:catch(?:es|ing)?|collect(?:s|ing)?|grab(?:s|bing)?|gather(?:s|ing)?|snag(?:s|ging)?|scoop(?:s|ing)?|eat(?:s|ing)?)(?= (?!(?:him|her|me|us|you|the player)\b)(?:${SAME_CLAUSE}){0,4}?${CAUGHT})`,
     String.raw`\b${FALLS}(?= (?:[a-z'-]+ ){0,3}?[a-z'-]+\b[^.]*?\b(?:catch(?:es|ing)?|(?:slide|move|hold|put)s? (?:my|your|the|a|his|her) (?:[a-z]+ )?${VESSEL} under)\b)`,
     String.raw`\b(?:mov(?:e|es|ing)|slid(?:e|es|ing)|swing(?:s|ing)?|hold(?:s|ing)?|carr(?:y|ies|ying)) (?:a|an|the|your|my|his|her|their) (?:[a-z]+ )?${VESSEL}(?= [^.]*?\b(?:to catch|under (?:it|them|the)|left and right)\b)`,
+    DEFENDS_AGAINST,
   ].join('|'))),
   // P55 T3: co vykoukne a hráč do toho udeří zájmenem („ghosts appear in windows, tap them before they vanish“,
   // „gophers pop up in the garden and you smash them“).

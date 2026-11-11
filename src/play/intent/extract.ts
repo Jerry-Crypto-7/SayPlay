@@ -21,7 +21,7 @@
 import { familyOf } from '../genre/families';
 import { heroClass } from '../genre/hero-class';
 import { vocabVerb } from '../vocab';
-import { framedBuilding, NUMBER_WORDS, negationScopes, nounPhrase, readCountedNouns, readLives, RED_LIGHT, RIGGED_ANIMALS, ROAD, singular, toolsOf, withoutPossessor } from '../draft/lexicon';
+import { framedBuilding, NUMBER_WORDS, negationScopes, nounPhrase, readCountedNouns, readLives, RED_LIGHT, RIGGED_ANIMALS, ROAD, singular, DEFENDS, THROWN_BY, toolsOf, withoutPossessor } from '../draft/lexicon';
 
 import { type ActionId, HERO, type Intent, type IntentAction, type IntentAxis, type MoveId, type ObjectiveId, type ThreatId } from './contract';
 
@@ -599,6 +599,9 @@ const AT_THE_PROTAGONIST = /^ at (?:(?:you|u|me|him|her|them|us)\b|(?:a|an) (?:[
 const DETERMINERS = new Set(['a', 'an', 'the', 'one', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'this', 'that']);
 /** Slovesa záměru, ze kterých má hrdina tlačítko (`INTENT_ABILITY` v `draft/controls`). */
 const HERO_BUTTON_VERBS: ReadonlySet<string> = new Set(['shoot', 'fight', 'kick']);
+/** Hod v trpném tvaru se svým aktérem za „by“ (P84 T2, `THROWN_BY`). */
+const THROWN_AT_HERO = new RegExp(String.raw`^${THROWN_BY}`);
+const BLOCKED_BEFORE = new RegExp(String.raw`\b${DEFENDS} (?:the |all |some |every |\d+ )?(?:[a-z'-]+ ){0,2}?$`);
 /** Zájmena hrdiny ve vedlejší větě („while he shoots“). */
 const HERO_PRONOUNS = new Set(['he', 'she', 'it', 'you', 'u', 'i', 'we', 'they']);
 
@@ -808,11 +811,13 @@ export function extractIntent(sentence: string): Intent {
     // Střelba a úder nepřítele („as hunters shoot“, „turrets fire at a robot crossing“) nejsou akce hrdiny (P52 T3);
     // jen slovesa tlačítek – „until the door unlocks“ zůstává, jak bylo.
     const enemyAction = hit.row.emits.some(emit => emit.axis === 'action' && HERO_BUTTON_VERBS.has(emit.id)) && enemyDoes(text, hit.at, hero);
+    // P84 T2: „snowballs thrown by a polar bear“ – hází ten za „by“, ne hrdina; hrdina to, co letí, chytá.
+    const thrownBy = THROWN_AT_HERO.test(text.slice(hit.at));
     for (const emit of hit.row.emits) {
       const verb = emit.id === 'each' ? (thing?.many === true ? 'collect' : 'reach') : emit.id === 'avoid' ? threatOf(object) : emit.id;
       // "Light all lanterns" requests interaction, not picking the lanterns up.
       // The inferred route/quantity goal is guidance, never another essential verb.
-      const base = { axis: emit.axis, verb, essential: !emit.fallback && emit.id !== 'each' && !(enemyAction && HERO_BUTTON_VERBS.has(emit.id)), said: hit.said, at: hit.at, fallback: emit.fallback, negated: negated && emit.axis !== 'threat', ...(emit.mapped ? { mapped: true as const } : {}) };
+      const base = { axis: emit.axis, verb, essential: !emit.fallback && emit.id !== 'each' && !(enemyAction && HERO_BUTTON_VERBS.has(emit.id)) && !(thrownBy && emit.axis === 'action'), said: hit.said, at: hit.at, fallback: emit.fallback, negated: negated && emit.axis !== 'threat', ...(emit.mapped ? { mapped: true as const } : {}) };
       if (emit.who === 'noun') drafts.push({ ...base, actor: hit.row.noun ?? headOf(hit.said), object: heroName });
       else if (emit.who === 'reverse' || emit.who === 'versus') {
         const opposed = emit.who === 'reverse' || /^(?:against|vs|versus)$/.test(thing?.via ?? '');
@@ -832,6 +837,10 @@ export function extractIntent(sentence: string): Intent {
     // „a lava cave“: láva jako přívlastek prostředí je kulisa; „laser blasters“ (P65 T6b): přívlastek zbraně hrozbou není.
     const next = /^ ([a-z]+)/.exec(text.slice(hit.end))?.[1];
     if (next !== undefined && TOOL_HEADS.has(headOf(next))) continue;
+    // P84 T2: „a goalkeeper penguin“ – přívlastek hrdiny je jeho role, ne soupeř; „blocks arrows fired by an archer“ –
+    // co hrdina zastaví, je jeho úlovek, ne nástraha (hrozbou je ten, kdo hází).
+    if (next !== undefined && hero !== null && headOf(next) === hero) continue;
+    if (BLOCKED_BEFORE.test(text.slice(0, hit.at)) && THROWN_AT_HERO.test(text.slice(hit.end).trimStart())) continue;
     const scenery = next !== undefined && inSetting(next);
     for (const emit of hit.row.emits) {
       const avoidedDetection = /^ (?:spotting|seeing|catching|detecting|noticing)\b/.test(text.slice(hit.end));

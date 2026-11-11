@@ -12,7 +12,7 @@
  */
 
 import { CATCH } from '../arcade/pieces/catch-fall';
-import { nounPhrase, plural, singular } from '../draft/lexicon';
+import { DEFENDS, THROWN_BY, nounPhrase, plural, singular } from '../draft/lexicon';
 
 import { type CastItem, type GenreModule, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
@@ -26,6 +26,13 @@ const BOMB_DOES = ['avoid', 'chase_me', 'shoot_at', 'fight', 'throw_at'] as cons
 const CATCH_OBJECT = /\bcatch(?:es|ing)?\s+(?:all\s+|the\s+|some\s+|falling\s+)*([a-z][a-z -]*)/;
 /** „catch him“ je honička, ne věc do koše. */
 const PRONOUN = /^(?:it|him|her|them|me|you|us|up)\b/;
+
+/**
+ * P84 T2: brankář chytá, co po něm hází soupeř („blocks snowballs thrown by a polar bear“, „stops pucks shot by a
+ * wolf“, „catches balls thrown by a monkey“) – věc letí k hráči a ten ji zastaví; hází ten za „by“, ne hráč. Ta věc
+ * padá do koše, soupeř padá jako bomba (chytání jiného soupeře nemá); věty sem vede `DEFENDS_AGAINST` v `classify.ts`.
+ */
+const DEFENDED = new RegExp(String.raw`\b${DEFENDS} (?:the |all |some |every |\d+ )?((?:[a-z'-]+ ){0,2}?[a-z'-]+) ${THROWN_BY} (?:a |an |the |some |his |her |their )?([a-z][a-z -]*)`);
 
 /** První text, který se vejde do meze schématu (dlouhé popisky z věty). */
 const fit = (max: number, ...lines: readonly string[]): string => lines.find((line) => line.length <= max) ?? (lines.at(-1) as string);
@@ -65,6 +72,16 @@ export const catchGenre: GenreModule<'catch'> = {
   },
   draftFill: (sentence, reading) => {
     const { hero, setting, cast } = draftRoles(sentence, reading);
+    const defended = DEFENDED.exec(sentence.toLowerCase());
+    const blocked = defended === null ? null : nounPhrase(defended[1] as string);
+    const thrower = defended === null ? null : nounPhrase(defended[2] as string);
+    if (blocked !== null && thrower !== null) {
+      const cast: CastItem[] = [
+        { label: singular(blocked), does: 'collect' },
+        { label: singular(thrower), does: 'avoid' },
+      ];
+      return { genre: 'catch', mode: 'default', ...(hero === undefined ? {} : { hero }), ...(setting === undefined ? {} : { setting }), cast };
+    }
     // Chytání zná jen dvě role: co se chytá, a co padá jako bomba.
     const roles = (cast ?? []).map((item): CastItem => (item.does === 'collect' ? item : { ...item, does: 'avoid' }));
     // „catches falling apples“: předmět slovesa chytání je to, co padá do koše (slovník sběru ho nečte).
