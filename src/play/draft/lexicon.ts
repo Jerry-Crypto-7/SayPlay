@@ -616,6 +616,12 @@ function namedThings(text: string, tools: readonly string[]): readonly NamedThin
   return [...named.values()];
 }
 
+/**
+ * P84 T3: věci, které věta počítá do nádob („pack twelve cupcakes into boxes“, „put six teddy bears into two boxes“) –
+ * sbírají se a počet u nich platí (tvar `PACK_COUNTED` v `genre/classify.ts`). Nádoba za „into“ místem hry není.
+ */
+const PACKED = /\b(?:pack|put|sort|load|box|stack|place|stuff|drop)(?:s|es|ed|ing|ting|ping)? (?:all |the |my )?((?:\d+|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty) (?:[a-z'-]+ ){0,2}?[a-z'-]+) (?:in|into|inside) (?:the |a |an |his |her |their |my |\d+ |two |three |four |five |six )?([a-z-]+)/;
+
 export function readRoles(sentence: string): SentenceRoles {
   const text = withoutPossessor(sentence.toLowerCase().replace(/\s+/g, ' ').trim());
   const player =
@@ -630,7 +636,7 @@ export function readRoles(sentence: string): SentenceRoles {
     /\b(?:hunted|chased|pursued|followed|guarded|patrolled) by (?:a |an |the )?([a-z][a-z -]*)/,
     /\b(?:flees|escapes|escape|flee|run from|runs from|outrun|outruns) (?:from )?(?:a |an |the )?([a-z][a-z -]*)/,
   ], 2);
-  const collectible = first(text, [/\b(?:collect|gather|hoard|find|pick up|grab|steal)(?:s|ing)? (?:all |every )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/], 2);
+  const collectible = first(text, [/\b(?:collect|gather|hoard|find|pick up|grab|steal)(?:s|ing)? (?:all |every )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/, PACKED], 2);
   const delivery = /\b(?:carry|deliver|bring|take|escort)s? (?:a |an |the )?([a-z][a-z -]*?) (?:from (?:a |an |the )?[a-z][a-z -]*? )?(?:across (?:a |an |the )?[a-z][a-z -]*? )?to (?:a |an |the )?([a-z][a-z -]*)/.exec(text);
   const target = first(text, [
     /\b(?:defeat|destroy|knock out|knock down|hit|smash|beat)s? (?:all |every |the )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/,
@@ -655,7 +661,9 @@ export function readRoles(sentence: string): SentenceRoles {
     const required = colours.filter((colour) => !excluded.includes(colour));
     switches = { all: colours, required: required.length > 0 ? required : colours.slice(0, 1) };
   }
-  const setting = first(text, [/\b(?:in|inside|across|through|on|around|at|into) (?:a |an |the )?([a-z][a-z -]*)/]);
+  const container = PACKED.exec(text)?.[2];
+  const notContainer = (phrase: string): boolean => container === undefined || singular(phrase.split(' ').at(-1) ?? '') !== singular(container);
+  const setting = first(text, [/\b(?:in|inside|across|through|on|around|at|into) (?:a |an |the )?([a-z][a-z -]*)/], 3, container === undefined ? undefined : notContainer);
   // Vyhýbání se nebezpečné ploše („avoid the lava“) je hazard, ne postava.
   const dodged = first(text, [
     /\b(?:dodg|avoid|evad)(?:e|es|ed|ing)? (?:the |a |an |all |any )?([a-z][a-z -]*)/,

@@ -18,6 +18,15 @@ Narrow fixes to how the keyword reader reads a sentence and which existing game 
 - **Where:** the shape lives once in `src/play/draft/lexicon.ts` (`THROWN_BY`, `DEFENDS`) and is read by the classifier, the Catch module (which thing is caught, who throws) and the intent reader: a throw after "by" is the thrower's action, not one the player misses, and "goalkeeper" in "a goalkeeper penguin" is the player's role, not a rival.
 - `A knight dodges arrows fired by archers` stays the runner it was.
 
+## T3 – "pack / put / sort N things into containers" (`pack-count.test.ts`)
+
+- **Shape:** `<pack|put|sort|load|stack> <N> <things> into <containers>`, N as a word or a digit.
+- **Before:** a bakery where twelve cupcakes go into boxes was a chase from a cat ("Survive 40 seconds") with no cupcake in it; the container ("boxes", "crates") was read as the place.
+- **Now:** collecting with a count (arena collect): the thing from the sentence is the thing collected and the goal counts to N from the sentence ("Collect 12 cupcakes."); no opponent; the place is the one the sentence names, never the container. Packing into boxes, which the game does not do, is admitted on the strip.
+- **Why not the shop counter:** it holds 2–8 items, and these sentences say 9, 10 and 12; collecting is the existing type that counts to any N the sentence says.
+- Sorting into the *right* bins, or by colour, stays the sorting game.
+- **Where:** one more shape for the collect verb in `src/play/genre/classify.ts` (the sorting sign skips it); the counted thing and the container in `readRoles` (`src/play/draft/lexicon.ts`).
+
 ## 200-sentence set (`../p30/test-200.json`)
 
 Hero, place and game type of every sentence, keyword reader, before and after each fix.
@@ -26,3 +35,4 @@ Hero, place and game type of every sentence, keyword reader, before and after ea
 |---|---|
 | T1 | 0 |
 | T2 | 0 |
+| T3 | 0 |
