@@ -22,6 +22,21 @@ Narrow fixes to how the keyword reader reads a sentence. No new game type, no ne
 
 - **s03** `A spaceship dodges asteroids and shoots three alien ships` and **s04** `A farmer plants five seeds and waters them until they grow` – before: the start card said "Place: spaceship" and "Place: farmer". The hero's word picks a scene set (spaceship → space, farmer → meadow) and that word was taken as the place. Now the place is the scene set's name; the scene itself is the same (`withPlace`, `src/play/draft/draft.ts`). A place the sentence names ("in the barn") stays.
 
+## T3 – an easier first round: measured, not shipped
+
+Offline beginner (`runBeginner`, 3 seeds) against the first-round numbers; the browser player is `clumsy.ts`.
+
+| Type | Tried | Offline beginner | Browser clumsy | Why not shipped |
+|---|---|---|---|---|
+| defense | 14 enemies instead of 30 | 3/3 at 49–50 s | not lost by 45 s (11 of 14 stopped) | the difficulty gate wants a novice to win 0.3–0.7 (now 1.0) and fewer events per second; no game ends before 45 s (`DEFENSE.bossAt`) |
+| catch | 20 items, 5 lives | 2/3 | 0/3, lost at 20–27 s | the same difficulty gate and the bot-count gates; no gain in the browser |
+| stealth maze | walking speed 120 instead of 110 | 3/3 at 41–45 s | 0/3, scroll not reached by 45 s | no gain in the browser |
+| shooter | 3 or 4 waves instead of 6 | 3/3 / 1/3 | – | 3 waves: the robot wins in 26 s, under the 30 s floor |
+| race | 500–600 m, 5–6 crashes | 1–3/3 | – | shorter than 700 m puts the robot under 30 s; more crashes alone do not help |
+| platformer, runner | – | – | – | track length is fixed by the piece (`sections` 3, `feel` 2): a rule change |
+
+The offline beginner plays far better than the browser clumsy player on catch and the maze, so a number tuned offline does not carry over.
+
 ## 200-sentence set (`../p30/test-200.json`)
 
 | Fix | Readings changed |
