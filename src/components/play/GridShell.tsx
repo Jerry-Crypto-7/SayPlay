@@ -31,7 +31,7 @@ import { musicFor } from '@/play/audio/library';
 import { CHAIN_RUNTIME_VERSION } from '@/play/chain/contract';
 
 import { isTyping } from './arcade/input';
-import { wakesGame } from './arcade/ready-gate';
+import { playStateOf, wakesGame } from './arcade/ready-gate';
 import { GridScenery } from './arcade/look/Scenery';
 import { HowItWorks } from './HowItWorks';
 import { FirstPrompt } from './FirstPrompt';
@@ -420,10 +420,12 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
     [avoid, cards, kinds],
   );
   const cardShown = paused && running && changing === null && !aboutOpen;
+  // Stav hry pro automat (P85, `data-state`): mřížka bez ukázky robota; svět, který se nepostavil, zůstane `loading`.
+  const playState = playStateOf({ loading: !built, demo: false, runState: snapshot.runState, paused: frozen, waiting });
 
   return (
     // Pod plátnem obzor sady jako u arkády (P32D T6, P33 T14, P56B T4): do prvního snímku ne tmavá plocha.
-    <main className="play-shell play-shell-grid" style={{ '--_sky': scene.horizon } as CSSProperties}>
+    <main className="play-shell play-shell-grid" data-testid="play-game" data-state={playState} data-version-id={versionId} style={{ '--_sky': scene.horizon } as CSSProperties}>
       <div
         className="play-stage"
         aria-hidden="true"
