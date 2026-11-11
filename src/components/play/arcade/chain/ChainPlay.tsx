@@ -36,7 +36,8 @@ import { useXrControls } from '../../xr/xr-context';
 import { heroActionOf } from '../action-cue/cues';
 import type { GhostLabel } from '../Ghost';
 import { type ChainGhostReplay, fetchChainGhost } from './chain-ghost';
-import { wakesGame } from '../ready-gate';
+import { useStageCode } from '../ArcadePlay';
+import { playStateOf, wakesGame } from '../ready-gate';
 import { prebuildRunnerTerrain } from '../runner/terrain';
 import type { Cast } from '../World';
 import { ChainCard } from './ChainCard';
@@ -336,9 +337,12 @@ function ChainRun({
   };
   const playing = active && card === 0 && !over && snapshot.runState === 'running';
   const committed = useCommitted(session.tick() / ARCADE_HZ, over);
+  // Stav hry pro automat (P85, `data-state`): karta mezi koly je běh řetězu; další kolo pak čeká na dotek (`ready`).
+  const stageCode = useStageCode();
+  const playState = playStateOf({ loading: !stageCode, demo: round.demo() !== null, runState: outcome, paused: false, waiting: card === 0 && snapshot.tick === 0 });
 
   return (
-    <main ref={shell} className="play-shell" data-chain-round={at + 1} data-chain-view={view} style={{ '--_sky': scene.sky } as CSSProperties}>
+    <main ref={shell} className="play-shell" data-testid="play-game" data-state={playState} data-version-id={versionId} data-chain-round={at + 1} data-chain-view={view} style={{ '--_sky': scene.sky } as CSSProperties}>
       {/* Kolo mění jen scénu žánru (`sceneKey`); rig, skládač a efekty plátna zůstávají – nová stavba všeho stála na telefonu snímky 150–430 ms (T13a). */}
       <ArcadeStage
         sceneKey={`${String(attempt)}-${String(at)}`}

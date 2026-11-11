@@ -261,6 +261,8 @@ export function ShareButton({
   const send = (onlyCopy: boolean) => () => void run(onlyCopy).then((sent) => sent && setOpen(false));
 
   const pending = dare?.state === 'pending' || (dareId === null && live?.state === 'pending');
+  // Odkaz, který stisk naposled poslal (P85): automat ho přečte z DOM – nabídku sdílení ani schránku nevidí.
+  const sentUrl = href === '' ? undefined : href;
   const manualField = <input className="play-share-url" readOnly value={href} aria-label="Game link" onFocus={(event) => event.target.select()} />;
   return (
     <>
@@ -272,6 +274,7 @@ export function ShareButton({
             className={`sp-hud-btn play-hud-round play-share ${className}`.trim()}
             data-testid="play-share"
             data-variant="hud"
+            data-share-url={sentUrl}
             aria-label={label}
             aria-haspopup="dialog"
             disabled={pending}
@@ -311,6 +314,7 @@ export function ShareButton({
           size={size}
           className={`play-share ${className}`.trim()}
           data-testid={copy ? 'play-copy-link' : 'play-share'}
+          data-share-url={sentUrl}
           disabled={pending}
           aria-busy={pending}
           onClick={() => void run(copy)}

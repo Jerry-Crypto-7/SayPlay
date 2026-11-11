@@ -68,3 +68,25 @@ export const keepsWaiting = (target: EventTarget | null): boolean => target inst
 export function wakesGame(event: Pick<KeyboardEvent, 'key' | 'repeat' | 'altKey' | 'ctrlKey' | 'metaKey' | 'target'>): boolean {
   return !event.repeat && !event.altKey && !event.ctrlKey && !event.metaKey && !PAGE_KEYS.has(event.key) && !isTyping(event.target) && !keepsWaiting(event.target);
 }
+
+/** Stav hry v DOM (`data-state` na `play-game`, P85): automat čte hru z atributu, ne z plátna. */
+export type PlayState = 'loading' | 'ready' | 'running' | 'paused' | 'demo' | 'won' | 'lost';
+
+/**
+ * Stav hry v pořadí přednosti: kód scény nebo fyzika ještě nedorazily, hraje ukázka robota (ani její konec
+ * není výsledek hráče), běh skončil, pauza, hodiny stojí na prvním doteku (`ready`), jinak běh.
+ * Konec bez výhry je `lost` i u poruchy mřížky (`runtimeFault`) – karta výsledku ho ukáže jako prohru.
+ */
+export function playStateOf(game: {
+  readonly loading: boolean;
+  readonly demo: boolean;
+  readonly runState: string;
+  readonly paused: boolean;
+  readonly waiting: boolean;
+}): PlayState {
+  if (game.loading) return 'loading';
+  if (game.demo) return 'demo';
+  if (game.runState !== 'running') return game.runState === 'won' ? 'won' : 'lost';
+  if (game.paused) return 'paused';
+  return game.waiting ? 'ready' : 'running';
+}
